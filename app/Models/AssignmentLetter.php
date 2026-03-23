@@ -14,6 +14,11 @@ class AssignmentLetter extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(User::class);
+    }
+
     protected function casts(): array
     {
         return [

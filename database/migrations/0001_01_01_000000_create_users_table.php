@@ -17,6 +17,8 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('drive_folder_url')->nullable();
+            $table->string('telegram_id')->nullable();
             $table->enum('role', ['Admin', 'Pimpinan', 'Pegawai'])->default('Pegawai');
             $table->rememberToken();
             $table->timestamps();

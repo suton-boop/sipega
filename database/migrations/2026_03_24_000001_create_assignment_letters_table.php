@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('date');
             $table->boolean('is_private')->default(false);
             $table->enum('type', ['Individu', 'Kolektif'])->default('Individu');
+            $table->enum('status', ['Draft', 'Disetujui', 'Ditolak'])->default('Draft');
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
         });
