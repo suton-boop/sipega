@@ -47,14 +47,22 @@
                                 <p class="text-sm mt-1">Anda belum menginput Rencana Kerja untuk hari ini. Batas waktu (*deadline*) normal adalah Pukul 17:00. Keterlambatan akan memotong Skor Warna Anda secara otomatis malam nanti.</p>
                             </div>
                         </div>
-                        <form class="flex flex-col gap-4 bg-gray-50 border border-gray-200 rounded-3xl p-6 shadow-inner">
+                        <form action="{{ route('agenda.store') }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4 bg-gray-50 border border-gray-200 rounded-3xl p-6 shadow-inner">
+                            @csrf
+                            @if(session('error'))
+                                <div class="bg-red-100 text-red-700 p-3 rounded-lg text-sm font-bold">{{ session('error') }}</div>
+                            @endif
+                            @if($errors->any())
+                                <div class="bg-red-100 text-red-700 p-3 rounded-lg text-sm font-bold">Terjadi kesalahan input data Anda. Pastikan ada tulisan (min 5 kata) dan foto.</div>
+                            @endif
+
                             <label class="font-bold text-sipega-navy text-lg block mb-1">Rincian Rencana Kegiatan</label>
-                            <textarea class="w-full border border-gray-300 focus:border-sipega-orange focus:ring-sipega-orange rounded-2xl shadow-sm p-4 h-32 text-gray-700" placeholder="Ketikkan apa yang akan Anda kerjakan di BPMP hari ini..."></textarea>
+                            <textarea name="activity_plan" required minlength="5" class="w-full border border-gray-300 focus:border-sipega-orange focus:ring-sipega-orange rounded-2xl shadow-sm p-4 h-32 text-gray-700" placeholder="Ketikkan apa yang akan Anda kerjakan di BPMP hari ini..."></textarea>
                             
                             <label class="font-bold text-sipega-navy text-lg block mt-2 mb-1">Unggah Bukti Dokumen/Foto</label>
-                            <input type="file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-orange-50 file:text-sipega-orange hover:file:bg-orange-100 transition-all cursor-pointer"/>
+                            <input type="file" name="proof_file" accept=".jpg,.png,.jpeg" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-orange-50 file:text-sipega-orange hover:file:bg-orange-100 transition-all cursor-pointer"/>
 
-                            <button type="button" class="bg-sipega-orange hover:bg-[#E67E22] text-white font-extrabold py-4 px-8 rounded-full shadow-xl transition-all hover:scale-105 hover:shadow-2xl mt-4 flex items-center justify-center gap-2 text-lg">
+                            <button type="submit" class="bg-sipega-orange hover:bg-[#E67E22] text-white font-extrabold py-4 px-8 rounded-full shadow-xl transition-all hover:scale-105 hover:shadow-2xl mt-4 flex items-center justify-center gap-2 text-lg">
                                 🚀 SUBMIT AGENDA
                             </button>
                         </form>
