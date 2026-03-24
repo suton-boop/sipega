@@ -1,0 +1,59 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+
+class UserController extends Controller
+{
+    /**
+     * Tampilkan halaman User Management untuk Admin
+     */
+    public function index(Request $request)
+    {
+        // Pastikan hanya admin/kasubag/pimpinan yang bisa lihat (Role Based)
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
+            return abort(403, 'Akses Ditolak.');
+        }
+
+        // Ambil semua user kecuali superadmin sendiri
+        $users = User::where('id', '!=', auth()->id())->orderBy('name')->get();
+        return view('admin.users.index', compact('users'));
+    }
+
+    /**
+     * Update data fleksibel: Role, Drive, Status, Reset Device
+     */
+    public function update(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        
+        $request->validate([
+            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai'])],
+            'drive_folder_url' => 'nullable|url',
+        ]);
+
+        $user->role = $request->role;
+        $user->drive_folder_url = $request->drive_folder_url;
+        
+        // Handle Switch Toggle "Status Aktif"
+        $user->is_active = $request->has('is_active');
+
+        // Handle Fitur "Reset Device Binding"
+        if ($request->has('reset_device') && $request->reset_device == '1') {
+            $user->device_id = null; // Membuka kunci HP
+        }
+        
+        // Handle "Reset Password"
+        if ($request->has('reset_password') && $request->reset_password == '1') {
+            $user->password = Hash::make('12345678'); // Default reset password
+        }
+
+        $user->save();
+
+        return back()->with('success', "Data {$user->name} berhasil diperbarui.");
+    }
+}

@@ -10,9 +10,13 @@ Route::get('/', function () {
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::post('/agenda', [\App\Http\Controllers\AgendaController::class, 'store'])->middleware(['auth'])->name('agenda.store');
 Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [\App\Http\Controllers\DashboardController::class, 'index'])->middleware(['auth', 'verified'])->name('dashboard');
 Route::post('/agenda', [\App\Http\Controllers\AgendaController::class, 'store'])->middleware(['auth'])->name('agenda.store');
 Route::post('/assign', [\App\Http\Controllers\AssignmentLetterController::class, 'store'])->middleware(['auth'])->name('assign.store');
 Route::post('/import-absen', [\App\Http\Controllers\AttendanceController::class, 'importExcel'])->middleware(['auth'])->name('attendance.import');
+
+Route::get('/users', [\App\Http\Controllers\UserController::class, 'index'])->middleware(['auth'])->name('users.index');
+Route::put('/users/{id}', [\App\Http\Controllers\UserController::class, 'update'])->middleware(['auth'])->name('users.update');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -1,8 +1,13 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-sipega-navy leading-tight">
-            {{ __('Administrator Dashboard - SIPEGA') }}
-        </h2>
+        <div class="flex justify-between items-center whitespace-nowrap">
+            <h2 class="font-semibold text-xl text-sipega-navy leading-tight">
+                {{ auth()->user()->name }} - Administrator Center
+            </h2>
+            <a href="{{ route('users.index') }}" class="bg-sipega-navy hover:bg-[#002244] text-white font-bold py-2 px-6 rounded-full shadow-md text-sm transition hover:-translate-y-0.5 whitespace-nowrap overflow-hidden">
+                👥 KELOLA PEGAWAI (RBAC)
+            </a>
+        </div>
     </x-slot>
 
     <div class="py-12">
