@@ -25,7 +25,8 @@ class DashboardController extends Controller
         if ($user->role === 'Admin' || $user->role === 'Kasubag') {
             // Admin: Fokus Statistik 65 Orang & Validasi Absen Lupa
             $totalUsers = User::count();
-            return view('dashboard.admin', compact('top5Highest', 'top5Lowest', 'totalUsers', 'today'));
+            $allPegawai = User::whereIn('role', ['Pegawai', 'Kasubag'])->orderBy('name')->get();
+            return view('dashboard.admin', compact('top5Highest', 'top5Lowest', 'totalUsers', 'today', 'allPegawai'));
             
         } elseif ($user->role === 'Pimpinan') {
             // Pimpinan: Fokus 'Dinas Khusus' Privat, Wall of Fame, Monitor Performa
