@@ -12,12 +12,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('nip')->unique()->nullable()->after('email');
-            $table->string('telegram_id')->nullable()->after('device_id');
+            if (!Schema::hasColumn('users', 'nip')) {
+                $table->string('nip')->unique()->nullable()->after('email');
+            }
+            if (!Schema::hasColumn('users', 'telegram_id')) {
+                $table->string('telegram_id')->nullable()->after('device_id');
+            }
         });
 
         Schema::table('assignment_letters', function (Blueprint $table) {
-            $table->enum('status', ['draft', 'published', 'completed'])->default('published')->after('type');
+            if (!Schema::hasColumn('assignment_letters', 'status')) {
+                $table->enum('status', ['draft', 'published', 'completed'])->default('published')->after('type');
+            }
         });
     }
 
@@ -26,12 +32,5 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn(['nip', 'telegram_id']);
-        });
-
-        Schema::table('assignment_letters', function (Blueprint $table) {
-            $table->dropColumn('status');
-        });
     }
 };
