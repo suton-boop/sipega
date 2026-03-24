@@ -19,7 +19,10 @@ return new class extends Migration
             $table->string('password');
             $table->string('drive_folder_url')->nullable();
             $table->string('telegram_id')->nullable();
-            $table->enum('role', ['Admin', 'Pimpinan', 'Pegawai'])->default('Pegawai');
+            $table->string('device_id')->nullable(); // Security: Device Binding
+            $table->decimal('performance_score', 5, 2)->default(100.00);
+            $table->string('performance_color')->default('Biru'); // Threshold Warna (Biru, Hijau, Kuning, Merah)
+            $table->enum('role', ['Admin', 'Pimpinan', 'Kasubag', 'Pegawai'])->default('Pegawai');
             $table->rememberToken();
             $table->timestamps();
         });

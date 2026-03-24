@@ -13,7 +13,7 @@ export default {
         extend: {
             colors: {
                 sipega: {
-                    navy: '#002147',
+                    navy: '#003366', // Branding Kemendikdasmen
                     orange: '#FF8C00'
                 }
             },

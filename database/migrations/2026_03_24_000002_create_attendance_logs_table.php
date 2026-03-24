@@ -17,6 +17,10 @@ return new class extends Migration
             $table->date('date');
             $table->time('check_in')->nullable();
             $table->time('check_out')->nullable();
+            $table->integer('tl_minutes')->default(0); // Terlambat (TL)
+            $table->integer('psw_minutes')->default(0); // Pulang Sebelum Waktunya (PSW)
+            $table->string('proof_file_path')->nullable(); // Klaim lupa absen
+            $table->enum('approval_status', ['None', 'Pending', 'Approved', 'Rejected'])->default('None');
             $table->enum('source', ['Mesin', 'ST', 'Manual'])->default('Manual');
             $table->timestamps();
         });

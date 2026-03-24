@@ -15,14 +15,20 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
+        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-sipega-navy relative">
+            <div class="absolute top-4 left-4">
+                <img src="{{ asset('images/Logo Kemendikdasmen BPMP Kaltim.png') }}" class="h-12" alt="Kemendikdasmen" />
+            </div>
+            
+            <div class="flex flex-col items-center">
                 <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
+                    <img src="{{ asset('images/logo Sipega.png') }}" class="w-auto h-32 drop-shadow-xl" alt="Logo SIPEGA" />
                 </a>
+                <img src="{{ asset('images/jenaman SIPEGA.png') }}" class="h-10 mt-6" alt="SIPEGA Text" />
+                <p class="text-sipega-orange mt-2 tracking-widest font-semibold uppercase text-sm">Monitoring Performa & Penugasan</p>
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <div class="w-full sm:max-w-md mt-8 px-6 py-8 bg-white shadow-2xl overflow-hidden sm:rounded-2xl border-t-8 border-sipega-orange">
                 {{ $slot }}
             </div>
         </div>
