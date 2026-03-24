@@ -62,6 +62,36 @@
                 </div>
             </div>
 
+            <!-- SIPEGA Drive & Reward Panel -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- SIPEGA-Drive -->
+                <div class="bg-gradient-to-r from-blue-600 to-blue-800 text-white overflow-hidden shadow-xl sm:rounded-3xl p-8 relative hover:-translate-y-1 transition-transform">
+                    <h3 class="text-2xl font-extrabold mb-2 flex items-center gap-2">☁️ SIPEGA-Drive</h3>
+                    <p class="text-blue-100 mb-6 text-sm">Akses langsung ke loker arsip cloud Anda (G-Drive) tanpa batasan ruang penyimpanan.</p>
+                    
+                    @if($user->drive_folder_url)
+                        <a href="{{ $user->drive_folder_url }}" target="_blank" class="bg-white text-blue-700 font-bold py-3 px-6 rounded-full shadow-lg hover:shadow-xl hover:bg-gray-50 transition w-full block text-center mt-auto">
+                            Buka Folder Pribadi ↗
+                        </a>
+                    @else
+                        <button disabled class="bg-white/20 text-white/50 font-bold py-3 px-6 rounded-full w-full block text-center cursor-not-allowed border border-white/20 mt-auto">
+                            Menunggu Konfigurasi Admin ⏳
+                        </button>
+                    @endif
+                </div>
+
+                <!-- SIPEGA-Reward -->
+                <div class="bg-white border-t-[8px] border-yellow-400 overflow-hidden shadow-xl sm:rounded-3xl p-8 hover:-translate-y-1 transition-transform relative">
+                    <h3 class="text-2xl font-extrabold mb-2 text-gray-800 flex items-center gap-2">🎁 SIPEGA-Reward</h3>
+                    <p class="text-gray-500 mb-6 text-sm">Berpartisipasi dalam Voting Teladan (Pemilihan Rekan Kerja Terbaik Semester Ini).</p>
+                    <button class="bg-yellow-400 text-yellow-900 font-bold py-3 px-6 rounded-full shadow hover:bg-yellow-500 transition w-full mt-auto block text-center">
+                        Ikuti Voting Sekarang 🗳️
+                    </button>
+                </div>
+
+            </div>
+
         </div>
     </div>
 </x-app-layout>
