@@ -72,6 +72,7 @@
                                                         <option value="Admin" {{ $u->role == 'Admin' ? 'selected' : '' }}>Admin</option>
                                                         <option value="Pimpinan" {{ $u->role == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
                                                         <option value="Kasubag" {{ $u->role == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
+                                                        <option value="Operator" {{ $u->role == 'Operator' ? 'selected' : '' }}>Operator</option>
                                                         <option value="Pegawai" {{ $u->role == 'Pegawai' ? 'selected' : '' }}>Pegawai</option>
                                                     </select>
                                                 </div>

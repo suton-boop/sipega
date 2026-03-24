@@ -32,7 +32,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         
         $request->validate([
-            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai'])],
+            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator'])],
             'drive_folder_url' => 'nullable|url',
         ]);
 
