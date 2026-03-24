@@ -4,9 +4,14 @@
             <h2 class="font-semibold text-xl text-sipega-navy leading-tight">
                 {{ auth()->user()->name }} - Administrator Center
             </h2>
-            <a href="{{ route('users.index') }}" class="bg-sipega-navy hover:bg-[#002244] text-white font-bold py-2 px-6 rounded-full shadow-md text-sm transition hover:-translate-y-0.5 whitespace-nowrap overflow-hidden">
-                👥 KELOLA PEGAWAI (RBAC)
-            </a>
+            <div class="flex gap-2">
+                <a href="{{ route('rbac.index') }}" class="bg-sipega-navy hover:bg-[#002244] text-white font-bold py-2 px-4 rounded-full shadow-md text-sm transition hover:-translate-y-0.5 whitespace-nowrap overflow-hidden border border-orange-400">
+                    🔐 MATRIKS HAK AKSES
+                </a>
+                <a href="{{ route('users.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-full shadow-md text-sm transition hover:-translate-y-0.5 whitespace-nowrap overflow-hidden">
+                    👥 KELOLA PEGAWAI
+                </a>
+            </div>
         </div>
     </x-slot>
 
@@ -137,6 +142,65 @@
                             </button>
                         </div>
                     </form>
+                </div>
+            </div>
+
+            <!-- Recent Assignment Letters Modul -->
+            <div class="bg-white overflow-hidden shadow-2xl sm:rounded-3xl border-t-[10px] border-orange-500 mt-8">
+                <div class="p-8">
+                    <h3 class="text-3xl font-extrabold mb-2 text-orange-600 flex items-center gap-2">📜 Arsip Surat Tugas SIPEGA</h3>
+                    <p class="text-gray-500 mb-6">Daftar publikasi surat tugas terbaru. Silakan unduh PDF resmi.</p>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-gray-50 border-b border-gray-100">
+                                <tr>
+                                    <th class="py-4 px-4 font-bold text-gray-700">Nomor / Judul</th>
+                                    <th class="py-4 px-4 font-bold text-gray-700">Tanggal</th>
+                                    <th class="py-4 px-4 font-bold text-gray-700">Peserta</th>
+                                    <th class="py-4 px-4 font-bold text-gray-700 text-center">Format</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50">
+                                @php
+                                    $recentLetters = \App\Models\AssignmentLetter::with('users')->latest()->take(5)->get();
+                                @endphp
+                                @foreach($recentLetters as $rl)
+                                <tr class="hover:bg-orange-50/30 transition">
+                                    <td class="py-4 px-4">
+                                        <div class="font-bold text-sipega-navy">{{ $rl->letter_number }}</div>
+                                        <div class="text-sm text-gray-400 capitalize">{{ $rl->title }}</div>
+                                    </td>
+                                    <td class="py-4 px-4 text-sm text-gray-600">
+                                        {{ $rl->date->format('d/m/Y') }}
+                                        @if($rl->is_private)
+                                            <span class="ml-2 bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Private</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-4 px-4">
+                                        <div class="flex -space-x-2">
+                                            @foreach($rl->users->take(3) as $u)
+                                                <div class="w-8 h-8 rounded-full bg-{{ strtolower($u->performance_color) }}-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold" title="{{ $u->name }}">
+                                                    {{ substr($u->name, 0, 1) }}
+                                                </div>
+                                            @endforeach
+                                            @if($rl->users->count() > 3)
+                                                <div class="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-[10px] text-gray-600 font-bold">
+                                                    +{{ $rl->users->count() - 3 }}
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-4 text-center">
+                                        <a href="{{ route('assign.pdf', $rl->id) }}" class="inline-flex items-center gap-2 bg-sipega-navy text-white text-xs font-bold py-2 px-4 rounded-full hover:bg-[#002244] transition shadow-md">
+                                            📥 DOWNLOAD PDF
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 

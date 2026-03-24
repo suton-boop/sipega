@@ -7,8 +7,8 @@ use App\Models\AssignmentLetter;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Illuminate\Support\Facades\Log;
-// use Telegram\Bot\Laravel\Facades\Telegram; // Pastikan package telegram-bot-sdk di-install
 
 class AssignmentLetterController extends Controller
 {
@@ -70,14 +70,9 @@ class AssignmentLetterController extends Controller
     {
         $letter = AssignmentLetter::with('users', 'creator')->findOrFail($id);
         
-        // Logika beda template sesuai tipe Surat Tugas
-        $template = $letter->type === 'Kolektif' ? 'pdf.surat-kolektif' : 'pdf.surat-perorangan';
+        $pdf = Pdf::loadView('pdf.assignment_letter', compact('letter'));
         
-        // Di-comment karena barryvdh/laravel-dompdf mungkin belum terinstall. Jika belum, harus di-install.
-        // $pdf = Pdf::loadView($template, compact('letter'));
-        // return $pdf->download(str_replace('/', '-', $letter->letter_number) . '.pdf');
-        
-        return "Generator PDF berhasil mendeteksi tipe {$letter->type}. Sedang mengarahkan ke template: {$template}";
+        return $pdf->download(str_replace('/', '-', $letter->letter_number) . '.pdf');
     }
 
     /**
