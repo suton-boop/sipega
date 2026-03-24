@@ -109,6 +109,32 @@
                 </div>
             </div>
 
+            <!-- SIPEGA-Check Modul -->
+            <div class="bg-white overflow-hidden shadow-2xl sm:rounded-3xl border-t-[10px] border-green-600 mt-8">
+                <div class="p-8">
+                    <h3 class="text-3xl font-extrabold mb-2 text-green-700 flex items-center gap-2">✅ SIPEGA-Check: Impor Excel Mesin Absen</h3>
+                    <p class="text-gray-500 mb-6">Engine akan melebur data Excel dengan database ST. <span class="text-green-600 font-bold">Anti-Tertindih DL Aktif!</span></p>
+
+                    @if(session('success_import'))
+                        <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-4 font-bold border border-green-300">✔️ {{ session('success_import') }}</div>
+                    @endif
+
+                    <form action="{{ route('attendance.import') }}" method="POST" enctype="multipart/form-data" class="bg-green-50 p-6 rounded-3xl border border-green-200 flex flex-col md:flex-row items-center gap-6">
+                        @csrf
+                        <div class="w-full md:flex-grow">
+                            <label class="font-bold text-green-800 block mb-2">Pilih File .xlsx / .csv</label>
+                            <input type="file" name="excel_file" accept=".xlsx,.csv,.xls" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-700 transition-all cursor-pointer"/>
+                            <p class="text-xs text-green-700 mt-2">Pastikan kolom memuat format: <i>email, tanggal, status, tl_menit, psw_menit</i>.</p>
+                        </div>
+                        <div class="w-full md:w-auto">
+                            <button type="submit" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-extrabold py-4 px-8 rounded-full shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2">
+                                🔄 SINKRONISASI DATA
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 </x-app-layout>
