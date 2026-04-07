@@ -56,4 +56,23 @@ class UserController extends Controller
 
         return back()->with('success', "Data {$user->name} berhasil diperbarui.");
     }
+
+    /**
+     * Kalkulasi ulang skor performa seluruh pegawai
+     */
+    public function recalculatePerformance()
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
+            return abort(403);
+        }
+
+        $service = new \App\Services\PerformanceService();
+        $users = User::all();
+        
+        foreach ($users as $user) {
+            $service->updateScore($user);
+        }
+
+        return back()->with('success', 'Skor performa seluruh pegawai berhasil di-kalkulasi ulang berdasarkan bobot adil SIPEGA.');
+    }
 }

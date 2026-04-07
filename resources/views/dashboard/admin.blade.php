@@ -1,206 +1,301 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex justify-between items-center whitespace-nowrap">
-            <h2 class="font-semibold text-xl text-sipega-navy leading-tight">
-                {{ auth()->user()->name }} - Administrator Center
-            </h2>
-            <div class="flex gap-2">
-                <a href="{{ route('rbac.index') }}" class="bg-sipega-navy hover:bg-[#002244] text-white font-bold py-2 px-4 rounded-full shadow-md text-sm transition hover:-translate-y-0.5 whitespace-nowrap overflow-hidden border border-orange-400">
-                    🔐 MATRIKS HAK AKSES
-                </a>
-                <a href="{{ route('users.index') }}" class="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-full shadow-md text-sm transition hover:-translate-y-0.5 whitespace-nowrap overflow-hidden">
-                    👥 KELOLA PEGAWAI
-                </a>
+            <div>
+                <h2 class="font-extrabold text-2xl text-sipega-navy leading-none tracking-tighter uppercase">
+                    Pusat Administrasi
+                </h2>
+                <p class="text-[10px] font-bold text-sipega-orange uppercase tracking-[0.3em] mt-1">{{ auth()->user()->name }} &bull; SIPEGA ENGINE</p>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <!-- Master Switch Reward -->
+                <form action="{{ route('settings.update') }}" method="POST" class="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-200">
+                    @csrf
+                    <input type="hidden" name="key" value="is_reward_active">
+                    <label class="text-[10px] font-black mr-3 text-gray-400 uppercase tracking-widest">SIPEGA Reward:</label>
+                    <select name="value" onchange="this.form.submit()" class="text-[10px] font-extrabold py-1 px-4 rounded-xl border-none focus:ring-0 {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <option value="1" {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'selected' : '' }}>AKTIF</option>
+                        <option value="0" {{ \App\Models\Setting::get('is_reward_active') === '0' ? 'selected' : '' }}>OFF</option>
+                    </select>
+                </form>
+
+                <!-- Master Switch Realisasi (Flexible for Testing) -->
+                <form action="{{ route('settings.update') }}" method="POST" class="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-200">
+                    @csrf
+                    <input type="hidden" name="key" value="is_realization_open_anytime">
+                    <label class="text-[10px] font-black mr-3 text-gray-400 uppercase tracking-widest leading-none">Uji Coba<br>Realisasi:</label>
+                    <select name="value" onchange="this.form.submit()" class="text-[10px] font-extrabold py-1 px-4 rounded-xl border-none focus:ring-0 {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <option value="1" {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'selected' : '' }}>OPEN (TEST)</option>
+                        <option value="0" {{ \App\Models\Setting::get('is_realization_open_anytime', '0') === '0' ? 'selected' : '' }}>NORMAL (JADWAL)</option>
+                    </select>
+                </form>
+
+                <!-- Master Switch Tukin -->
+                <form action="{{ route('settings.update') }}" method="POST" class="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-200">
+                    @csrf
+                    <input type="hidden" name="key" value="is_tukin_active">
+                    <label class="text-[10px] font-black mr-3 text-gray-400 uppercase tracking-widest">SIPEGA Tukin:</label>
+                    <select name="value" onchange="this.form.submit()" class="text-[10px] font-extrabold py-1 px-4 rounded-xl border-none focus:ring-0 {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                        <option value="1" {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'selected' : '' }}>AKTIF</option>
+                        <option value="0" {{ \App\Models\Setting::get('is_tukin_active') === '0' ? 'selected' : '' }}>OFF</option>
+                    </select>
+                </form>
+
+                <div class="flex gap-2">
+                    @if(\App\Models\Setting::get('is_reward_active') === '1')
+                    <a href="{{ route('reward.index') }}" class="bg-sipega-orange hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest">
+                        Reward Center
+                    </a>
+                    @endif
+                    <a href="{{ route('rbac.index') }}" class="bg-sipega-navy hover:bg-[#002244] text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest border border-white/10">
+                        Matriks Akses
+                    </a>
+                    <a href="{{ route('users.index') }}" class="bg-gray-800 hover:bg-black text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest">
+                        Pegawai
+                    </a>
+                </div>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-3xl border-t-8 border-sipega-navy">
-                <div class="p-6 text-gray-900">
-                    <h3 class="text-2xl font-bold mb-4">🚀 Parameter Validasi Data Absen</h3>
-                    <p class="mb-4 text-lg">Total Pegawai Saat Ini: <span class="font-bold text-sipega-orange text-2xl">{{ $totalUsers }}</span> Orang</p>
-                    <div class="p-6 bg-gray-50 rounded-2xl border border-gray-200">
-                        <p class="text-gray-600 mb-4">Lakukan sinkronisasi atau pemantauan persetujuan lupa absen harian untuk memastikan *Engine Performa* menghitung secara adil.</p>
-                        <button class="bg-sipega-orange hover:bg-orange-600 text-white font-extrabold py-3 px-8 rounded-full shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl">
-                            Validasi Cepat Lupa Absen ({{ $today }}) ➡️
-                        </button>
+    <div class="py-12 bg-slate-50 min-h-screen font-sans">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+            
+            <!-- Performance Parameters -->
+            <div class="bg-white overflow-hidden shadow-sm rounded-[32px] border-b-8 border-sipega-navy p-2">
+                <div class="p-8 lg:p-10">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+                        <div class="flex-1">
+                            <h3 class="text-3xl font-black mb-2 text-sipega-navy tracking-tighter uppercase">Validasi Performa Pegawai</h3>
+                            <p class="text-gray-500 font-medium @if(\App\Models\Setting::get('is_tukin_active') === '0') line-through decoration-red-500 @endif mb-6">
+                                Sinkronisasi kehadiran harian untuk mematikan akurasi perhitungan Tukin secara otomatis.
+                                @if(\App\Models\Setting::get('is_tukin_active') === '0')
+                                    <span class="block text-red-600 font-black uppercase text-[10px] mt-1 tracking-widest">[MODUL TUKIN NON-AKTIF]</span>
+                                @endif
+                            </p>
+                            
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                                <div class="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                                    <span class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Pegawai</span>
+                                    <span class="text-3xl font-black text-sipega-navy leading-none">{{ $totalUsers }}</span>
+                                </div>
+                                <div class="bg-gray-50 p-6 rounded-3xl border border-gray-100 italic">
+                                    <span class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 ">Status Hari</span>
+                                    <span class="text-xl font-bold text-sipega-orange uppercase tracking-tighter">{{ $today }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-3">
+                            <button class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-sipega-orange/20 uppercase text-xs tracking-widest">
+                                Validasi Lupa Absen
+                            </button>
+                            <form action="{{ route('users.recalculate-performance') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full bg-sipega-navy hover:bg-[#002244] text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-sipega-navy/20 uppercase text-xs tracking-widest flex items-center justify-center gap-3">
+                                    Kalkulasi Bobot Skor
+                                </button>
+                            </form>
+                            @if(\App\Models\Setting::get('is_tukin_active') !== '0')
+                            <a href="{{ route('tukin.export') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-emerald-600/20 uppercase text-xs tracking-widest flex items-center justify-center gap-3">
+                                Export Rekap Tukin
+                            </a>
+                            @endif
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Top 5 Highest -->
-                <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-6">
-                    <h3 class="text-xl font-bold mb-4 text-green-700">🏆 Top 5 Skor (Tertinggi)</h3>
-                    <ul class="divide-y divide-gray-100">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Leaderboard High -->
+                <div class="bg-white overflow-hidden shadow-sm rounded-[32px] p-8 border border-gray-100">
+                    <h3 class="text-xl font-black mb-6 text-green-700 uppercase tracking-tight flex items-center gap-3">
+                        <span class="w-2 h-8 bg-green-500 rounded-full"></span>
+                        Top Performa (Tertinggi)
+                    </h3>
+                    <div class="space-y-3">
                         @foreach($top5Highest as $user)
-                        <li class="py-3 flex justify-between items-center group hover:bg-gray-50 px-2 rounded-xl transition">
-                            <span class="font-medium">{{ $user->name }}</span>
-                            <span class="bg-sipega-navy text-white font-bold py-1 px-4 rounded-full shadow-sm">{{ $user->performance_score }}</span>
-                        </li>
+                        <div class="p-4 flex justify-between items-center group bg-gray-50 hover:bg-green-50 rounded-2xl transition-all border border-transparent hover:border-green-100">
+                            <span class="font-bold text-gray-700">{{ $user->name }}</span>
+                            <span class="bg-sipega-navy text-white font-black py-1.5 px-4 rounded-xl text-sm shadow-sm">{{ $user->performance_score }}</span>
+                        </div>
                         @endforeach
-                    </ul>
+                    </div>
                 </div>
-                <!-- Top 5 Lowest -->
-                <div class="bg-white overflow-hidden shadow-md sm:rounded-3xl p-6">
-                    <h3 class="text-xl font-bold mb-4 text-red-600">⚠️ Top 5 Penanganan (Terendah)</h3>
-                    <ul class="divide-y divide-gray-100">
+
+                <!-- Leaderboard Low -->
+                <div class="bg-white overflow-hidden shadow-sm rounded-[32px] p-8 border border-gray-100">
+                    <h3 class="text-xl font-black mb-6 text-red-600 uppercase tracking-tight flex items-center gap-3">
+                        <span class="w-2 h-8 bg-red-500 rounded-full"></span>
+                        Intervensi Khusus (Terendah)
+                    </h3>
+                    <div class="space-y-3">
                         @foreach($top5Lowest as $user)
-                        <li class="py-3 flex justify-between items-center group hover:bg-gray-50 px-2 rounded-xl transition">
-                            <span class="font-medium text-gray-700">{{ $user->name }}</span>
-                            <span class="bg-red-100 text-red-700 font-bold py-1 px-4 rounded-full border border-red-200">{{ $user->performance_score }}</span>
-                        </li>
+                        <div class="p-4 flex justify-between items-center group bg-gray-50 hover:bg-red-50 rounded-2xl transition-all border border-transparent hover:border-red-100">
+                            <span class="font-bold text-gray-700">{{ $user->name }}</span>
+                            <span class="bg-red-100 text-red-700 font-extrabold py-1.5 px-4 rounded-xl text-sm border border-red-200">{{ $user->performance_score }}</span>
+                        </div>
                         @endforeach
-                    </ul>
+                    </div>
                 </div>
             </div>
 
-            <!-- SIPEGA-Assign Modul -->
-            <div class="bg-white overflow-hidden shadow-2xl sm:rounded-3xl border-t-[10px] border-sipega-navy mt-8">
-                <div class="p-8">
-                    <h3 class="text-3xl font-extrabold mb-2 text-sipega-navy flex items-center gap-2">📄 SIPEGA-Assign: Terbitkan Surat Tugas</h3>
-                    <p class="text-gray-500 mb-6">Filter pintar akan otomatis menolak pegawai yang jadwalnya bentrok (Anti-Double Tugas).</p>
+            <!-- 1.5. Agenda Rapat & Pribadi (NEW) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Agenda Rapat (Mentions & Target_type all) -->
+                <div class="bg-white overflow-hidden shadow-2xl sm:rounded-[32px] p-8 border border-gray-100 relative">
+                    <div class="absolute top-0 right-0 bg-sipega-orange text-white text-[10px] font-black px-4 py-2 rounded-bl-3xl rounded-tr-[32px] uppercase tracking-widest">
+                        Agenda Instansi / Rapat
+                    </div>
+                    <h3 class="text-xl font-black text-sipega-navy mb-6 flex items-center gap-3">📅 Jadwal Rapat Anda</h3>
+                    
+                    @if(isset($upcomingMeetings) && $upcomingMeetings->count() > 0)
+                        <div class="space-y-4">
+                            @foreach($upcomingMeetings as $meeting)
+                                <div class="p-4 rounded-3xl bg-blue-50 border border-blue-100 hover:shadow-md transition">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <h4 class="font-black text-blue-900 text-sm">{{ $meeting->title }}</h4>
+                                        <span class="text-xs font-bold text-blue-600 bg-blue-100 px-2 py-1 rounded-full">{{ \Carbon\Carbon::parse($meeting->date)->format('d/m/Y') }}</span>
+                                    </div>
+                                    <p class="text-xs text-blue-700 font-medium flex items-center gap-2 mb-1">
+                                        ⏱️ {{ \Carbon\Carbon::parse($meeting->start_time)->format('H:i') }} WITA
+                                    </p>
+                                    <p class="text-[10px] text-blue-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                                        📍 {{ $meeting->location_name }}
+                                    </p>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center p-6 text-gray-400 bg-gray-50 rounded-3xl border border-dashed border-gray-200">
+                            <span class="text-4xl mb-2 opacity-50">🏝️</span>
+                            <p class="text-xs font-bold uppercase tracking-widest text-center">Belum ada agenda rapat terdekat.</p>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Agenda Pribadi (Daily Agenda) -->
+                <div class="bg-white overflow-hidden shadow-2xl sm:rounded-[32px] p-8 border border-gray-100 relative">
+                    <div class="absolute top-0 right-0 bg-sipega-navy text-white text-[10px] font-black px-4 py-2 rounded-bl-3xl rounded-tr-[32px] uppercase tracking-widest">
+                        Rencana / Agenda Pribadi
+                    </div>
+                    <h3 class="text-xl font-black text-sipega-navy mb-6 flex items-center gap-3">📝 Agenda Hari Ini</h3>
+                    
+                    @if(isset($todayAgenda) && $todayAgenda && $todayAgenda->items->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($todayAgenda->items as $idx => $item)
+                                <div class="flex items-start gap-3 p-3 rounded-2xl bg-gray-50 border border-gray-100">
+                                    <div class="w-6 h-6 rounded-full {{ $item->status == 'completed' ? 'bg-green-100 text-green-600' : ($item->status == 'progress' ? 'bg-orange-100 text-orange-600' : 'bg-gray-200 text-gray-500') }} flex justify-center items-center text-[10px] font-black shrink-0 mt-0.5">
+                                        {{ $idx + 1 }}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-800 leading-tight">{{ $item->plan_description }}</p>
+                                        <span class="text-[9px] font-black uppercase tracking-widest {{ $item->status == 'completed' ? 'text-green-500' : ($item->status == 'progress' ? 'text-orange-500' : 'text-gray-400') }}">
+                                            Status: {{ ucfirst($item->status) }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="flex flex-col items-center justify-center p-6 text-gray-400 bg-red-50 rounded-3xl border border-dashed border-red-200">
+                            <span class="text-4xl mb-2 opacity-50">⚠️</span>
+                            <p class="text-xs font-bold uppercase tracking-widest text-red-500 text-center">Anda belum menyusun agenda pribadi hari ini. Segera buat prioritas Kerja Anda.</p>
+                            <a href="{{ route('agenda.index') }}" class="mt-4 bg-red-500 text-white px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition">Buat Agenda</a>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Assignment Section -->
+            <div class="bg-white overflow-hidden shadow-sm rounded-[40px] border border-gray-100">
+                <div class="p-8 lg:p-12">
+                    <div class="mb-10">
+                        <h3 class="text-4xl font-black text-sipega-navy tracking-tighter uppercase mb-2">SIPEGA-Assign</h3>
+                        <p class="text-gray-400 font-medium">Penerbitan Surat Tugas (ST) dengan deteksi bentrok jadwal otomatis.</p>
+                    </div>
                     
                     @if(session('success'))
-                        <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-4 font-bold border border-green-300">✔️ {{ session('success') }}</div>
-                    @endif
-                    @if($errors->any())
-                        <div class="bg-red-100 text-red-800 p-4 rounded-xl mb-4 font-bold border border-red-300">❌ {{ $errors->first() }}</div>
-                    @endif
-
-                    <form action="{{ route('assign.store') }}" method="POST" class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-3xl border border-gray-200">
-                        @csrf
-                        <div class="space-y-4">
-                            <div>
-                                <label class="font-bold text-gray-700 block mb-1">Judul / Keperluan Dinas</label>
-                                <input type="text" name="title" required class="w-full rounded-xl border-gray-300 focus:ring-sipega-navy focus:border-sipega-navy" placeholder="Contoh: Rapat Koordinasi Dapodik...">
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="font-bold text-gray-700 block mb-1">Tanggal Mulai</label>
-                                    <input type="date" name="date" required class="w-full rounded-xl border-gray-300 focus:ring-sipega-navy focus:border-sipega-navy">
-                                </div>
-                                <div>
-                                    <label class="font-bold text-gray-700 block mb-1">Tipe Surat</label>
-                                    <select name="type" class="w-full rounded-xl border-gray-300 focus:ring-sipega-navy focus:border-sipega-navy">
-                                        <option value="Individu">Perorangan</option>
-                                        <option value="Kolektif">Kolektif (Group)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="flex items-center gap-3 bg-red-50 p-4 rounded-xl border border-red-100">
-                                <input type="hidden" name="is_private" value="0">
-                                <input type="checkbox" name="is_private" value="1" class="rounded text-red-600 focus:ring-red-500 w-5 h-5">
-                                <label class="font-bold text-red-800">Ubah Tipe Menjadi "Dinas Khusus" (Tertutup) 🔒</label>
-                            </div>
+                        <div class="bg-green-50 text-green-700 p-6 rounded-3xl mb-8 font-bold border border-green-100 flex items-center gap-3">
+                            <span class="bg-green-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">✓</span>
+                            {{ session('success') }}
                         </div>
+                    @endif
 
-                        <div class="space-y-4 flex flex-col">
-                            <div class="flex-grow">
-                                <label class="font-bold text-gray-700 block mb-2">Pilih Personil Pegawai (Multi-select)</label>
-                                <div class="bg-white border border-gray-300 rounded-xl p-4 h-48 overflow-y-auto shadow-inner space-y-2">
-                                    @foreach($allPegawai as $p)
-                                        <label class="flex items-center gap-3 p-2 hover:bg-blue-50 rounded-lg transition cursor-pointer">
-                                            <input type="checkbox" name="assigned_users[]" value="{{ $p->id }}" class="rounded border-gray-300 text-sipega-navy focus:ring-sipega-navy w-5 h-5">
-                                            <span class="font-semibold text-gray-800">{{ $p->name }}</span>
-                                            <span class="ml-auto text-xs font-bold text-{{ strtolower($p->performance_color) }}-700 bg-{{ strtolower($p->performance_color) }}-100 px-2 py-1 rounded-full">{{ $p->performance_color }}</span>
-                                        </label>
-                                    @endforeach
+                    <form action="{{ route('assign.store') }}" method="POST" class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                        @csrf
+                        <div class="lg:col-span-12 space-y-8">
+                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="md:col-span-2">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 px-2">Keterangan / Keperluan Dinas</label>
+                                    <input type="text" name="title" required class="w-full rounded-2xl border-gray-100 bg-gray-50 focus:bg-white focus:border-sipega-navy focus:ring-4 focus:ring-sipega-navy/5 p-4 font-bold text-gray-700" placeholder="Rapat Koordinasi...">
                                 </div>
-                            </div>
-                            
-                            <button type="submit" class="bg-sipega-navy hover:bg-[#002244] text-white font-extrabold py-4 px-8 rounded-full shadow-xl transition-all hover:-translate-y-1 hover:shadow-2xl flex items-center justify-center gap-2">
-                                📜 TERBITKAN SURAT TUGAS
-                            </button>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 px-2">Tanggal</label>
+                                        <input type="date" name="date" required class="w-full rounded-2xl border-gray-100 bg-gray-50 p-4 font-bold text-gray-700">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-2 px-2">Tipe</label>
+                                        <select name="type" class="w-full rounded-2xl border-gray-100 bg-gray-50 p-4 font-bold text-gray-700">
+                                            <option value="Individu">Perorangan</option>
+                                            <option value="Kolektif">Kolektif</option>
+                                        </select>
+                                    </div>
+                                </div>
+                             </div>
+
+                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                                <div>
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3 px-2">Pilih Personil Pelaksana</label>
+                                    <div class="bg-white border-2 border-dashed border-gray-100 rounded-3xl p-4 h-64 overflow-y-auto space-y-2">
+                                        @foreach($allPegawai as $p)
+                                            <label class="flex items-center gap-4 p-4 hover:bg-gray-50 rounded-2xl transition cursor-pointer border border-transparent hover:border-gray-100">
+                                                <input type="checkbox" name="assigned_users[]" value="{{ $p->id }}" class="rounded-lg border-gray-300 text-sipega-navy focus:ring-sipega-navy w-6 h-6">
+                                                <div>
+                                                    <span class="block font-bold text-gray-800 leading-none mb-1">{{ $p->name }}</span>
+                                                    <span class="text-[10px] uppercase font-black text-{{ strtolower($p->performance_color) }}-600">{{ $p->performance_color }} Performance</span>
+                                                </div>
+                                            </label>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col">
+                                    <label class="text-[10px] font-black text-gray-400 uppercase tracking-widest block mb-3 px-2">Justifikasi Pimpinan</label>
+                                    <textarea name="justification" rows="5" class="w-full rounded-3xl border-gray-100 bg-gray-50 p-6 font-medium text-gray-700 flex-grow" placeholder="Catatan khusus atau instruksi pimpinan..."></textarea>
+                                    
+                                    <div class="mt-6 flex items-center gap-4 bg-red-50 p-4 rounded-2xl border border-red-100">
+                                        <input type="checkbox" name="is_private" value="1" class="rounded-lg text-red-600 focus:ring-red-500 w-6 h-6">
+                                        <label class="font-black text-red-800 uppercase text-[10px] tracking-widest">Tandai Sebagai "Dinas Khusus" (Tertutup)</label>
+                                    </div>
+                                </div>
+                             </div>
+
+                             <button type="submit" class="w-full bg-sipega-navy hover:bg-black text-white font-black py-6 rounded-3xl shadow-2xl transition-all hover:-translate-y-1 hover:shadow-sipega-navy/30 uppercase tracking-[0.2em]">
+                                Terbitkan Surat Tugas Resmi
+                             </button>
                         </div>
                     </form>
                 </div>
             </div>
 
-            <!-- SIPEGA-Check Modul -->
-            <div class="bg-white overflow-hidden shadow-2xl sm:rounded-3xl border-t-[10px] border-green-600 mt-8">
-                <div class="p-8">
-                    <h3 class="text-3xl font-extrabold mb-2 text-green-700 flex items-center gap-2">✅ SIPEGA-Check: Impor Excel Mesin Absen</h3>
-                    <p class="text-gray-500 mb-6">Engine akan melebur data Excel dengan database ST. <span class="text-green-600 font-bold">Anti-Tertindih DL Aktif!</span></p>
-
-                    @if(session('success_import'))
-                        <div class="bg-green-100 text-green-800 p-4 rounded-xl mb-4 font-bold border border-green-300">✔️ {{ session('success_import') }}</div>
-                    @endif
-
-                    <form action="{{ route('attendance.import') }}" method="POST" enctype="multipart/form-data" class="bg-green-50 p-6 rounded-3xl border border-green-200 flex flex-col md:flex-row items-center gap-6">
-                        @csrf
-                        <div class="w-full md:flex-grow">
-                            <label class="font-bold text-green-800 block mb-2">Pilih File .xlsx / .csv</label>
-                            <input type="file" name="excel_file" accept=".xlsx,.csv,.xls" required class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-700 transition-all cursor-pointer"/>
-                            <p class="text-xs text-green-700 mt-2">Pastikan kolom memuat format: <i>email, tanggal, status, tl_menit, psw_menit</i>.</p>
-                        </div>
-                        <div class="w-full md:w-auto">
-                            <button type="submit" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-extrabold py-4 px-8 rounded-full shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2">
-                                🔄 SINKRONISASI DATA
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Recent Assignment Letters Modul -->
-            <div class="bg-white overflow-hidden shadow-2xl sm:rounded-3xl border-t-[10px] border-orange-500 mt-8">
-                <div class="p-8">
-                    <h3 class="text-3xl font-extrabold mb-2 text-orange-600 flex items-center gap-2">📜 Arsip Surat Tugas SIPEGA</h3>
-                    <p class="text-gray-500 mb-6">Daftar publikasi surat tugas terbaru. Silakan unduh PDF resmi.</p>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left">
-                            <thead class="bg-gray-50 border-b border-gray-100">
-                                <tr>
-                                    <th class="py-4 px-4 font-bold text-gray-700">Nomor / Judul</th>
-                                    <th class="py-4 px-4 font-bold text-gray-700">Tanggal</th>
-                                    <th class="py-4 px-4 font-bold text-gray-700">Peserta</th>
-                                    <th class="py-4 px-4 font-bold text-gray-700 text-center">Format</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-50">
-                                @php
-                                    $recentLetters = \App\Models\AssignmentLetter::with('users')->latest()->take(5)->get();
-                                @endphp
-                                @foreach($recentLetters as $rl)
-                                <tr class="hover:bg-orange-50/30 transition">
-                                    <td class="py-4 px-4">
-                                        <div class="font-bold text-sipega-navy">{{ $rl->letter_number }}</div>
-                                        <div class="text-sm text-gray-400 capitalize">{{ $rl->title }}</div>
-                                    </td>
-                                    <td class="py-4 px-4 text-sm text-gray-600">
-                                        {{ $rl->date->format('d/m/Y') }}
-                                        @if($rl->is_private)
-                                            <span class="ml-2 bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase">Private</span>
-                                        @endif
-                                    </td>
-                                    <td class="py-4 px-4">
-                                        <div class="flex -space-x-2">
-                                            @foreach($rl->users->take(3) as $u)
-                                                <div class="w-8 h-8 rounded-full bg-{{ strtolower($u->performance_color) }}-500 border-2 border-white flex items-center justify-center text-[10px] text-white font-bold" title="{{ $u->name }}">
-                                                    {{ substr($u->name, 0, 1) }}
-                                                </div>
-                                            @endforeach
-                                            @if($rl->users->count() > 3)
-                                                <div class="w-8 h-8 rounded-full bg-gray-200 border-2 border-white flex items-center justify-center text-[10px] text-gray-600 font-bold">
-                                                    +{{ $rl->users->count() - 3 }}
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="py-4 px-4 text-center">
-                                        <a href="{{ route('assign.pdf', $rl->id) }}" class="inline-flex items-center gap-2 bg-sipega-navy text-white text-xs font-bold py-2 px-4 rounded-full hover:bg-[#002244] transition shadow-md">
-                                            📥 DOWNLOAD PDF
-                                        </a>
-                                    </td>
-                                </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+            <!-- Import Section -->
+            <div class="bg-white overflow-hidden shadow-sm rounded-[40px] p-8 lg:p-12 border border-emerald-100">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div>
+                        <h3 class="text-3xl font-black text-emerald-700 tracking-tighter uppercase mb-2">SIPEGA-Check</h3>
+                        <p class="text-gray-400 font-medium italic">Impor data rekapitulasi mesin kehadiran tanpa menindih data dinas luar.</p>
                     </div>
+
+                    <form action="{{ route('attendance.import') }}" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row items-center gap-4 bg-emerald-50/50 p-4 rounded-3xl border border-emerald-50">
+                        @csrf
+                        <input type="file" name="excel_file" accept=".xlsx,.csv,.xls" required class="block w-full text-xs text-emerald-800 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-emerald-600 file:text-white file:uppercase file:tracking-widest cursor-pointer"/>
+                        <button type="submit" class="w-full md:w-auto bg-emerald-700 hover:bg-emerald-800 text-white font-black py-4 px-8 rounded-2xl transition-all shadow-lg text-[10px] uppercase tracking-widest">
+                            Sync Data
+                        </button>
+                    </form>
                 </div>
             </div>
 

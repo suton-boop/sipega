@@ -15,6 +15,34 @@
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('agenda.index')" :active="request()->routeIs('agenda.index')">
+                        {{ __('Agenda & Realisasi') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('schedules.index')" :active="request()->routeIs('schedules.index')">
+                        {{ __('Agenda Individu') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.index')">
+                        {{ __('Daftar Hadir') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('letters.index')" :active="request()->routeIs('letters.*')">
+                        {{ __('SK & Surat Tugas') }}
+                    </x-nav-link>
+                    @if(\App\Models\Setting::get('is_tukin_active') !== '0')
+                    <x-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')">
+                        {{ __('Tukin') }}
+                    </x-nav-link>
+                    @endif
+                    @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
+                    <x-nav-link :href="route('leader.agenda.index')" :active="request()->routeIs('leader.agenda.index')">
+                        {{ __('Monitoring (Penilaian)') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('travel.recap')" :active="request()->routeIs('travel.recap')">
+                        {{ __('Rekap Dinas Luar') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('admin.calendar.index')" :active="request()->routeIs('admin.calendar.index')">
+                        {{ __('Kalender Kerja') }}
+                    </x-nav-link>
+                    @endif
                 </div>
             </div>
 
@@ -70,6 +98,29 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('agenda.index')" :active="request()->routeIs('agenda.index')">
+                {{ __('Agenda & Realisasi') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('schedules.index')" :active="request()->routeIs('schedules.index')">
+                {{ __('Agenda Individu') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.index')">
+                {{ __('Daftar Hadir') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('letters.index')" :active="request()->routeIs('letters.*')">
+                {{ __('SK & Surat Tugas') }}
+            </x-responsive-nav-link>
+            @if(\App\Models\Setting::get('is_tukin_active') !== '0')
+            <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')">
+                {{ __('Tukin') }}
+            </x-responsive-nav-link>
+            @endif
+
+            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
+            <x-responsive-nav-link :href="route('travel.recap')" :active="request()->routeIs('travel.recap')">
+                {{ __('Rekap Dinas Luar') }}
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

@@ -13,6 +13,21 @@ use Illuminate\Support\Facades\Log;
 class AssignmentLetterController extends Controller
 {
     /**
+     * Pengajuan SK & Surat Tugas (SIPEGA-Assign)
+     */
+    public function index()
+    {
+        $user = auth()->user();
+        $myAssignments = AssignmentLetter::whereHas('users', function($q) use ($user) {
+            $q->where('users.id', $user->id);
+        })->latest()->get();
+
+        $allUsers = User::orderBy('name')->get();
+
+        return view('assignments.index', compact('myAssignments', 'allUsers', 'user'));
+    }
+
+    /**
      * Manajemen Surat Tugas (SIPEGA-Assign)
      */
     public function store(Request $request)
@@ -23,11 +38,19 @@ class AssignmentLetterController extends Controller
             'date' => 'required|date',
             'is_private' => 'required|boolean',
             'type' => 'required|in:Individu,Kolektif',
-            'assigned_users' => 'required|array', // Fitur Wajib 1: Multi-select pegawai
-            'assigned_users.*' => 'exists:users,id'
+            'assigned_users' => 'required|array',
+            'assigned_users.*' => 'exists:users,id',
+            'justification' => 'nullable|string', // Added for Flowchart Logic 3
         ]);
 
         $date = $request->date;
+        $users = User::whereIn('id', $request->assigned_users)->get();
+        
+        // --- LOGIC 3: Override Justification ---
+        $needJustification = $users->contains(fn($u) => in_array($u->performance_color, ['Kuning', 'Merah']));
+        if ($needJustification && empty($request->justification)) {
+            return back()->withErrors(['justification' => "PERINGATAN: Terdapat pegawai dengan performa Kuning/Merah. Anda WAJIB mengisi 'Justifikasi/Catatan Pimpinan' untuk melanjutkan penerbitan ST ini."])->withInput();
+        }
 
         // Fitur Wajib 2: Deteksi Bentrok Jadwal
         foreach ($request->assigned_users as $userId) {
@@ -48,6 +71,7 @@ class AssignmentLetterController extends Controller
             'letter_number' => 'ST/SIPEGA/' . time(),
             'title' => $request->title,
             'description' => $request->description,
+            'justification' => $request->justification, // Added here
             'date' => $date,
             'is_private' => $request->is_private,
             'type' => $request->type,
@@ -60,7 +84,7 @@ class AssignmentLetterController extends Controller
         // Fitur Wajib 4: Integrasi Telegram Bot (Notifikasi Otomatis)
         $this->sendTelegramNotification($letter, $request->assigned_users);
 
-        return redirect()->back()->with('success', 'Surat Tugas SIPEGA berhasil diterbitkan.');
+        return redirect()->back()->with('success', 'Surat Tugas SIPEGA berhasil diterbitkan sesuai panduan Logic Flowchart.');
     }
 
     /**

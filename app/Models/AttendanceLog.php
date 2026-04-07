@@ -4,11 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['user_id', 'date', 'check_in', 'check_out', 'source'])]
 class AttendanceLog extends Model
 {
+    protected $fillable = [
+        'user_id', 
+        'date', 
+        'check_in', 
+        'check_out', 
+        'tl_minutes', 
+        'psw_minutes', 
+        'status',
+        'notes',
+        'proof_file_path', 
+        'approval_status', 
+        'source'
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

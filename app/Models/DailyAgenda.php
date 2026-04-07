@@ -12,10 +12,21 @@ class DailyAgenda extends Model
         'date', 
         'activity_plan', 
         'activity_realization', 
+        'change_reason',
         'proof_file_path', 
         'submitted_at', 
-        'status'
+        'realization_submitted_at',
+        'status',
+        'evaluated_at',
+        'leader_rating',
+        'leader_feedback',
+        'evaluated_by'
     ];
+
+    public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DailyAgendaItem::class);
+    }
 
     public function user(): BelongsTo
     {
