@@ -141,7 +141,7 @@
                                     <td class="py-8 px-6 align-top">
                                         <div class="flex items-center gap-4">
                                             @if($u->photo)
-                                                <img src="{{ asset('storage/' . $u->photo) }}" class="w-12 h-12 object-cover rounded-2xl border-2 border-sipega-navy shadow-lg">
+                                                <img src="{{ asset('public/storage/' . $u->photo) }}" class="w-12 h-12 object-cover rounded-2xl border-2 border-sipega-navy shadow-lg">
                                             @else
                                                 <div class="w-12 h-12 bg-sipega-navy flex items-center justify-center rounded-2xl text-white font-black text-lg shadow-lg">
                                                     {{ substr($u->name, 0, 1) }}
