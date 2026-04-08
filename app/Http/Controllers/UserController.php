@@ -75,4 +75,68 @@ class UserController extends Controller
 
         return back()->with('success', 'Skor performa seluruh pegawai berhasil di-kalkulasi ulang berdasarkan bobot adil SIPEGA.');
     }
+
+    /**
+     * Import Data Pegawai dari Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv'
+        ]);
+
+        try {
+            \Maatwebsite\Excel\Facades\Excel::import(new \App\Imports\UserImport, $request->file('file'));
+            return back()->with('success', 'Data pegawai berhasil di-import dari Excel.');
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal meng-import data. Pastikan format kolom sudah benar. Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download Template Excel Pegawai
+     */
+    public function downloadTemplate()
+    {
+        $headers = ['Nama', 'Email', 'Password', 'Role', 'NIP', 'Jabatan', 'Golongan', 'KJ'];
+        $filename = "Template_Import_Pegawai_SIPEGA.csv";
+        
+        $handle = fopen('php://output', 'w');
+        fputcsv($handle, $headers);
+        
+        // Contoh Data dengan tanda kutip di depan NIP agar Excel menganggapnya teks
+        fputcsv($handle, ['Budi Santoso', 'budi@sipega.com', 'sipega123', 'Pegawai', "'198501012010011001", 'Penyusun Laporan', 'III/a', '7']);
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="'.$filename.'"');
+        fclose($handle);
+        exit;
+    }
+
+    /**
+     * Simpan Pegawai Baru Secara Manual
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'nip' => 'required|string|unique:users',
+            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator'])],
+            'password' => 'required|string|min:8',
+        ]);
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'nip' => $request->nip,
+            'role' => $request->role,
+            'password' => Hash::make($request->password),
+            'is_active' => true,
+        ]);
+
+        $user->assignRole($request->role);
+
+        return back()->with('success', "Pegawai {$user->name} berhasil ditambahkan ke sistem.");
+    }
 }

@@ -32,7 +32,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // MODULE USER MANAGEMENT (Admin-Only Dashboard Features)
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::post('/users', [UserController::class, 'store'])->name('users.store');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
+    Route::get('/users/template', [UserController::class, 'downloadTemplate'])->name('users.template');
     Route::post('/users/recalculate/performance', [UserController::class, 'recalculatePerformance'])->name('users.recalculate-performance');
 
     // MODULE RBAC (Matriks Hak Akses / Role-Permission Management)
