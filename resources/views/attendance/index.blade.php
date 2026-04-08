@@ -232,6 +232,10 @@
                         </div>
                     </div>
 
+                    <button type="button" onclick="detectCurrentLocation()" class="w-full flex items-center justify-center gap-3 bg-sipega-navy text-white font-black py-4 rounded-2xl hover:bg-black transition-all uppercase tracking-widest text-[10px] border-b-4 border-sipega-orange">
+                        <span>🎯</span> AMBIL LOKASI SAYA SEKARANG
+                    </button>
+
                     <div class="bg-blue-50/50 p-4 rounded-2xl border border-blue-100 flex gap-3 items-start">
                         <span class="text-blue-500 mt-0.5 italic font-black text-xs">ℹ️</span>
                         <p class="text-[9px] text-blue-700 font-bold leading-relaxed">* Titik ini akan menjadi pusat lingkaran (geofence) SIPEGA. Pastikan angka koordinat akurat agar pegawai tidak gagal presensi.</p>
@@ -590,6 +594,37 @@
                     saveBtn.innerHTML = 'Simpan Master 💾';
                 }
             }
+        }
+
+        function detectCurrentLocation() {
+            const latInput = document.getElementById('loc_lat');
+            const lngInput = document.getElementById('loc_lng');
+            const btn = document.querySelector('button[onclick="detectCurrentLocation()"]');
+
+            if (!navigator.geolocation) {
+                return alert('⚠️ Browser Anda tidak mendukung deteksi lokasi.');
+            }
+
+            btn.innerHTML = '<span>⏳</span> MENDETEKSI...';
+            btn.disabled = true;
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    latInput.value = position.coords.latitude;
+                    lngInput.value = position.coords.longitude;
+                    btn.innerHTML = '<span>✅</span> LOKASI TERDETEKSI';
+                    btn.disabled = false;
+                    setTimeout(() => {
+                        btn.innerHTML = '<span>🎯</span> AMBIL LOKASI SAYA SEKARANG';
+                    }, 3000);
+                },
+                (error) => {
+                    alert('❌ Gagal mendeteksi lokasi: ' + error.message);
+                    btn.innerHTML = '<span>🎯</span> AMBIL LOKASI SAYA SEKARANG';
+                    btn.disabled = false;
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
         }
     </script>
     @endpush
