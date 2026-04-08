@@ -121,4 +121,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// TEMPORARY FIX ROUTE FOR HOSTING (visit: /fix-app)
+Route::get('/fix-app', function() {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('key:generate');
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        return "App Key Generated, Migrations Done, and Config Cleared! <a href='/'>Go to Home</a>";
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage();
+    }
+});
+
+// DEBUG DB CONNECTION (visit: /db-test)
+Route::get('/db-test', function() {
+    try {
+        \DB::connection()->getPdo();
+        return "Database connection is working!";
+    } catch (\Exception $e) {
+        return "Could not connect to the database. Error: " . $e->getMessage();
+    }
+});
+
 require __DIR__.'/auth.php';
