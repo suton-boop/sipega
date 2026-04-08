@@ -129,12 +129,37 @@ Route::get('/fix-app', function() {
     try {
         \Illuminate\Support\Facades\Artisan::call('key:generate');
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true, '--seed' => true]);
+        try {
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+        } catch (\Exception $e) {
+            // Silently fail if link exists or restricted
+        }
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
         return "App Key Generated, Migrations & Seeding Done! <a href='/'>Go to Home</a>";
     } catch (\Exception $e) {
         return "Error: " . $e->getMessage();
     }
+});
+
+// MANUAL SYMLINK FOR SHARED HOSTING
+Route::get('/manual-link', function () {
+    $target = storage_path('app/public');
+    $link = public_path('storage');
+    
+    if (file_exists($link)) {
+        return "ALREADY EXISTS: Folder 'public/storage' sudah ada. Silakan HAPUS folder tersebut melalui File Manager di hosting Anda terlebih dahulu agar skrip ini bisa membuat link yang baru.";
+    }
+
+    try {
+        if (symlink($target, $link)) {
+            return "SUCCESS: Link storage berhasil dibuat! Silakan cek foto Anda.";
+        }
+    } catch (\Exception $e) {
+        return "ERROR: Gagal membuat link. Penyebab: " . $e->getMessage() . ". Kemungkinan fungsi 'symlink' dilarang oleh hosting Anda.";
+    }
+    
+    return "UNKNOWN ERROR.";
 });
 
 // DEBUG DB CONNECTION (visit: /db-test)
