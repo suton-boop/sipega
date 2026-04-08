@@ -105,9 +105,13 @@
                             <input type="text" name="agenda" placeholder="Agenda Rapat..." required class="border-2 border-gray-100 rounded-2xl p-4 text-sm font-bold w-full">
                         </div>
                     </div>
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <input type="text" name="lat" id="lat_input" placeholder="Lat" class="border-2 border-gray-100 rounded-2xl p-4 text-[10px] font-bold w-full bg-gray-50" readonly title="Koordinat otomatis dari Lokasi">
                         <input type="text" name="lng" id="lng_input" placeholder="Lng" class="border-2 border-gray-100 rounded-2xl p-4 text-[10px] font-bold w-full bg-gray-50" readonly title="Koordinat otomatis dari Lokasi">
+                        <div class="relative">
+                            <input type="number" name="geofence_radius" value="100" placeholder="Radius (Meter)" class="border-2 border-orange-100 rounded-2xl p-4 text-[10px] font-bold w-full bg-orange-50/20 focus:border-sipega-orange" title="Jarak maksimal pegawai dari titik lokasi">
+                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-sipega-orange uppercase">Meter</span>
+                        </div>
                     </div>
                     <button type="submit" class="w-full bg-sipega-navy text-white font-black py-5 rounded-[2rem] shadow-xl hover:bg-black transition-all hover:scale-[1.01] uppercase tracking-[0.2em] text-[11px]">
                         Publish Kegiatan SIPEGA 💾
@@ -308,9 +312,13 @@
                         <input type="text" name="agenda" id="edit_agenda" required class="border-2 border-gray-100 rounded-2xl p-4 text-sm font-bold w-full">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <input type="text" name="lat" id="edit_lat" placeholder="Computed Lat" class="border-2 border-gray-100 rounded-2xl p-4 text-[10px] font-bold w-full bg-gray-50" readonly>
                     <input type="text" name="lng" id="edit_lng" placeholder="Computed Lng" class="border-2 border-gray-100 rounded-2xl p-4 text-[10px] font-bold w-full bg-gray-50" readonly>
+                    <div class="relative">
+                        <input type="number" name="geofence_radius" id="edit_radius" placeholder="Radius (Meter)" class="border-2 border-orange-100 rounded-2xl p-4 text-[10px] font-bold w-full bg-orange-50/20">
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 text-[8px] font-black text-sipega-orange uppercase">Meter</span>
+                    </div>
                 </div>
                 <div class="flex gap-3">
                     <button type="button" onclick="closeEditModal()" class="flex-1 bg-gray-100 text-gray-500 font-black py-4 rounded-2xl hover:bg-gray-200 transition uppercase tracking-widest text-[10px]">BATAL</button>
@@ -490,6 +498,7 @@
             document.getElementById('edit_location_select').value = meeting.location_name;
             document.getElementById('edit_lat').value = meeting.gps_lat || '';
             document.getElementById('edit_lng').value = meeting.gps_lng || '';
+            document.getElementById('edit_radius').value = meeting.geofence_radius || 100;
             
             document.getElementById('editMeetingModal').classList.remove('hidden');
             console.log('SIPEGA: Modal Edit berhasil ditampilkan.');

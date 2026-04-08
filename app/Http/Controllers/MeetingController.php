@@ -96,8 +96,8 @@ class MeetingController extends Controller
 
         // Geofence Check
         $distance = $this->calculateDistance($meeting->gps_lat, $meeting->gps_lng, $request->lat, $request->lng);
-        if ($distance > ($meeting->geofence_radius ?? 50)) {
-            return response()->json(['success' => false, 'message' => "Posisi terlalu jauh (" . round($distance, 1) . "m)."], 403);
+        if ($distance > ($meeting->geofence_radius ?? 100)) {
+            return response()->json(['success' => false, 'message' => "Posisi terlalu jauh (" . round($distance, 1) . "m). SIPEGA melacak Anda berada " . round($distance - ($meeting->geofence_radius ?? 100), 1) . "m di luar area yang diizinkan."], 403);
         }
 
         // --- LOGIKA KEDISIPLINAN RAPAT SIPEGA ---
@@ -165,6 +165,7 @@ class MeetingController extends Controller
             'gps_lng' => $request->lng,
             'open_time' => $request->open_time,
             'close_time' => $request->close_time,
+            'geofence_radius' => $request->geofence_radius ?? 100,
             'created_by' => auth()->id()
         ]);
 
