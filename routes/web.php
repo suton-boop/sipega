@@ -125,10 +125,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/fix-app', function() {
     try {
         \Illuminate\Support\Facades\Artisan::call('key:generate');
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true, '--seed' => true]);
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        return "App Key Generated, Migrations Done, and Config Cleared! <a href='/'>Go to Home</a>";
+        return "App Key Generated, Migrations & Seeding Done! <a href='/'>Go to Home</a>";
     } catch (\Exception $e) {
         return "Error: " . $e->getMessage();
     }

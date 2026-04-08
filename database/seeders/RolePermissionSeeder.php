@@ -57,10 +57,19 @@ class RolePermissionSeeder extends Seeder
             'import_attendance'
         ]);
 
-        // 4. Assign Role ke User Akun Admin Utama jika ada
-        $mainAdmin = User::where('role', 'Admin')->first();
-        if ($mainAdmin) {
-            $mainAdmin->assignRole('Admin');
-        }
+        // 4. Buat Akun Admin Utama (Jika belum ada)
+        $adminUser = User::firstOrCreate(
+            ['email' => 'admin@sipega.com'],
+            [
+                'name' => 'Administrator SIPEGA',
+                'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
+                'role' => 'Admin',
+                'is_active' => true,
+                'nip' => '1234567890',
+                'position' => 'System Administrator'
+            ]
+        );
+
+        $adminUser->assignRole('Admin');
     }
 }
