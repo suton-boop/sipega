@@ -4,9 +4,11 @@
             <h2 class="font-bold text-2xl text-sipega-navy leading-tight italic uppercase tracking-wider">
                 📄 Kelola Dokumen ST & SK
             </h2>
+            @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
             <a href="{{ route('letters.create') }}" class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-3 px-6 rounded-2xl shadow-xl shadow-orange-200 transition-all uppercase tracking-widest text-[11px] flex items-center gap-2">
                 <span>➕</span> Buat Baru
             </a>
+            @endif
         </div>
     </x-slot>
 
@@ -123,6 +125,7 @@
                                                 @endif
                                             @endif
                                             
+                                            @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
                                             <a href="{{ route('letters.edit', $letter->id) }}" class="bg-white border hover:border-blue-500 text-blue-500 rounded px-2 py-1 text-[10px] font-bold uppercase tracking-widest hover:bg-blue-50 transition-all flex items-center shadow-sm" title="Edit">
                                                 ✏️
                                             </a>
@@ -133,6 +136,7 @@
                                                     🗑️
                                                 </button>
                                             </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>

@@ -13,7 +13,14 @@ class LetterController extends Controller
 {
     public function index(Request $request)
     {
-        $letters = Letter::with('users', 'creator')->latest()->get();
+        $query = Letter::with('users', 'creator');
+
+        // Level Pegawai hanya melihat yang sudah Approved
+        if (auth()->user()->role === 'Pegawai') {
+            $query->where('status', 'Approved');
+        }
+
+        $letters = $query->latest()->get();
         return view('admin.letters.index', compact('letters'));
     }
 
