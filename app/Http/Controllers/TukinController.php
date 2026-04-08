@@ -24,8 +24,8 @@ class TukinController extends Controller
         }
 
         $user = auth()->user();
-        if (in_array($user->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
-            $users = User::with('jobClass')->orderBy('name')->get();
+        if (in_array($user->role, ['Admin', 'Kasubag', 'Pimpinan', 'Sekpri'])) {
+            $users = User::realPegawai()->with('jobClass')->orderBy('name')->get();
             $jobClasses = JobClass::orderBy('base_amount', 'desc')->get();
             return view('tukin.index', compact('users', 'jobClasses'));
         } else {
@@ -40,7 +40,7 @@ class TukinController extends Controller
     public function downloadSlip($id = null)
     {
         $targetUser = $id ? User::findOrFail($id) : auth()->user();
-        if (auth()->id() !== $targetUser->id && !in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
+        if (auth()->id() !== $targetUser->id && !in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Sekpri'])) {
             abort(403);
         }
         $tukin = (new TukinService())->calculateForUser($targetUser);
@@ -54,10 +54,10 @@ class TukinController extends Controller
      */
     public function downloadPaymentList()
     {
-        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Sekpri'])) {
             abort(403);
         }
-        $users = User::with('jobClass')->orderBy('name', 'asc')->get();
+        $users = User::realPegawai()->with('jobClass')->orderBy('name', 'asc')->get();
         $month = Carbon::now('Asia/Makassar')->translatedFormat('F Y');
         return Pdf::loadView('pdf.tukin_payment_list', compact('users', 'month'))
                   ->setPaper('a4', 'landscape')
@@ -69,10 +69,10 @@ class TukinController extends Controller
      */
     public function downloadRecap()
     {
-        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Sekpri'])) {
             abort(403);
         }
-        $users = User::with('jobClass')->orderBy('name', 'asc')->get();
+        $users = User::realPegawai()->with('jobClass')->orderBy('name', 'asc')->get();
         $month = Carbon::now('Asia/Makassar')->translatedFormat('F Y');
         return Pdf::loadView('pdf.tukin_recap', compact('users', 'month'))
                   ->setPaper('a3', 'landscape')

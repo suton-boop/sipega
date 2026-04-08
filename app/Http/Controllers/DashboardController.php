@@ -39,21 +39,21 @@ class DashboardController extends Controller
         $todayAgenda = DailyAgenda::with('items')->where('user_id', $user->id)->where('date', $today)->first();
 
         if ($user->role === 'Admin' || $user->role === 'Kasubag' || $user->role === 'Operator') {
-            // Admin/Operator/Kasubag: Fokus Statistik 65 Orang & Validasi Absen Lupa
-            $totalUsers = User::count();
-            $allPegawai = User::orderBy('name')->get();
+            // Admin/Operator/Kasubag: Fokus Statistik Pegawai & Validasi Absen Lupa
+            $totalUsers = User::realPegawai()->count();
+            $allPegawai = User::realPegawai()->orderBy('name')->get();
             $recentLetters = AssignmentLetter::with('users')->latest()->take(5)->get(); // For recent archives
             $pendingEvalCount = DailyAgenda::whereNotNull('realization_submitted_at')->whereNull('leader_rating')->count();
             return view('dashboard.admin', compact('top5Highest', 'top5Lowest', 'totalUsers', 'today', 'allPegawai', 'recentLetters', 'pendingEvalCount', 'upcomingMeetings', 'todayAgenda'));
             
         } elseif ($user->role === 'Pimpinan') {
             // Pimpinan: Fokus 'Performance Heatmap' & Real-time Monitoring
-            $heatmap = User::selectRaw("performance_color, count(*) as total")
+            $heatmap = User::realPegawai()->selectRaw("performance_color, count(*) as total")
                         ->groupBy('performance_color')
                         ->pluck('total', 'performance_color')->toArray();
 
             $submittedToday = DailyAgenda::where('date', $today)->pluck('user_id')->toArray();
-            $allUsers = User::all();
+            $allUsers = User::realPegawai()->get();
             
             $privateAssignments = AssignmentLetter::where('is_private', true)->latest()->get();
             $totalUsers = $allUsers->count();

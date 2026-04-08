@@ -4,7 +4,7 @@
             <h2 class="font-bold text-2xl text-sipega-navy leading-tight italic uppercase tracking-wider">
                 📄 Kelola Dokumen ST & SK
             </h2>
-            @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
+            @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator', 'Sekpri']))
             <a href="{{ route('letters.create') }}" class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-3 px-6 rounded-2xl shadow-xl shadow-orange-200 transition-all uppercase tracking-widest text-[11px] flex items-center gap-2">
                 <span>➕</span> Buat Baru
             </a>

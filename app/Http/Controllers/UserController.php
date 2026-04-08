@@ -32,7 +32,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         
         $request->validate([
-            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator'])],
+            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
             'drive_folder_url' => 'nullable|url',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -128,7 +128,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'nip' => 'required|string|unique:users',
-            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator'])],
+            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
             'password' => 'required|string|min:8',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);

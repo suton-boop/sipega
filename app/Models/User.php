@@ -69,6 +69,11 @@ class User extends Authenticatable
         return $this->belongsToMany(AssignmentLetter::class, 'assignment_letter_user');
     }
 
+    public function scopeRealPegawai($query)
+    {
+        return $query->whereNotIn('role', ['Sekpri', 'Admin', 'Pimpinan', 'Kasubag']);
+    }
+
     public function letters()
     {
         return $this->belongsToMany(Letter::class, 'letter_user')
