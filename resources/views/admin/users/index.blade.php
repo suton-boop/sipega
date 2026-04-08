@@ -35,8 +35,12 @@
                             <h3 class="text-3xl font-black text-sipega-navy mb-2 tracking-tighter uppercase">Pendaftaran Pegawai</h3>
                             <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-8">Input Data Pegawai Secara Manual</p>
 
-                            <form action="{{ route('users.store') }}" method="POST" class="space-y-6">
+                            <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
                                 @csrf
+                                <div class="flex flex-col items-center mb-6">
+                                    <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Foto Pegawai</label>
+                                    <input type="file" name="photo" class="text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-gray-100 file:text-sipega-navy hover:file:bg-gray-200 cursor-pointer">
+                                </div>
                                 <div>
                                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Nama Lengkap</label>
                                     <input type="text" name="name" required class="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-sipega-navy">
@@ -136,9 +140,13 @@
                                 <tr class="hover:bg-gray-50 transition duration-150 group">
                                     <td class="py-8 px-6 align-top">
                                         <div class="flex items-center gap-4">
-                                            <div class="w-12 h-12 bg-sipega-navy flex items-center justify-center rounded-2xl text-white font-black text-lg">
-                                                {{ substr($u->name, 0, 1) }}
-                                            </div>
+                                            @if($u->photo)
+                                                <img src="{{ asset('storage/' . $u->photo) }}" class="w-12 h-12 object-cover rounded-2xl border-2 border-sipega-navy shadow-lg">
+                                            @else
+                                                <div class="w-12 h-12 bg-sipega-navy flex items-center justify-center rounded-2xl text-white font-black text-lg shadow-lg">
+                                                    {{ substr($u->name, 0, 1) }}
+                                                </div>
+                                            @endif
                                             <div>
                                                 <div class="font-black text-sipega-navy text-lg leading-none mb-1">{{ $u->name }}</div>
                                                 <div class="text-xs text-gray-400 font-bold tracking-tight lowercase">{{ $u->email }}</div>
@@ -172,10 +180,15 @@
                                         </div>
                                     </td>
                                     <td class="py-8 px-6 align-top">
-                                        <form action="{{ route('users.update', $u->id) }}" method="POST" class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl group-hover:border-gray-200 transition-all flex flex-col gap-4">
+                                        <form action="{{ route('users.update', $u->id) }}" method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl group-hover:border-gray-200 transition-all flex flex-col gap-4">
                                             @csrf
                                             @method('PUT')
                                             
+                                            <div>
+                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Update Foto</label>
+                                                <input type="file" name="photo" class="text-[9px] text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-gray-100 file:text-sipega-navy cursor-pointer">
+                                            </div>
+
                                             <div class="grid grid-cols-2 gap-4">
                                                 <div>
                                                     <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Tukar Peran</label>

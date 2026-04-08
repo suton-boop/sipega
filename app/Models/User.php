@@ -27,7 +27,8 @@ class User extends Authenticatable
         'telegram_id', 
         'base_tukin', 
         'job_class_id', 
-        'is_active'
+        'is_active',
+        'photo'
     ];
 
     protected $hidden = [

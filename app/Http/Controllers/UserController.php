@@ -34,7 +34,13 @@ class UserController extends Controller
         $request->validate([
             'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator'])],
             'drive_folder_url' => 'nullable|url',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        if ($request->hasFile('photo')) {
+            $path = $request->file('photo')->store('photos', 'public');
+            $user->photo = $path;
+        }
 
         $user->role = $request->role;
         $user->drive_folder_url = $request->drive_folder_url;
@@ -124,7 +130,13 @@ class UserController extends Controller
             'nip' => 'required|string|unique:users',
             'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator'])],
             'password' => 'required|string|min:8',
+            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
+
+        $photoPath = null;
+        if ($request->hasFile('photo')) {
+            $photoPath = $request->file('photo')->store('photos', 'public');
+        }
 
         $user = User::create([
             'name' => $request->name,
@@ -133,6 +145,7 @@ class UserController extends Controller
             'role' => $request->role,
             'password' => Hash::make($request->password),
             'is_active' => true,
+            'photo' => $photoPath,
         ]);
 
         $user->assignRole($request->role);
