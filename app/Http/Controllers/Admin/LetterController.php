@@ -32,7 +32,11 @@ class LetterController extends Controller
             'date_end' => 'nullable|date|after_or_equal:date_start',
             'users' => 'required|array',
             'users.*' => 'exists:users,id',
-            'justification' => 'nullable|string'
+            'justification' => 'nullable|string',
+            'basis' => 'nullable|string',
+            'purpose' => 'nullable|string',
+            'signatory_name' => 'nullable|string',
+            'signatory_nip' => 'nullable|string',
         ]);
 
         // Logic check: Performance & Clash for non-executives
@@ -89,9 +93,13 @@ class LetterController extends Controller
             'date_start' => $request->date_start,
             'date_end' => $request->date_end,
             'location' => $request->location,
+            'basis' => $request->basis,
+            'purpose' => $request->purpose,
+            'signatory_name' => $request->signatory_name,
+            'signatory_nip' => $request->signatory_nip,
             'justification' => $request->justification,
             'created_by' => auth()->id(),
-            'status' => 'Pending' // Requires Approval if standard flow
+            'status' => 'Pending'
         ]);
 
         $letter->users()->attach($selectedUserIds);

@@ -36,11 +36,17 @@ class AssignmentLetterController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'date' => 'required|date',
+            'end_date' => 'nullable|date',
+            'basis' => 'nullable|string',
+            'purpose' => 'nullable|string',
+            'location' => 'nullable|string',
+            'signatory_name' => 'nullable|string',
+            'signatory_nip' => 'nullable|string',
             'is_private' => 'required|boolean',
             'type' => 'required|in:Individu,Kolektif',
             'assigned_users' => 'required|array',
             'assigned_users.*' => 'exists:users,id',
-            'justification' => 'nullable|string', // Added for Flowchart Logic 3
+            'justification' => 'nullable|string',
         ]);
 
         $date = $request->date;
@@ -68,11 +74,17 @@ class AssignmentLetterController extends Controller
 
         // Simpan Data Surat
         $letter = AssignmentLetter::create([
-            'letter_number' => 'ST/SIPEGA/' . time(),
+            'letter_number' => $request->letter_number ?? ('ST/SIPEGA/' . time()),
             'title' => $request->title,
             'description' => $request->description,
-            'justification' => $request->justification, // Added here
+            'justification' => $request->justification,
             'date' => $date,
+            'end_date' => $request->end_date,
+            'basis' => $request->basis,
+            'purpose' => $request->purpose,
+            'location' => $request->location,
+            'signatory_name' => $request->signatory_name,
+            'signatory_nip' => $request->signatory_nip,
             'is_private' => $request->is_private,
             'type' => $request->type,
             'created_by' => auth()->id() ?? 1,

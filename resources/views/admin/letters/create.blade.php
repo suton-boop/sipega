@@ -54,6 +54,11 @@
                         </div>
                         
                         <div class="group">
+                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2 ml-1">Dasar Penugasan (Nota Dinas/dll)</label>
+                            <textarea name="basis" rows="2" placeholder="Berdasarkan nota dinas dari... nomor... perihal..." class="w-full border-2 border-gray-100 rounded-2xl p-4 text-xs font-bold bg-gray-50 focus:bg-white focus:border-sipega-navy focus:ring-0 transition-all resize-none">{{ old('basis') }}</textarea>
+                        </div>
+
+                        <div class="group">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2 ml-1">Nomor Registrasi (Opsional)</label>
                             <div class="relative">
                                 <input type="text" name="number" value="{{ old('number') }}" placeholder="123" class="w-full border-2 border-gray-100 rounded-2xl p-4 text-sm font-bold bg-gray-50 focus:bg-white focus:border-sipega-navy focus:ring-0 transition-all">
@@ -63,7 +68,12 @@
 
                         <div class="group">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2 ml-1">Perihal / Judul Kegiatan <span class="text-red-500">*</span></label>
-                            <textarea name="title" required rows="3" placeholder="Contoh: Rapat Koordinasi Wilayah..." class="w-full border-2 border-gray-100 rounded-2xl p-4 text-sm font-bold bg-gray-50 focus:bg-white focus:border-sipega-navy focus:ring-0 transition-all resize-none">{{ old('title') }}</textarea>
+                            <input type="text" name="title" required value="{{ old('title') }}" placeholder="Contoh: Rapat Koordinasi Wilayah..." class="w-full border-2 border-gray-100 rounded-2xl p-4 text-sm font-bold bg-gray-50 focus:bg-white focus:border-sipega-navy focus:ring-0 transition-all">
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2 ml-1">Untuk Keperluan (Detail Tugas)</label>
+                            <textarea name="purpose" rows="3" placeholder="Untuk mengikuti rapat... yang dilaksanakan pada..." class="w-full border-2 border-gray-100 rounded-2xl p-4 text-xs font-bold bg-gray-50 focus:bg-white focus:border-sipega-navy focus:ring-0 transition-all resize-none">{{ old('purpose') }}</textarea>
                         </div>
                     </div>
 
@@ -88,6 +98,18 @@
                         <div class="group">
                             <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2 ml-1">Catatan Pimpinan (Wajib Jika Bentrok/Merah)</label>
                             <textarea name="justification" rows="2" placeholder="Tuliskan justifikasi/alasan override jadwal di sini..." class="w-full border-2 border-red-100 bg-red-50/30 rounded-2xl p-4 text-xs font-medium focus:bg-white focus:border-red-400 focus:ring-0 transition-all resize-none placeholder-red-300">{{ old('justification') }}</textarea>
+                        </div>
+
+                        <div class="group">
+                            <label class="text-[10px] font-black uppercase text-gray-400 tracking-widest block mb-2 ml-1">Penandatangan Surat</label>
+                            <select name="signatory_id" class="w-full border-2 border-gray-100 rounded-2xl p-4 text-xs font-bold bg-blue-50/30 focus:bg-white focus:border-sipega-navy focus:ring-0 transition-all" onchange="updateSignatory(this)">
+                                <option value="">-- Pilih Penandatangan --</option>
+                                @foreach($users->whereIn('role', ['Admin', 'Pimpinan']) as $lead)
+                                <option value="{{ $lead->id }}" data-name="{{ $lead->name }}" data-nip="{{ $lead->nip }}">{{ $lead->name }} ({{ $lead->position ?? $lead->role }})</option>
+                                @endforeach
+                            </select>
+                            <input type="hidden" name="signatory_name" id="signatory_name">
+                            <input type="hidden" name="signatory_nip" id="signatory_nip">
                         </div>
                     </div>
                 </div>
@@ -147,4 +169,11 @@
             </form>
         </div>
     </div>
+    <script>
+        function updateSignatory(select) {
+            const option = select.options[select.selectedIndex];
+            document.getElementById('signatory_name').value = option.dataset.name || '';
+            document.getElementById('signatory_nip').value = option.dataset.nip || '';
+        }
+    </script>
 </x-app-layout>

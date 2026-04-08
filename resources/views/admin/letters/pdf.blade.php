@@ -147,7 +147,7 @@
 
     <div class="isi-surat">
         <p>
-            Berdasarkan {{ $letter->justification ?? 'Kepentingan Kedinasan' }}, maka Kepala Balai Penjaminan Mutu Pendidikan Provinsi Kalimantan Timur dengan ini menugaskan kepada,
+            {{ $letter->basis ?? ('Berdasarkan kepentingan kedinasan BPMP Provinsi Kalimantan Timur, maka Kepala Balai Penjaminan Mutu Pendidikan Provinsi Kalimantan Timur dengan ini menugaskan kepada,') }}
         </p>
     </div>
 
@@ -169,7 +169,7 @@
                     {{ $user->golongan ?? 'Penata Muda, III/a' }}
                 </td>
                 <td>
-                    {{ $user->position ?? 'Fungsional Umum' }}
+                    {{ $user->position ?? $user->role }}
                 </td>
             </tr>
             @endforeach
@@ -177,7 +177,7 @@
     </table>
 
     <div class="isi-surat">
-        <p>Untuk melaksanakan tugas <b>{{ $letter->title }}</b>, yang akan dilaksanakan pada:</p>
+        <p>{{ $letter->purpose ?? ('Untuk mengikuti kegiatan ' . $letter->title . ', yang akan dilaksanakan pada:') }}</p>
         
         <table class="detail-row">
             <tr>
@@ -190,7 +190,11 @@
                             $start = \Carbon\Carbon::parse($letter->date_start);
                             $end = \Carbon\Carbon::parse($letter->date_end);
                         @endphp
-                        {{ $start->translatedFormat('l, d F Y') }} s.d {{ $end->translatedFormat('l, d F Y') }}
+                        @if($start->format('Y-m-d') == $end->format('Y-m-d'))
+                            {{ $start->translatedFormat('l, d F Y') }}
+                        @else
+                            {{ $start->translatedFormat('l') }} - {{ $end->translatedFormat('l') }}, {{ $start->format('d') }} s.d {{ $end->translatedFormat('d F Y') }}
+                        @endif
                     @else
                         -
                     @endif
@@ -213,10 +217,10 @@
             <p>{{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
             <p>Kepala,</p>
             <div class="stamp-space">
-                <!-- If signature image exists -->
+                <!-- Spasi stempel -->
             </div>
-            <p style="font-weight: bold; text-decoration: underline;">Dr. Jarwoko, M.Pd</p>
-            <p>NIP 197003191997031001</p>
+            <p style="font-weight: bold; text-decoration: underline;">{{ $letter->signatory_name ?? 'Dr. Jarwoko, M.Pd' }}</p>
+            <p>NIP {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
         </div>
         <div style="clear: both;"></div>
     </div>

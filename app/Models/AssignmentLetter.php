@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 
-#[Fillable(['letter_number', 'title', 'description', 'justification', 'date', 'is_private', 'type', 'created_by', 'report_path', 'report_submitted_at'])]
+#[Fillable(['letter_number', 'title', 'description', 'justification', 'date', 'end_date', 'basis', 'location', 'purpose', 'signatory_name', 'signatory_nip', 'is_private', 'type', 'created_by', 'report_path', 'report_submitted_at'])]
 class AssignmentLetter extends Model
 {
     public function creator(): BelongsTo
