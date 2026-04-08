@@ -262,10 +262,13 @@
             </div>
 
             <!-- Footer Quick Drive -->
-            <div class="bg-sipega-navy p-10 rounded-[3rem] shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6">
-                <div class="text-center md:text-left">
-                    <h3 class="text-2xl font-black text-white">☁️ SIPEGA-Drive</h3>
-                    <p class="text-white/50 text-xs font-bold tracking-widest uppercase mt-1">Cloud Locker Dinas Anda</p>
+            <div class="bg-sipega-navy p-10 rounded-[3rem] shadow-2xl flex flex-col md:flex-row justify-between items-center gap-6 overflow-hidden">
+                <div class="text-center md:text-left flex flex-col md:flex-row items-center gap-4">
+                    <img src="{{ asset('images/gdrive.png') }}" class="w-16 h-16 object-contain" alt="Google Drive Logo">
+                    <div>
+                        <h3 class="text-2xl font-black text-white">SIPEGA-Drive</h3>
+                        <p class="text-white/50 text-xs font-bold tracking-widest uppercase mt-1">Cloud Locker Dinas Anda</p>
+                    </div>
                 </div>
                 <a href="{{ $user->drive_folder_url ?? '#' }}" target="_blank" class="bg-white hover:bg-sipega-orange hover:text-white text-sipega-navy font-black py-4 px-10 rounded-full shadow-2xl transition transform active:scale-95 text-sm uppercase tracking-widest whitespace-nowrap">
                     AKSES CLOUD FOLDER ➜
