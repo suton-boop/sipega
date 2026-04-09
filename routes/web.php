@@ -118,6 +118,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/schedules', [ScheduleController::class, 'store'])->name('schedules.store');
     Route::delete('/schedules/{id}', [ScheduleController::class, 'destroy'])->name('schedules.destroy');
 
+    // MODULE BUKTI FISIK & SKP SUPPORT
+    Route::get('/evidence', [\App\Http\Controllers\EvidenceController::class, 'index'])->name('evidence.index');
+    Route::post('/evidence/{itemId}', [\App\Http\Controllers\EvidenceController::class, 'update'])->name('evidence.update');
+    Route::get('/evidence/download/pdf', [\App\Http\Controllers\EvidenceController::class, 'downloadPdf'])->name('evidence.download');
+
     // PROFILE
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

@@ -109,32 +109,74 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Leaderboard High -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-[32px] p-8 border border-gray-100">
-                    <h3 class="text-xl font-black mb-6 text-green-700 uppercase tracking-tight flex items-center gap-3">
-                        <span class="w-2 h-8 bg-green-500 rounded-full"></span>
-                        Top Performa (Tertinggi)
+                <div class="bg-white overflow-hidden shadow-2xl rounded-[48px] p-10 border border-gray-100 relative">
+                    <div class="absolute -top-4 -right-4 bg-sipega-orange text-white w-20 h-20 rounded-full flex flex-col items-center justify-center rotate-12 shadow-xl">
+                        <span class="text-[10px] font-black uppercase tracking-widest">Rank</span>
+                        <span class="text-2xl font-black">#1</span>
+                    </div>
+                    <h3 class="text-2xl font-black mb-10 text-sipega-navy uppercase tracking-tighter flex items-center gap-4">
+                        <span class="w-2.5 h-10 bg-sipega-orange rounded-full"></span>
+                        Wall of Fame
                     </h3>
-                    <div class="space-y-3">
+                    <div class="grid grid-cols-1 gap-6">
                         @foreach($top5Highest as $user)
-                        <div class="p-4 flex justify-between items-center group bg-gray-50 hover:bg-green-50 rounded-2xl transition-all border border-transparent hover:border-green-100">
-                            <span class="font-bold text-gray-700">{{ $user->name }}</span>
-                            <span class="bg-sipega-navy text-white font-black py-1.5 px-4 rounded-xl text-sm shadow-sm">{{ $user->performance_score }}</span>
+                        <div class="group relative bg-gray-50 hover:bg-white p-4 rounded-[32px] transition-all duration-500 border border-transparent hover:border-gray-100 hover:shadow-2xl hover:-translate-y-1 flex items-center gap-6">
+                            <div class="relative">
+                                @if($user->profile_photo_path)
+                                    <img src="{{ asset('storage/' . $user->profile_photo_path) }}" class="w-20 h-20 rounded-[24px] object-cover shadow-lg border-4 {{ $loop->first ? 'border-sipega-orange' : 'border-white' }} group-hover:scale-110 transition-transform duration-500">
+                                @else
+                                    <div class="w-20 h-20 rounded-[24px] bg-sipega-navy text-white flex items-center justify-center text-2xl font-black shadow-lg border-4 border-white">
+                                        {{ substr($user->name, 0, 1) }}
+                                    </div>
+                                @endif
+                                @if($loop->first)
+                                    <span class="absolute -top-2 -right-2 bg-sipega-orange text-[8px] font-black text-white px-2 py-1 rounded-lg uppercase tracking-widest animate-bounce">TOP</span>
+                                @endif
+                            </div>
+                            <div class="flex-1">
+                                <h4 class="font-black text-gray-800 text-lg leading-none mb-1 group-hover:text-sipega-navy transition-colors">{{ $user->name }}</h4>
+                                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">{{ $user->position ?? 'Fungsional Umum' }}</p>
+                                <div class="mt-3 flex items-center gap-2">
+                                    <span class="px-3 py-1 bg-sipega-navy text-white text-[10px] font-black rounded-full shadow-sm">{{ $user->performance_score }} PTS</span>
+                                    <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                </div>
+                            </div>
+                            <div class="text-4xl font-black text-gray-100 group-hover:text-sipega-orange/10 transition-colors">
+                                0{{ $loop->iteration }}
+                            </div>
                         </div>
                         @endforeach
                     </div>
                 </div>
 
                 <!-- Leaderboard Low -->
-                <div class="bg-white overflow-hidden shadow-sm rounded-[32px] p-8 border border-gray-100">
-                    <h3 class="text-xl font-black mb-6 text-red-600 uppercase tracking-tight flex items-center gap-3">
-                        <span class="w-2 h-8 bg-red-500 rounded-full"></span>
-                        Intervensi Khusus (Terendah)
+                <div class="bg-gray-900 overflow-hidden shadow-2xl rounded-[48px] p-10 relative">
+                    <div class="absolute top-0 right-0 p-8">
+                         <div class="w-12 h-12 bg-red-500/20 rounded-2xl flex items-center justify-center animate-pulse">
+                             <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                         </div>
+                    </div>
+                    <h3 class="text-2xl font-black mb-10 text-white uppercase tracking-tighter flex items-center gap-4">
+                        <span class="w-2.5 h-10 bg-red-600 rounded-full"></span>
+                        Attention Required
                     </h3>
-                    <div class="space-y-3">
+                    <div class="space-y-4">
                         @foreach($top5Lowest as $user)
-                        <div class="p-4 flex justify-between items-center group bg-gray-50 hover:bg-red-50 rounded-2xl transition-all border border-transparent hover:border-red-100">
-                            <span class="font-bold text-gray-700">{{ $user->name }}</span>
-                            <span class="bg-red-100 text-red-700 font-extrabold py-1.5 px-4 rounded-xl text-sm border border-red-200">{{ $user->performance_score }}</span>
+                        <div class="p-4 flex justify-between items-center group bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5">
+                            <div class="flex items-center gap-4">
+                                @if($user->profile_photo_path)
+                                    <img src="{{ asset('storage/' . $user->profile_photo_path) }}" class="w-10 h-10 rounded-xl object-cover grayscale opacity-50 group-hover:grayscale-0 group-hover:opacity-100 transition-all">
+                                @else
+                                    <div class="w-10 h-10 rounded-xl bg-gray-800 text-gray-500 flex items-center justify-center text-sm font-black italic">
+                                        !
+                                    </div>
+                                @endif
+                                <div>
+                                    <span class="block font-bold text-gray-300 group-hover:text-white">{{ $user->name }}</span>
+                                    <span class="text-[9px] font-black text-red-500 uppercase tracking-widest">Score: {{ $user->performance_score }}</span>
+                                </div>
+                            </div>
+                            <button class="bg-red-500/10 text-red-500 px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition">Intervensi</button>
                         </div>
                         @endforeach
                     </div>
@@ -286,7 +328,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div>
                         <h3 class="text-3xl font-black text-emerald-700 tracking-tighter uppercase mb-2">SIPEGA-Check</h3>
-                        <p class="text-gray-400 font-medium italic">Impor data rekapitulasi mesin kehadiran tanpa menindih data dinas luar.</p>
+                        <p class="text-gray-400 font-medium italic">Upload file <b>Laporan Log Transaksi</b> (Excel) dari mesin absensi. Sistem akan mencocokkan NIP dan menghitung TL/PSW secara otomatis.</p>
                     </div>
 
                     <form action="{{ route('attendance.import') }}" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row items-center gap-4 bg-emerald-50/50 p-4 rounded-3xl border border-emerald-50">

@@ -95,17 +95,24 @@ class AttendanceController extends Controller
     }
 
     /**
-     * SIPEGA: Import Excel Absensi Mingguan Mesin (Admin)
+     * SIPEGA: Import Excel Absensi Mingguan/Bulanan dari Mesin (Log Transaksi)
      */
     public function importExcel(Request $request)
     {
-        ini_set('max_execution_time', 300);
+        ini_set('max_execution_time', 600);
         $request->validate(['excel_file' => 'required|mimes:xlsx,xls,csv|max:10240']);
+        
         try {
-            Excel::import(new AttendanceImport, $request->file('excel_file'));
-            return back()->with('success_import', 'Mesin Excel berhasil disinkronisasi ke SIPEGA!');
+            // Gunakan importer baru yang mendukung format Laporan Log Transaksi Mesin
+            Excel::import(new \App\Imports\MachineTransactionImport, $request->file('excel_file'));
+            
+            // Rekalkulasi performa setelah import (Optional but helpful)
+            \Illuminate\Support\Facades\Artisan::call('sipega:calculate-performance');
+
+            return back()->with('success_import', 'Log Mesin berhasil disinkronisasi! Data TL/PSW dihitung otomatis.');
         } catch (\Exception $e) {
-            return back()->withErrors(['excel_file' => 'Import Error: ' . $e->getMessage()]);
+            \Illuminate\Support\Facades\Log::error('Import Error: ' . $e->getMessage());
+            return back()->withErrors(['excel_file' => 'Gagal Import: Format file mungkin tidak sesuai atau data NIP tidak ditemukan di SIPEGA.']);
         }
     }
 }

@@ -28,7 +28,8 @@ class User extends Authenticatable
         'base_tukin', 
         'job_class_id', 
         'is_active',
-        'photo'
+        'photo',
+        'profile_photo_path'
     ];
 
     protected $hidden = [
