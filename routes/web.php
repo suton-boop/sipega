@@ -127,6 +127,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // QR CODE GENERATOR (Layanan Mandiri)
+    Route::get('/qrcode', [\App\Http\Controllers\QRCodeController::class, 'index'])->name('qrcode.index');
 });
 
 // TEMPORARY FIX ROUTE FOR HOSTING (visit: /fix-app)

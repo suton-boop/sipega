@@ -47,6 +47,7 @@
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Administrasi Pegawai</div>
                             <x-dropdown-link :href="route('attendance.index')" class="text-[11px] font-bold py-3">Daftar Hadir</x-dropdown-link>
                             <x-dropdown-link :href="route('letters.index')" class="text-[11px] font-bold py-3">SK & Surat Tugas</x-dropdown-link>
+                            <x-dropdown-link :href="route('qrcode.index')" class="text-[11px] font-bold py-3 border-t border-gray-50 bg-slate-50">Pembuat QR Code</x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
 
@@ -150,6 +151,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('letters.index')" :active="request()->routeIs('letters.*')" class="text-xs font-medium py-3 ps-8">
                 {{ __('SK & Surat Tugas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('qrcode.index')" :active="request()->routeIs('qrcode.*')" class="text-xs font-medium py-3 ps-8 bg-slate-50">
+                {{ __('Pembuat QR Code') }}
             </x-responsive-nav-link>
 
             @if(\App\Models\Setting::get('is_tukin_active') !== '0')
