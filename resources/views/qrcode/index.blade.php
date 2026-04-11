@@ -1,21 +1,52 @@
 <x-app-layout>
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+    <style>
+        .designer-container {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        @media (min-width: 1024px) {
+            .designer-container {
+                grid-template-columns: 5fr 7fr;
+            }
+        }
+        .pro-card {
+            background: white;
+            border-radius: 2.5rem;
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            border: 1px solid #f1f5f9;
+        }
+        .label-elite {
+            display: block;
+            font-size: 10px;
+            font-weight: 900;
+            color: #1e293b;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            margin-bottom: 1rem;
+            margin-left: 0.25rem;
+        }
+    </style>
+
+    <div class="py-12 bg-slate-50 min-h-screen font-sans">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Header Section -->
             <div class="mb-8 flex items-center justify-between bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
                 <div class="flex items-center gap-4">
-                    <div class="p-4 bg-sipega-navy rounded-2xl shadow-indigo-200 shadow-lg">
+                    <div class="p-4 bg-sipega-navy rounded-2xl shadow-indigo-200 shadow-lg" style="background-color: #0f172a;">
                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path>
                         </svg>
                     </div>
                     <div>
-                        <h2 class="text-2xl font-black text-sipega-navy tracking-tight leading-none uppercase italic">QR Designer<span class="text-sipega-orange text-xs block not-italic tracking-widest mt-1">SIPEGA ELITE TOOLS</span></h2>
+                        <h2 class="text-2xl font-black tracking-tight leading-none uppercase italic" style="color: #0f172a;">QR Designer<span class="text-sipega-orange text-xs block not-italic tracking-widest mt-1" style="color: #ea580c;">SIPEGA ELITE TOOLS</span></h2>
                     </div>
                 </div>
             </div>
 
-            <!-- Designer Content -->
             <div x-data="{ 
                 content: '',
                 isGenerating: false,
@@ -62,7 +93,7 @@
                             colorLight : '#ffffff',
                             correctLevel : QRCode.CorrectLevel.H,
                             logo: useLogo ? this.logoPath : null,
-                            logoWidth: 260, // Perbesar logo ke ~26%
+                            logoWidth: 260,
                             logoHeight: 260,
                             logoBackgroundColor: '#ffffff',
                             logoBackgroundTransparent: false,
@@ -78,9 +109,9 @@
 
                 drawFrame(qrCanvas) {
                     const mainCanvas = document.getElementById('final-canvas');
+                    if (!mainCanvas) return;
                     const ctx = mainCanvas.getContext('2d');
                     
-                    // Master dimensions (Proposional ke 1000px QR source)
                     const qrDrawSize = 800;
                     let canvasWidth = qrDrawSize;
                     let canvasHeight = qrDrawSize;
@@ -88,13 +119,13 @@
                     let offsetY = 0;
 
                     if (this.frameType === 'box') {
-                        canvasWidth = qrDrawSize + 160; // Extra padding
+                        canvasWidth = qrDrawSize + 160;
                         canvasHeight = qrDrawSize + 160;
                         offsetX = 80;
                         offsetY = 80;
                     } else if (this.frameType === 'scan_me') {
                         canvasWidth = qrDrawSize + 160;
-                        canvasHeight = qrDrawSize + 380; // Area bawah lebih luas untk teks
+                        canvasHeight = qrDrawSize + 380;
                         offsetX = 80;
                         offsetY = 80;
                     }
@@ -102,35 +133,28 @@
                     mainCanvas.width = canvasWidth;
                     mainCanvas.height = canvasHeight;
 
-                    // Clear & Fill BG
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
                     if (this.frameType !== 'none') {
-                        // Draw Main Outer Frame
                         ctx.fillStyle = this.qrColor;
                         const frameRadius = 60;
                         this.roundRect(ctx, 10, 10, canvasWidth - 20, canvasHeight - 20, frameRadius, true, false);
 
-                        // Draw White QR Area (Inner Box)
                         ctx.fillStyle = '#ffffff';
                         const innerRadius = 30;
                         this.roundRect(ctx, 50, 50, qrDrawSize + 60, qrDrawSize + 60, innerRadius, true, false);
 
                         if (this.frameType === 'scan_me') {
                             ctx.fillStyle = '#ffffff';
-                            // Gunakan font yang lebih tebal dan besar
-                            ctx.font = '900 120px Inter, system-ui, -apple-system, sans-serif';
+                            ctx.font = '900 120px sans-serif';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            ctx.letterSpacing = '10px';
                             ctx.fillText('SCAN ME', canvasWidth / 2, canvasHeight - 140);
                         }
                     }
 
-                    // Draw actual QR image
                     ctx.drawImage(qrCanvas, offsetX, offsetY, qrDrawSize, qrDrawSize);
-                    
                     this.isGenerating = false;
                 },
 
@@ -160,32 +184,29 @@
                     link.href = canvas.toDataURL('image/png');
                     link.click();
                 }
-            }" class="grid lg:grid-cols-12 gap-8 items-start">
+            }" class="designer-container">
                 
                 <!-- Settings Panel -->
-                <div class="lg:col-span-5 space-y-6">
-                    <!-- Text Data -->
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200 border border-slate-100">
-                        <label class="block text-[10px] font-black text-sipega-navy uppercase tracking-[0.2em] mb-4 ms-1">Konten QR Code</label>
+                <div class="space-y-6">
+                    <div class="pro-card">
+                        <label class="label-elite">Konten QR Code</label>
                         <textarea 
                             x-model="content" 
                             @input.debounce.500ms="renderQR"
                             rows="4"
                             class="w-full border-slate-200 rounded-2xl shadow-sm focus:ring-sipega-orange focus:border-sipega-orange transition-all duration-300 resize-none text-slate-600 font-medium p-4 border-2"
-                            placeholder="Ketikkan link atau teks di sini..."></textarea>
+                            placeholder="Ketikkan link atau teks..."></textarea>
                     </div>
 
-                    <!-- Look & Feel -->
-                    <div class="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200 border border-slate-100">
+                    <div class="pro-card">
                         <div class="space-y-8">
-                            <!-- Bingkai -->
                             <div>
-                                <label class="block text-[10px] font-black text-sipega-navy uppercase tracking-[0.2em] mb-4 ms-1">Model Bingkai</label>
+                                <label class="label-elite">Model Bingkai</label>
                                 <div class="grid grid-cols-3 gap-3">
                                     <template x-for="type in ['none', 'box', 'scan_me']">
                                         <button 
                                             @click="frameType = type; renderQR()" 
-                                            :class="frameType === type ? 'bg-sipega-navy text-white shadow-lg' : 'bg-slate-50 text-slate-400 hover:bg-slate-100'"
+                                            :style="frameType === type ? 'background-color: #0f172a; color: white;' : 'background-color: #f8fafc; color: #94a3b8;'"
                                             class="py-3 px-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all duration-300">
                                             <span x-text="type === 'none' ? 'Polos' : (type === 'box' ? 'Kotak' : 'Scan Me')"></span>
                                         </button>
@@ -194,9 +215,8 @@
                             </div>
 
                             <div class="grid grid-cols-2 gap-8">
-                                <!-- Warna -->
                                 <div>
-                                    <label class="block text-[10px] font-black text-sipega-navy uppercase tracking-[0.2em] mb-4 ms-1">Warna Tema</label>
+                                    <label class="label-elite">Warna Tema</label>
                                     <div class="flex flex-wrap gap-2">
                                         <template x-for="color in ['#000000', '#1e293b', '#dc2626', '#16a34a', '#2563eb', '#ea580c']">
                                             <button 
@@ -208,16 +228,12 @@
                                     </div>
                                 </div>
 
-                                <!-- Logo Toggle -->
                                 <div>
-                                    <label class="block text-[10px] font-black text-sipega-navy uppercase tracking-[0.2em] mb-4 ms-1">Siipkan Logo</label>
+                                    <label class="label-elite">Siipkan Logo</label>
                                     <button 
                                         @click="showLogo = !showLogo; renderQR()"
-                                        :class="showLogo ? 'bg-sipega-orange text-white' : 'bg-slate-100 text-slate-400'"
-                                        class="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300">
-                                        <div :class="showLogo ? 'translate-x-0' : '-translate-x-1'" class="w-10 h-5 bg-white/20 rounded-full relative transition-all">
-                                            <div :class="showLogo ? 'right-1' : 'left-1'" class="absolute top-1 w-3 h-3 bg-white rounded-full transition-all"></div>
-                                        </div>
+                                        :style="showLogo ? 'background-color: #ea580c; color: white;' : 'background-color: #f1f5f9; color: #94a3b8;'"
+                                        class="w-full py-3 rounded-xl flex items-center justify-center gap-2 transition-all duration-300 border-none">
                                         <span class="text-[9px] font-black uppercase tracking-widest" x-text="showLogo ? 'Tutwuri ON' : 'Logo OFF'"></span>
                                     </button>
                                 </div>
@@ -227,27 +243,28 @@
                 </div>
 
                 <!-- Preview Panel -->
-                <div class="lg:col-span-7 bg-white p-8 rounded-[2.5rem] shadow-xl shadow-slate-200 border border-slate-100 flex flex-col items-center justify-center min-h-[600px]">
-                    <div class="relative group">
+                <div class="pro-card flex flex-col items-center justify-center" style="min-height: 500px;">
+                    <div class="relative group" style="position: relative;">
                         <!-- Loading Overlay -->
-                        <div x-show="isGenerating" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-3xl z-50">
-                            <div class="animate-spin rounded-full h-12 w-12 border-4 border-sipega-navy border-t-sipega-orange"></div>
+                        <div x-show="isGenerating" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center rounded-3xl z-50" style="position: absolute; top:0; left:0; width:100%; height:100%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.8); z-index: 50;">
+                            <div class="animate-spin rounded-full h-12 w-12 border-4 border-sipega-navy border-t-sipega-orange" style="border-radius: 9999px; width: 3rem; height: 3rem; border: 4px solid #0f172a; border-top-color: #ea580c; animation: spin 1s linear infinite;"></div>
                         </div>
 
                         <!-- Main Display Canvas -->
-                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 transition-colors duration-500 overflow-hidden">
-                            <canvas id="final-canvas" class="shadow-2xl rounded-2xl max-w-full h-auto mx-auto"></canvas>
+                        <div class="p-6 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 transition-colors duration-500 overflow-hidden" style="background: #f8fafc; padding: 1.5rem; border-radius: 1.5rem; border: 2px dashed #e2e8f0;">
+                            <canvas id="final-canvas" class="shadow-2xl rounded-2xl max-w-full h-auto mx-auto" style="box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); border-radius: 1rem; max-width: 100%; height: auto; display: block; margin: 0 auto;"></canvas>
                         </div>
                     </div>
 
                     <!-- Hidden Temp QR Source -->
-                    <div id="qrcode-temp-container" class="hidden"></div>
+                    <div id="qrcode-temp-container" class="hidden" style="display: none;"></div>
 
-                    <div class="mt-8 w-full max-w-sm">
+                    <div class="mt-8 w-full" style="max-width: 24rem; width: 100%; margin-top: 2rem;">
                         <button 
                             @click="downloadPNG"
-                            class="w-full bg-sipega-navy text-white text-[11px] font-black uppercase tracking-[0.2em] py-4 rounded-2xl shadow-lg hover:shadow-indigo-200 hover:bg-sipega-navy/90 transition-all duration-300 flex items-center justify-center gap-3 active:scale-95">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            class="w-full py-4 rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-center gap-3 active:scale-95 border-none cursor-pointer"
+                            style="background-color: #0f172a; color: white; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.2em; width: 100%;">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 1rem; height: 1rem;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                             </svg>
                             Download PNG
@@ -258,6 +275,21 @@
             </div>
         </div>
     </div>
+
+    <!-- EasyQRCodeJS -->
+    <script src="{{ asset('assets/js/easy.qrcode.min.js') }}"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        #final-canvas {
+            max-height: 500px;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin { animation: spin 1s linear infinite; }
+    </style>
+</x-app-layout>
 
     <!-- EasyQRCodeJS -->
     <script src="{{ asset('assets/js/easy.qrcode.min.js') }}"></script>
