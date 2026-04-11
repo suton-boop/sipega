@@ -20,11 +20,15 @@
                 content: '',
                 isGenerating: false,
                 qrcode: null,
+                logoPath: '{{ asset('images/Tutwuri.png') }}',
                 
                 init() {
-                    // Beri jeda sedikit untuk memastikan library sudah ter-load sepenuhnya
-                    setTimeout(() => {
-                        this.renderQR();
+                    // Cek ketersediaan library setiap 500ms
+                    const checkInterval = setInterval(() => {
+                        if (typeof QRCode !== 'undefined') {
+                            clearInterval(checkInterval);
+                            this.renderQR();
+                        }
                     }, 500);
                 },
 
@@ -35,33 +39,50 @@
                     this.isGenerating = true;
                     container.innerHTML = ''; 
                     
+                    // Preload Image untuk mencegah hang jika logo tidak ditemukan
+                    const img = new Image();
+                    img.onload = () => this.generateWithLogo(true);
+                    img.onerror = () => {
+                        console.warn('Logo tidak ditemukan, generate tanpa logo...');
+                        this.generateWithLogo(false);
+                    };
+                    img.src = this.logoPath;
+                },
+
+                generateWithLogo(useLogo) {
+                    const container = document.getElementById('qrcode-container');
+                    
                     try {
-                        // Gunakan EasyQRCodeJS
-                        this.qrcode = new QRCode(container, {
+                        const options = {
                             text: this.content || 'SIPEGA',
                             width: 500,
                             height: 500,
                             colorDark : '#000000',
                             colorLight : '#ffffff',
                             correctLevel : QRCode.CorrectLevel.H,
-                            logo: '{{ asset('images/Tutwuri.png') }}', 
-                            logoWidth: 100,
-                            logoHeight: 100,
-                            logoBackgroundColor: '#ffffff',
-                            logoBackgroundTransparent: false,
-                            onRenderingEnd: (options, dataURL) => {
+                            onRenderingEnd: () => {
                                 this.isGenerating = false;
                             }
-                        });
+                        };
 
-                        // Safety Timeout: Jika logo gagal load/render, jangan biarkan munter selamanya
+                        if (useLogo) {
+                            options.logo = this.logoPath;
+                            options.logoWidth = 100;
+                            options.logoHeight = 100;
+                            options.logoBackgroundColor = '#ffffff';
+                            options.logoBackgroundTransparent = false;
+                        }
+
+                        this.qrcode = new QRCode(container, options);
+
+                        // Safety Timeout
                         setTimeout(() => {
                             if (this.isGenerating) this.isGenerating = false;
-                        }, 3000);
+                        }, 2500);
+
                     } catch (e) {
-                        console.error('QR Error:', e);
+                        console.error('QR Render Error:', e);
                         this.isGenerating = false;
-                        container.innerHTML = '<p class='text-red-500 text-xs text-center font-bold'>Gagal memuat QR Code. Silakan muat ulang halaman.</p>';
                     }
                 },
 
@@ -73,11 +94,11 @@
                     const canvas = document.querySelector('#qrcode-container canvas');
                     if (canvas) {
                         const link = document.createElement('a');
-                        link.download = 'qrcode_tutwuri_' + Date.now() + '.png';
+                        link.download = 'qrcode_' + Date.now() + '.png';
                         link.href = canvas.toDataURL('image/png');
                         link.click();
                     } else {
-                        alert('Gambar belum siap untuk diunduh.');
+                        alert('Gambar belum siap.');
                     }
                 }
             }" class="grid md:grid-cols-2 gap-8 items-start">
@@ -89,7 +110,7 @@
                         <textarea 
                             id="qr_data" 
                             x-model="content" 
-                            @input.debounce.500ms="updateQR"
+                            @input.debounce.700ms="updateQR"
                             rows="5"
                             class="w-full border-slate-200 rounded-2xl shadow-sm focus:ring-sipega-orange focus:border-sipega-orange transition-all duration-300 resize-none text-slate-600 font-medium p-4 border-2"
                             placeholder="Ketikkan link URL atau informasi teks di sini untuk membuat QR Code..."></textarea>
@@ -99,9 +120,9 @@
                         <div class="p-4 bg-orange-50 rounded-2xl border border-orange-100">
                             <h4 class="text-[10px] font-black text-sipega-orange uppercase tracking-wider mb-1 flex items-center gap-2">
                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Logo Terintegrasi
+                                Mode Offline & Logo
                             </h4>
-                            <p class="text-[11px] text-slate-600 leading-relaxed font-medium">QR Code diproses secara lokal dengan logo Tut Wuri Handayani. Jika QR tidak muncul, pastikan koneksi internet stabil untuk memuat library pendukung.</p>
+                            <p class="text-[11px] text-slate-600 leading-relaxed font-medium">Library sekarang dimuat secara lokal. Jika logo tidak ditemukan, QR Code akan tetap muncul tanpa logo agar tidak terjadi hambatan loading.</p>
                         </div>
                     </div>
                 </div>
@@ -136,8 +157,8 @@
         </div>
     </div>
 
-    <!-- EasyQRCodeJS Library -->
-    <script src="https://cdn.jsdelivr.net/gh/ushelp/EasyQRCodeJS@master/dist/easy.qrcode.min.js"></script>
+    <!-- EasyQRCodeJS Library - Sekarang Lokal -->
+    <script src="{{ asset('assets/js/easy.qrcode.min.js') }}"></script>
     <style>
         #qrcode-container canvas {
             display: block;
