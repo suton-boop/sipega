@@ -290,13 +290,3 @@
         .animate-spin { animation: spin 1s linear infinite; }
     </style>
 </x-app-layout>
-
-    <!-- EasyQRCodeJS -->
-    <script src="{{ asset('assets/js/easy.qrcode.min.js') }}"></script>
-    <style>
-        [x-cloak] { display: none !important; }
-        #final-canvas {
-            max-height: 500px;
-        }
-    </style>
-</x-app-layout>
