@@ -44,7 +44,7 @@
                             colorDark : '#000000',
                             colorLight : '#ffffff',
                             correctLevel : QRCode.CorrectLevel.H,
-                            logo: '{{ asset('assets/img/tutwuri.png') }}', 
+                            logo: '{{ asset('images/Tutwuri.png') }}', 
                             logoWidth: 100,
                             logoHeight: 100,
                             logoBackgroundColor: '#ffffff',
