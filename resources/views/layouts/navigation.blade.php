@@ -19,6 +19,10 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
+                    <x-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="text-[10px] font-black uppercase tracking-[0.2em] px-4 text-white/70 hover:text-white transition-all">
+                        {{ __('Dokumen Fisik') }}
+                    </x-nav-link>
+
                     <!-- Group 1: KINERJA -->
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
@@ -128,6 +132,10 @@
         <div class="pt-2 pb-3 space-y-1 bg-white">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="font-black uppercase tracking-widest text-[11px]">
                 {{ __('Beranda') }}
+            </x-responsive-nav-link>
+
+            <x-responsive-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="font-black uppercase tracking-widest text-[11px] text-sipega-orange">
+                {{ __('Pusat Dokumen') }}
             </x-responsive-nav-link>
 
             <div class="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50 flex items-center gap-3 mt-4">

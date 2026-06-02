@@ -123,6 +123,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/evidence/{itemId}', [\App\Http\Controllers\EvidenceController::class, 'update'])->name('evidence.update');
     Route::get('/evidence/download/pdf', [\App\Http\Controllers\EvidenceController::class, 'downloadPdf'])->name('evidence.download');
 
+    // PUSAT DOKUMEN FISIK
+    Route::get('/my-documents', [\App\Http\Controllers\UserDocumentController::class, 'index'])->name('documents.index');
+
     // PROFILE
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
