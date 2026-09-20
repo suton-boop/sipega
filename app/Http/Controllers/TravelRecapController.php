@@ -13,17 +13,36 @@ class TravelRecapController extends Controller
     {
         $year = $request->year ?? date('Y');
 
-        // Mengambil seluruh pegawai
-        $pegawai = User::where('role', 'Pegawai')->orderBy('name')->get();
+        // Mengambil seluruh pegawai (di luar Pimpinan / Sekpri jika diinginkan, atau scopeRealPegawai)
+        $pegawai = User::whereIn('role', ['Pegawai', 'Operator'])->orderBy('name')->get();
 
         $fullRecap = $pegawai->map(function ($user) use ($year) {
-            // Hitung Dinas Luar Formal (Approved & Type ST/SK)
-            $externalCount = $user->letters()
+            // Hitung Surat Tugas Approved per Kategori
+            $dlkCount = $user->letters()
                 ->where('status', 'Approved')
+                ->where(function($q) {
+                    $q->where('category', 'DLK')
+                      ->orWhereNull('category'); // Fallback data lama
+                })
                 ->whereYear('date_start', $year)
                 ->count();
 
-            // Hitung Penugasan Internal
+            $dlpCount = $user->letters()
+                ->where('status', 'Approved')
+                ->where('category', 'DLP')
+                ->whereYear('date_start', $year)
+                ->count();
+
+            $dlnCount = $user->letters()
+                ->where('status', 'Approved')
+                ->where('category', 'DLN')
+                ->whereYear('date_start', $year)
+                ->count();
+
+            // Total Surat Tugas Formal Approved
+            $externalCount = $dlkCount + $dlpCount + $dlnCount;
+
+            // Hitung Penugasan Internal (AssignmentLetter) jika ada
             $internalCount = $user->assignmentLetters()
                 ->whereYear('date', $year)
                 ->count();
@@ -32,6 +51,9 @@ class TravelRecapController extends Controller
 
             return [
                 'user' => $user,
+                'dlk_count' => $dlkCount,
+                'dlp_count' => $dlpCount,
+                'dln_count' => $dlnCount,
                 'external_count' => $externalCount,
                 'internal_count' => $internalCount,
                 'total_trips' => $total,

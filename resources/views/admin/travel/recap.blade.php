@@ -36,18 +36,20 @@
                     <table class="w-full text-left">
                         <thead>
                             <tr class="bg-sipega-navy text-white text-[10px] font-black uppercase tracking-widest">
-                                <th class="px-8 py-5">Nama Pegawai</th>
-                                <th class="px-8 py-5">Jabatan</th>
-                                <th class="px-8 py-5 text-center">Dinas Formal (ST)</th>
-                                <th class="px-8 py-5 text-center">Dinas Dalam (IA)</th>
-                                <th class="px-8 py-5 text-center bg-sipega-orange">Total Penugasan</th>
-                                <th class="px-8 py-5 text-right italic">Status</th>
+                                <th class="px-6 py-5">Nama Pegawai</th>
+                                <th class="px-6 py-5">Jabatan</th>
+                                <th class="px-4 py-5 text-center bg-blue-900/40 text-blue-200">DLK (Kantor)</th>
+                                <th class="px-4 py-5 text-center bg-purple-900/40 text-purple-200">DLP (Pusat)</th>
+                                <th class="px-4 py-5 text-center bg-emerald-900/40 text-emerald-200">DLN (Mitra)</th>
+                                <th class="px-4 py-5 text-center bg-slate-800 text-slate-300">Internal</th>
+                                <th class="px-6 py-5 text-center bg-sipega-orange text-white">Total Tugas</th>
+                                <th class="px-6 py-5 text-right italic">Status</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-100 font-bold">
                             @forelse($activeRecap->sortByDesc('total_trips') as $item)
                                 <tr class="hover:bg-gray-50 transition anim-up">
-                                    <td class="px-8 py-5 flex items-center gap-3">
+                                    <td class="px-6 py-5 flex items-center gap-3">
                                         <div class="w-10 h-10 rounded-2xl bg-{{ strtolower($item['user']->performance_color ?? 'gray') }}-100 flex items-center justify-center text-{{ strtolower($item['user']->performance_color ?? 'gray') }}-600 font-black text-xs border border-{{ strtolower($item['user']->performance_color ?? 'gray') }}-200">
                                             {{ substr($item['user']->name, 0, 1) }}
                                         </div>
@@ -56,11 +58,13 @@
                                             <p class="text-[9px] font-bold text-gray-400 mt-0.5 tracking-tighter uppercase leading-none opacity-60">{{ $item['user']->nip ?? 'NIP: -' }}</p>
                                         </div>
                                     </td>
-                                    <td class="px-8 py-5 text-gray-500 font-bold text-xs uppercase">{{ $item['user']->position ?? '-' }}</td>
-                                    <td class="px-8 py-5 text-center font-black text-emerald-600 text-lg">{{ $item['external_count'] }}</td>
-                                    <td class="px-8 py-5 text-center font-black text-blue-600 text-lg">{{ $item['internal_count'] }}</td>
-                                    <td class="px-8 py-5 text-center font-black text-white bg-sipega-orange/90 text-2xl shadow-inner">{{ $item['total_trips'] }}</td>
-                                    <td class="px-8 py-5 text-right font-black italic text-[10px] text-sipega-navy opacity-40">TUGAS AKTIF ✅</td>
+                                    <td class="px-6 py-5 text-gray-500 font-bold text-xs uppercase">{{ $item['user']->position ?? '-' }}</td>
+                                    <td class="px-4 py-5 text-center font-black text-blue-600 text-base bg-blue-50/20">{{ $item['dlk_count'] }}</td>
+                                    <td class="px-4 py-5 text-center font-black text-purple-600 text-base bg-purple-50/20">{{ $item['dlp_count'] }}</td>
+                                    <td class="px-4 py-5 text-center font-black text-emerald-600 text-base bg-emerald-50/20">{{ $item['dln_count'] }}</td>
+                                    <td class="px-4 py-5 text-center font-black text-gray-500 text-sm">{{ $item['internal_count'] }}</td>
+                                    <td class="px-6 py-5 text-center font-black text-white bg-sipega-orange/90 text-2xl shadow-inner">{{ $item['total_trips'] }}</td>
+                                    <td class="px-6 py-5 text-right font-black italic text-[10px] text-sipega-navy opacity-40">TUGAS AKTIF ✅</td>
                                 </tr>
                             @empty
                                 <tr><td colspan="6" class="px-8 py-20 text-center text-gray-400 italic">Belum ada data dinas luar terekam untuk tahun {{ $year }}.</td></tr>

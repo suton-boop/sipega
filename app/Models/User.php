@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
     protected $fillable = [
         'name', 
@@ -78,7 +79,21 @@ class User extends Authenticatable
     public function letters()
     {
         return $this->belongsToMany(Letter::class, 'letter_user')
-            ->withPivot('report_text', 'report_photo_1', 'report_photo_2', 'report_status')
+            ->withPivot(
+                'user_nip',
+                'user_golongan',
+                'user_position',
+                'report_text', 
+                'report_photo_1', 
+                'report_photo_2', 
+                'report_status', 
+                'custom_role', 
+                'keterangan', 
+                'city_destination', 
+                'venue', 
+                'execution_dates', 
+                'person_in_charge'
+            )
             ->withTimestamps();
     }
 }

@@ -98,6 +98,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/recap/travel', [TravelRecapController::class, 'index'])->name('travel.recap');
 
     // SURAT-SURAT (SK/ST Admin-Pro)
+    Route::get('/letters/check-conflicts', [LetterController::class, 'checkConflicts'])->name('letters.check_conflicts');
     Route::resource('letters', LetterController::class);
     Route::get('/letters/{id}/st/pdf', [LetterController::class, 'downloadPdfSt'])->name('letters.pdf_st');
     Route::get('/letters/{id}/sk/pdf', [LetterController::class, 'downloadPdfSk'])->name('letters.pdf_sk');
