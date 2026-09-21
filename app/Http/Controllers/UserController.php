@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     /**
-     * Tampilkan halaman User Management untuk Admin
+     * Tampilkan halaman User Management untuk Admin dengan Filter
      */
     public function index(Request $request)
     {
@@ -19,9 +19,46 @@ class UserController extends Controller
             return abort(403, 'Akses Ditolak.');
         }
 
-        // Ambil semua user kecuali superadmin sendiri
-        $users = User::where('id', '!=', auth()->id())->orderBy('name')->get();
-        return view('admin.users.index', compact('users'));
+        $query = User::where('id', '!=', auth()->id());
+
+        // 1. Filter Pencarian: Nama, NIP, Email, atau Jabatan
+        if ($request->filled('search')) {
+            $search = trim($request->search);
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('nip', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('position', 'LIKE', "%{$search}%");
+            });
+        }
+
+        // 2. Filter Peran (Role)
+        if ($request->filled('role') && $request->role !== 'all') {
+            $query->where('role', $request->role);
+        }
+
+        // 3. Filter Status Aktif
+        if ($request->filled('status') && $request->status !== 'all') {
+            if ($request->status === 'active') {
+                $query->where('is_active', true);
+            } elseif ($request->status === 'inactive') {
+                $query->where('is_active', false);
+            }
+        }
+
+        // 4. Filter Device Binding (Kunci HP)
+        if ($request->filled('device') && $request->device !== 'all') {
+            if ($request->device === 'locked') {
+                $query->whereNotNull('device_id');
+            } elseif ($request->device === 'unbound') {
+                $query->whereNull('device_id');
+            }
+        }
+
+        $totalUsers = User::where('id', '!=', auth()->id())->count();
+        $users = $query->orderBy('name')->get();
+
+        return view('admin.users.index', compact('users', 'totalUsers'));
     }
 
     /**
@@ -155,5 +192,35 @@ class UserController extends Controller
         $user->assignRole($request->role);
 
         return back()->with('success', "Pegawai {$user->name} berhasil ditambahkan ke sistem.");
+    }
+
+    /**
+     * Hapus Data Pegawai (Khusus Level Admin)
+     */
+    public function destroy($id)
+    {
+        // 1. Otorisasi Ketat: Hanya role 'Admin' yang memiliki hak menghapus
+        if (auth()->user()->role !== 'Admin') {
+            return abort(403, 'Akses ditolak: Hanya Administrator yang berhak menghapus data pegawai.');
+        }
+
+        // 2. Cegah Admin menghapus akunnya sendiri
+        if (auth()->id() == $id) {
+            return back()->with('error', 'Tindakan Ditolak: Anda tidak dapat menghapus akun Anda sendiri.');
+        }
+
+        $user = User::findOrFail($id);
+        $name = $user->name;
+        $nip = $user->nip;
+
+        // 3. Hapus foto profil dari disk jika ada
+        if ($user->photo && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->photo)) {
+            \Illuminate\Support\Facades\Storage::disk('public')->delete($user->photo);
+        }
+
+        // 4. Hapus data pegawai (relasi di tabel lain akan cascade delete)
+        $user->delete();
+
+        return back()->with('success', "Pegawai {$name} (NIP: " . ($nip ?: '-') . ") berhasil dihapus secara permanen dari sistem.");
     }
 }

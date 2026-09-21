@@ -37,6 +37,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/users/import', [UserController::class, 'import'])->name('users.import');
     Route::get('/users/template', [UserController::class, 'downloadTemplate'])->name('users.template');
     Route::post('/users/recalculate/performance', [UserController::class, 'recalculatePerformance'])->name('users.recalculate-performance');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // MODULE RBAC (Matriks Hak Akses / Role-Permission Management)
     Route::get('/rbac', [RolePermissionController::class, 'index'])->name('rbac.index');
