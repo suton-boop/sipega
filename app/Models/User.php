@@ -73,7 +73,16 @@ class User extends Authenticatable
 
     public function scopeRealPegawai($query)
     {
-        return $query->whereNotIn('role', ['Sekpri', 'Admin', 'Pimpinan', 'Kasubag']);
+        return $query->whereNotIn('role', ['Sekpri', 'Admin', 'Administrator', 'Pimpinan', 'Kasubag'])
+            ->where('name', 'not like', '%administrator%')
+            ->where('email', 'not like', '%admin%');
+    }
+
+    public function isRealPegawai(): bool
+    {
+        return !in_array($this->role, ['Sekpri', 'Admin', 'Administrator', 'Pimpinan', 'Kasubag'])
+            && stripos($this->name, 'administrator') === false
+            && stripos($this->email, 'admin') === false;
     }
 
     public function letters()

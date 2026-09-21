@@ -18,9 +18,9 @@ class DashboardController extends Controller
         $user = auth()->user();
         $today = Carbon::today()->format('Y-m-d');
 
-        // Global Data SIPEGA: Modul Wall of Fame & Wall of Shame
-        $top5Highest = User::orderBy('performance_score', 'desc')->take(5)->get();
-        $top5Lowest = User::orderBy('performance_score', 'asc')->take(5)->get();
+        // Global Data SIPEGA: Modul Wall of Fame & Wall of Shame (Khusus Pegawai Riil, Administrator Tidak Masuk Penilaian)
+        $top5Highest = User::realPegawai()->whereNotNull('performance_score')->orderBy('performance_score', 'desc')->take(5)->get();
+        $top5Lowest = User::realPegawai()->whereNotNull('performance_score')->orderBy('performance_score', 'asc')->take(5)->get();
 
         // Upcoming Meetings for the Logged in user
         $upcomingMeetings = \App\Models\Meeting::where('date', '>=', $today)
@@ -43,21 +43,30 @@ class DashboardController extends Controller
             $totalUsers = User::realPegawai()->count();
             $allPegawai = User::realPegawai()->orderBy('name')->get();
             $recentLetters = AssignmentLetter::with('users')->latest()->take(5)->get(); // For recent archives
-            $pendingEvalCount = DailyAgenda::whereNotNull('realization_submitted_at')->whereNull('leader_rating')->count();
+            $pendingEvalCount = DailyAgenda::whereNotNull('realization_submitted_at')
+                ->whereNull('leader_rating')
+                ->whereHas('user', function($q) { $q->realPegawai(); })
+                ->count();
             return view('dashboard.admin', compact('top5Highest', 'top5Lowest', 'totalUsers', 'today', 'allPegawai', 'recentLetters', 'pendingEvalCount', 'upcomingMeetings', 'todayAgenda'));
             
         } elseif ($user->role === 'Pimpinan') {
             // Pimpinan: Fokus 'Performance Heatmap' & Real-time Monitoring
             $heatmap = User::realPegawai()->selectRaw("performance_color, count(*) as total")
+                        ->whereNotNull('performance_color')
                         ->groupBy('performance_color')
                         ->pluck('total', 'performance_color')->toArray();
 
-            $submittedToday = DailyAgenda::where('date', $today)->pluck('user_id')->toArray();
-            $allUsers = User::realPegawai()->get();
+            $submittedToday = DailyAgenda::where('date', $today)
+                ->whereHas('user', function($q) { $q->realPegawai(); })
+                ->pluck('user_id')->toArray();
+            $allUsers = User::realPegawai()->orderBy('name')->get();
             
             $privateAssignments = AssignmentLetter::where('is_private', true)->latest()->get();
             $totalUsers = $allUsers->count();
-            $pendingEvalCount = DailyAgenda::whereNotNull('realization_submitted_at')->whereNull('leader_rating')->count();
+            $pendingEvalCount = DailyAgenda::whereNotNull('realization_submitted_at')
+                ->whereNull('leader_rating')
+                ->whereHas('user', function($q) { $q->realPegawai(); })
+                ->count();
             
             return view('dashboard.pimpinan', compact('top5Highest', 'top5Lowest', 'heatmap', 'submittedToday', 'allUsers', 'privateAssignments', 'totalUsers', 'today', 'pendingEvalCount', 'upcomingMeetings', 'todayAgenda'));
 

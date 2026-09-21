@@ -191,8 +191,11 @@ class AgendaController extends Controller
             return redirect()->route('dashboard')->with('error', 'Akses Ditolak: Anda tidak memiliki hak akses Penilaian.');
         }
 
-        // Tampilkan 20 agenda terbaru yang sudah ada realisasinya
+        // Tampilkan 15 agenda terbaru yang sudah ada realisasinya (Khusus Pegawai Riil, Administrator tidak dinilai)
         $pendingAgendas = DailyAgenda::with(['user', 'items'])
+            ->whereHas('user', function($q) {
+                $q->realPegawai();
+            })
             ->whereNotNull('realization_submitted_at')
             ->orderBy('realization_submitted_at', 'desc')
             ->paginate(15);
@@ -224,17 +227,19 @@ class AgendaController extends Controller
             'status' => 'Verified'
         ]);
 
-        // Opsional: Update skor performa user secara kumulatif
+        // Opsional: Update skor performa user secara kumulatif (Hanya jika Pegawai Riil)
         $employee = $agenda->user;
-        $avgScore = DailyAgenda::where('user_id', $employee->id)
-            ->whereNotNull('leader_rating')
-            ->avg('leader_rating');
-            
-        if ($avgScore) {
-            $employee->update([
-                'performance_score' => $avgScore,
-                'performance_color' => $avgScore >= 80 ? 'Hijau' : ($avgScore >= 60 ? 'Kuning' : 'Merah')
-            ]);
+        if ($employee && $employee->isRealPegawai()) {
+            $avgScore = DailyAgenda::where('user_id', $employee->id)
+                ->whereNotNull('leader_rating')
+                ->avg('leader_rating');
+                
+            if ($avgScore) {
+                $employee->update([
+                    'performance_score' => $avgScore,
+                    'performance_color' => $avgScore >= 80 ? 'Hijau' : ($avgScore >= 60 ? 'Kuning' : 'Merah')
+                ]);
+            }
         }
 
         return back()->with('success', 'Penilaian SIPEGA berhasil disimpan. Skor pegawai telah diperbarui otomatis.');
@@ -270,17 +275,19 @@ class AgendaController extends Controller
                     'status' => 'Verified'
                 ]);
 
-                // Update performa user
+                // Update performa user (Hanya jika Pegawai Riil)
                 $employee = $agenda->user;
-                $avgScore = DailyAgenda::where('user_id', $employee->id)
-                    ->whereNotNull('leader_rating')
-                    ->avg('leader_rating');
-                    
-                if ($avgScore) {
-                    $employee->update([
-                        'performance_score' => $avgScore,
-                        'performance_color' => $avgScore >= 80 ? 'Hijau' : ($avgScore >= 60 ? 'Kuning' : 'Merah')
-                    ]);
+                if ($employee && $employee->isRealPegawai()) {
+                    $avgScore = DailyAgenda::where('user_id', $employee->id)
+                        ->whereNotNull('leader_rating')
+                        ->avg('leader_rating');
+                        
+                    if ($avgScore) {
+                        $employee->update([
+                            'performance_score' => $avgScore,
+                            'performance_color' => $avgScore >= 80 ? 'Hijau' : ($avgScore >= 60 ? 'Kuning' : 'Merah')
+                        ]);
+                    }
                 }
                 $evaluatedCount++;
             }

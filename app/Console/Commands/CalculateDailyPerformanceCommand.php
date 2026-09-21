@@ -34,7 +34,7 @@ class CalculateDailyPerformanceCommand extends Command
         $calculationDate = $this->argument('date') ?? Carbon::yesterday()->format('Y-m-d');
         $this->info("Memulai kalkulasi performa (Tahap 5) untuk tanggal: {$calculationDate}...");
 
-        $users = User::all();
+        $users = User::realPegawai()->get();
 
         foreach ($users as $user) {
             $dailyScore = 100.00; // Skor awalan penuh, dipotong jika ada pelanggaran

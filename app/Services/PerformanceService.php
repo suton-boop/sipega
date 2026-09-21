@@ -95,6 +95,10 @@ class PerformanceService
      */
     public function updateScore(User $user)
     {
+        if (!$user->isRealPegawai()) {
+            return null;
+        }
+
         $result = $this->calculateForUser($user, Carbon::today('Asia/Makassar')->format('Y-m-d'));
         
         $user->update([

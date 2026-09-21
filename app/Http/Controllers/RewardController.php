@@ -23,9 +23,11 @@ class RewardController extends Controller
 
         $monthYear = now()->format('m-Y');
 
-        // 🏆 Top 3 "Pegawai Teladan" (Wall of Fame)
+        // 🏆 Top 3 "Pegawai Teladan" (Wall of Fame - Khusus Pegawai Riil)
         // Kriteria: Skor > 90 + Terpilih dlm Voting
-        $wallOfFame = User::where('performance_score', '>=', 90)
+        $wallOfFame = User::realPegawai()
+            ->whereNotNull('performance_score')
+            ->where('performance_score', '>=', 90)
             ->withCount(['receivedVotes' => function($q) use ($monthYear) {
                 $q->where('month_year', $monthYear);
             }])
@@ -33,8 +35,10 @@ class RewardController extends Controller
             ->orderBy('performance_score', 'desc')
             ->take(5)->get();
 
-        // 🐢 Top 3 "Perlu Pembinaan" (Wall of Shame)
-        $wallOfShame = User::where('performance_color', 'Merah')
+        // 🐢 Top 3 "Perlu Pembinaan" (Wall of Shame - Khusus Pegawai Riil)
+        $wallOfShame = User::realPegawai()
+            ->whereNotNull('performance_score')
+            ->where('performance_color', 'Merah')
             ->orderBy('performance_score', 'asc')
             ->take(3)->get();
 
@@ -43,7 +47,8 @@ class RewardController extends Controller
             ->where('month_year', $monthYear)
             ->first();
 
-        $allPegawai = User::where('id', '!=', auth()->id())->get();
+        // Daftar pegawai yang bisa divote (Hanya Pegawai Riil, bukan Administrator)
+        $allPegawai = User::realPegawai()->where('id', '!=', auth()->id())->orderBy('name')->get();
 
         return view('reward.index', compact('wallOfFame', 'wallOfShame', 'myVote', 'allPegawai'));
     }
@@ -57,6 +62,9 @@ class RewardController extends Controller
             'target_id' => 'required|exists:users,id|not_in:' . auth()->id(),
             'comment' => 'nullable|string|max:100'
         ]);
+
+        // Pastikan target vote adalah Pegawai Riil (bukan administrator / non-pegawai)
+        $targetUser = User::realPegawai()->findOrFail($request->target_id);
 
         $monthYear = now()->format('m-Y');
 
