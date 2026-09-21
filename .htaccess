@@ -1,13 +1,5 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
-
-    # 1. Blokir akses ke file rahasia (.env, .git, dll)
-    RewriteRule ^\.(.*)$ - [F,L]
-
-    # 2. Cegah redirect loop (jika sudah di-rewrite atau sudah mengarah ke /public/)
-    RewriteCond %{ENV:REDIRECT_STATUS} ^$
     RewriteCond %{REQUEST_URI} !^/public/
-
-    # 3. Teruskan semua request ke folder public/
-    RewriteRule ^(.*)$ public/$1 [L]
+    RewriteRule ^(.*)$ public/$1 [L,QSA]
 </IfModule>
