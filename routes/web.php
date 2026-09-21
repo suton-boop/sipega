@@ -104,6 +104,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/letters/{id}/st/pdf', [LetterController::class, 'downloadPdfSt'])->name('letters.pdf_st');
     Route::get('/letters/{id}/sk/pdf', [LetterController::class, 'downloadPdfSk'])->name('letters.pdf_sk');
     Route::post('/letters/{id}/approve', [LetterController::class, 'approve'])->name('letters.approve');
+    Route::post('/letters/{id}/unapprove', [LetterController::class, 'unapprove'])->name('letters.unapprove');
     Route::post('/letters/{id}/reject', [LetterController::class, 'reject'])->name('letters.reject');
 
     // KALENDER KERJA

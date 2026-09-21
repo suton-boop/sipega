@@ -199,14 +199,21 @@
                                         </a>
 
                                         @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
-                                            <!-- APPROVE BUTTON (Jika belum approved) -->
-                                            @if($letter->status !== 'Approved')
-                                            <form action="{{ route('letters.approve', $letter->id) }}" method="POST" class="inline" onsubmit="return confirm('Setujui surat tugas ini? Setelah disetujui, otomatis terhitung 1 kali penugasan pada Rekap Tugas!')">
-                                                @csrf
-                                                <button type="submit" class="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl transition border border-emerald-200 shadow-sm" title="Setujui (Approve)">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                </button>
-                                            </form>
+                                            <!-- APPROVE / BATALKAN APPROVE BUTTON -->
+                                            @if($letter->status === 'Approved')
+                                                <form action="{{ route('letters.unapprove', $letter->id) }}" method="POST" class="inline" onsubmit="return confirm('⚠️ BATALKAN PERSETUJUAN:\n\nApakah Anda yakin ingin MEMBATALKAN persetujuan Surat Tugas ini?\n\n• Status akan kembali menjadi DRAFT.\n• Hitungan pada Rekap Dinas Luar otomatis dikurangi agar tetap sinkron.\n• Tanda Dinas Luar pada kalender pegawai akan disesuaikan.')">
+                                                    @csrf
+                                                    <button type="submit" class="p-2 bg-amber-50 hover:bg-amber-100 text-amber-600 rounded-xl transition border border-amber-200 shadow-sm" title="Batalkan Persetujuan (Kembalikan ke Draft & Sinkronkan Rekap)">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <form action="{{ route('letters.approve', $letter->id) }}" method="POST" class="inline" onsubmit="return confirm('Setujui surat tugas ini? Setelah disetujui, otomatis terhitung penugasan pada Rekap Dinas Luar dan ditandai pada Kalender!')">
+                                                    @csrf
+                                                    <button type="submit" class="p-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl transition border border-emerald-200 shadow-sm" title="Setujui (Approve)">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                    </button>
+                                                </form>
                                             @endif
 
                                             <!-- EDIT -->

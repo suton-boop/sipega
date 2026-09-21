@@ -253,6 +253,8 @@ class LetterController extends Controller
 
         if ($request->action_type === 'approve') {
             $letter->update(['status' => 'Approved']);
+        } elseif ($request->action_type === 'unapprove') {
+            $letter->update(['status' => 'Draft']);
         }
 
         // Format data pivot peserta
@@ -312,6 +314,31 @@ class LetterController extends Controller
 
         $letter->update(['status' => 'Approved']);
         return back()->with('success', 'Surat Tugas berhasil Disetujui (Approved). Penugasan otomatis tercatat pada Rekap Tugas!');
+    }
+
+    public function unapprove($id)
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag'])) {
+            return abort(403, 'Akses Ditolak.');
+        }
+
+        $letter = Letter::with('users')->findOrFail($id);
+        
+        $letter->update(['status' => 'Draft']);
+
+        return back()->with('success', 'Persetujuan Surat Tugas ' . ($letter->number ?: '') . ' berhasil DIBATALKAN. Status kembali menjadi DRAFT dan perhitungan Rekap Dinas Luar otomatis disinkronkan.');
+    }
+
+    public function reject($id)
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag'])) {
+            return abort(403, 'Akses Ditolak.');
+        }
+
+        $letter = Letter::with('users')->findOrFail($id);
+        $letter->update(['status' => 'Rejected']);
+
+        return back()->with('success', 'Surat Tugas ditolak (Rejected). Data tidak dihitung dalam Rekap Dinas Luar.');
     }
 
     public function checkConflicts(Request $request)
@@ -389,13 +416,6 @@ class LetterController extends Controller
         }
 
         return $conflicts;
-    }
-
-    public function reject(Request $request, $id)
-    {
-        $letter = Letter::findOrFail($id);
-        $letter->update(['status' => 'Rejected']);
-        return back()->with('success', 'Surat Tugas berhasil ditolak/dikembalikan ke draf.');
     }
 
     public function downloadPdfSt($id)

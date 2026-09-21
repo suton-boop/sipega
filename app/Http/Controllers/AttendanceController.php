@@ -35,13 +35,30 @@ class AttendanceController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        // Check assigned letters/ST to mark "Tugas Luar"
+        // Check assigned letters/ST to mark "Tugas Luar" (Sinkronisasi Penugasan Resmi)
         $activeAssignmentDays = \DB::table('assignment_letter_user')
             ->join('assignment_letters', 'assignment_letter_user.assignment_letter_id', '=', 'assignment_letters.id')
             ->where('user_id', $user->id)
             ->whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
             ->pluck('date')
             ->toArray();
+
+        // Tambahkan tanggal dari Surat Tugas Formal (Letter) yang berstatus Approved
+        $approvedLetters = $user->letters()
+            ->where('status', 'Approved')
+            ->where('date_start', '<=', $endOfMonth->toDateString())
+            ->whereRaw('COALESCE(date_end, date_start) >= ?', [$startOfMonth->toDateString()])
+            ->get();
+
+        foreach ($approvedLetters as $al) {
+            $cur = Carbon::parse($al->date_start);
+            $end = Carbon::parse($al->date_end ?? $al->date_start);
+            while ($cur->lte($end)) {
+                $activeAssignmentDays[] = $cur->toDateString();
+                $cur->addDay();
+            }
+        }
+        $activeAssignmentDays = array_values(array_unique($activeAssignmentDays));
 
         // Get Holiday/Shared Leave days
         $holidays = CalendarEvent::whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])

@@ -51,9 +51,61 @@
                 </form>
             </div>
 
+            <!-- Agenda Dinas Luar Resmi (Surat Tugas Approved) -->
+            <div class="bg-white overflow-hidden shadow-2xl rounded-[40px] border border-orange-200 p-8 lg:p-10">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center font-black">
+                            <span class="text-xl">✈️</span>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-black text-sipega-navy uppercase">Agenda Dinas Luar Resmi (ST)</h3>
+                            <p class="text-[10px] font-bold text-orange-600 uppercase tracking-widest">Surat Tugas Resmi yang Telah Disetujui (Approved)</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('admin.calendar.index') }}" class="px-4 py-2 bg-orange-50 hover:bg-orange-100 text-orange-600 font-black text-[10px] uppercase tracking-wider rounded-xl border border-orange-200 transition">
+                        Buka Kalender Kerja &rarr;
+                    </a>
+                </div>
+
+                <div class="space-y-3">
+                    @forelse($dutyLetters as $dl)
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-orange-50/50 rounded-2xl border border-orange-200/70 hover:border-orange-400 transition-all gap-4">
+                            <div class="flex items-start sm:items-center gap-4">
+                                <div class="bg-orange-500 text-white p-3 rounded-2xl text-center min-w-[70px] shrink-0 shadow-md shadow-orange-500/20">
+                                    <span class="block text-[9px] font-black uppercase tracking-wider opacity-90">{{ \Carbon\Carbon::parse($dl->date_start)->format('M') }}</span>
+                                    <span class="block text-xl font-black">{{ \Carbon\Carbon::parse($dl->date_start)->format('d') }}</span>
+                                </div>
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-2 py-0.5 rounded text-[8px] font-extrabold bg-orange-200 text-orange-800 uppercase tracking-wider">{{ $dl->category ?? 'DL' }}</span>
+                                        <span class="text-[10px] font-mono text-orange-700 font-bold">No: {{ $dl->number ?? '-' }}</span>
+                                    </div>
+                                    <h4 class="text-base font-black text-sipega-navy leading-tight mt-1">{{ $dl->title }}</h4>
+                                    <div class="flex flex-wrap items-center gap-3 mt-1 text-[11px] text-gray-500 font-medium">
+                                        <span>📍 {{ $dl->location ?? 'Lokasi Penugasan' }}</span>
+                                        <span class="text-gray-300">•</span>
+                                        <span>📅 {{ \Carbon\Carbon::parse($dl->date_start)->translatedFormat('d M Y') }}{{ $dl->date_end ? ' s.d ' . \Carbon\Carbon::parse($dl->date_end)->translatedFormat('d M Y') : '' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 self-end sm:self-center">
+                                <a href="{{ route('letters.show', $dl->id) }}" class="px-3.5 py-1.5 bg-white text-orange-600 hover:bg-orange-600 hover:text-white rounded-xl border border-orange-300 text-xs font-bold transition shadow-sm">
+                                    Detail Surat
+                                </a>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-6 text-gray-400 text-xs font-bold uppercase tracking-wider bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                            Tidak ada jadwal Dinas Luar aktif dalam periode berjalan
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
             <!-- Daftar Agenda -->
             <div class="bg-white overflow-hidden shadow-2xl rounded-[40px] border border-gray-100 p-10 lg:p-12">
-                <h3 class="text-2xl font-black text-sipega-navy uppercase mb-8">Daftar Agenda Saya</h3>
+                <h3 class="text-2xl font-black text-sipega-navy uppercase mb-8">Daftar Agenda Mandiri Saya</h3>
                 <div class="space-y-4">
                     @forelse($schedules as $s)
                         <div class="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100 hover:border-sipega-orange transition-all group">

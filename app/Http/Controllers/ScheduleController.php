@@ -16,8 +16,14 @@ class ScheduleController extends Controller
             ->orderBy('date', 'asc')
             ->orderBy('start_time', 'asc')
             ->get();
+
+        $dutyLetters = $user->letters()
+            ->where('status', 'Approved')
+            ->where('date_start', '>=', now()->subMonths(2)->startOfMonth()->toDateString())
+            ->orderBy('date_start', 'desc')
+            ->get();
             
-        return view('schedules.index', compact('schedules'));
+        return view('schedules.index', compact('schedules', 'dutyLetters'));
     }
 
     public function store(Request $request)

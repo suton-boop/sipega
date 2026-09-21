@@ -4,18 +4,74 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\CalendarEvent;
+use App\Models\User;
 use Carbon\Carbon;
 
 class CalendarController extends Controller
 {
     /**
-     * Daftar Kalender Kerja SIPEGA (Interactive UI)
+     * Daftar Kalender Kerja SIPEGA (Interactive UI dengan penandaan Dinas Luar)
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Ambil semua event di tahun 2026 agar Dot status muncul semua
-        $events = CalendarEvent::whereYear('date', 2026)->get();
-        return view('admin.calendar.index', compact('events'));
+        $year = (int)$request->get('year', 2026);
+        $currentMonthIdx = (int)$request->get('month', now()->month);
+
+        // Ambil semua event di tahun terpilih (Hari libur, cuti bersama, dll)
+        $events = CalendarEvent::whereYear('date', $year)->get();
+
+        // Pegawai yang dilihat jadwal tugas individunya
+        // Khusus Admin/Pimpinan/Kasubag dapat memilih pegawai lain, pegawai biasa melihat jadwal diri sendiri
+        if (in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag'])) {
+            $selectedUserId = $request->get('user_id', auth()->id());
+            $targetUser = User::find($selectedUserId) ?? auth()->user();
+        } else {
+            $targetUser = auth()->user();
+        }
+
+        // Ambil seluruh Surat Tugas Approved untuk pegawai ini di tahun terpilih
+        $dutyLetters = $targetUser->letters()
+            ->where('status', 'Approved')
+            ->where(function($q) use ($year) {
+                $q->whereYear('date_start', $year)
+                  ->orWhereYear('date_end', $year);
+            })
+            ->get();
+
+        // Petakan setiap tanggal Dinas Luar ke array map: 'YYYY-MM-DD' => [list data tugas]
+        $dutyDates = [];
+        $monthDutyCount = 0;
+        foreach ($dutyLetters as $letter) {
+            if (!$letter->date_start) continue;
+            $cur = Carbon::parse($letter->date_start)->copy();
+            $end = Carbon::parse($letter->date_end ?? $letter->date_start)->copy();
+            while ($cur->lte($end)) {
+                $dateStr = $cur->toDateString();
+                if ($cur->year == $year && $cur->month == $currentMonthIdx) {
+                    $monthDutyCount++;
+                }
+                if (!isset($dutyDates[$dateStr])) {
+                    $dutyDates[$dateStr] = [];
+                }
+                $dutyDates[$dateStr][] = [
+                    'id' => $letter->id,
+                    'number' => $letter->number ?? 'Tanpa Nomor',
+                    'title' => $letter->title,
+                    'location' => $letter->location ?? 'Lokasi Penugasan',
+                    'category' => $letter->category,
+                    'category_label' => $letter->category_label,
+                    'dates' => Carbon::parse($letter->date_start)->translatedFormat('d M Y') . ($letter->date_end ? ' s.d ' . Carbon::parse($letter->date_end)->translatedFormat('d M Y') : ''),
+                ];
+                $cur->addDay();
+            }
+        }
+
+        // Daftar seluruh pegawai untuk dropdown filter jika user adalah Admin/Pimpinan/Kasubag
+        $allUsers = in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']) 
+            ? User::orderBy('name')->get() 
+            : collect([auth()->user()]);
+
+        return view('admin.calendar.index', compact('events', 'year', 'currentMonthIdx', 'targetUser', 'dutyDates', 'allUsers', 'monthDutyCount'));
     }
 
     /**

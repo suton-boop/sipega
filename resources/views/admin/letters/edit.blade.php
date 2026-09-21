@@ -471,6 +471,10 @@
                         <button type="submit" onclick="document.getElementById('editActionType').value='approve'" class="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition shadow-xl shadow-emerald-600/20 flex items-center gap-2">
                             <span>✅</span> Simpan & Langsung Setujui (Approve)
                         </button>
+                        @else
+                        <button type="submit" onclick="document.getElementById('editActionType').value='unapprove'" class="px-6 py-3 bg-amber-500 hover:bg-amber-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl transition shadow-xl shadow-amber-500/20 flex items-center gap-2" title="Kembalikan status surat ke Draft dan kurangi hitungan Rekap Tugas">
+                            <span>🔄</span> Simpan & Batalkan Approve (Draft)
+                        </button>
                         @endif
                     </div>
                 </div>
