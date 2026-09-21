@@ -12,17 +12,17 @@
     <form method="POST" action="{{ route('login') }}" class="space-y-6">
         @csrf
 
-        <!-- Email Address -->
+        <!-- NIP atau Email -->
         <div class="group text-left">
-            <label for="email" class="block text-[10px] font-black text-[#003366]/40 uppercase tracking-widest mb-3 px-2">Email</label>
+            <label for="email" class="block text-[10px] font-black text-[#003366]/60 uppercase tracking-widest mb-3 px-2">NIP / Email Pegawai</label>
             <div class="flex items-center h-16 bg-gray-50/30 border border-gray-300 rounded-3xl px-6 focus-within:bg-white focus-within:border-blue-500 focus-within:ring-8 focus-within:ring-blue-100/30 transition-all shadow-sm">
-                <input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" 
-                    placeholder="nama@kemdikbud.go.id"
-                    class="flex-grow bg-transparent border-none focus:ring-0 text-[15px] font-semibold text-[#003366] placeholder-gray-300 p-0">
+                <input id="email" type="text" name="email" :value="old('email')" required autofocus autocomplete="username" 
+                    placeholder="Masukkan NIP atau Email"
+                    class="flex-grow bg-transparent border-none focus:ring-0 text-[15px] font-semibold text-[#003366] placeholder-gray-400 p-0">
                 
                 <div class="ml-3 text-gray-400 group-focus-within:text-[#003366] group-focus-within:scale-110 transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                 </div>
             </div>
@@ -58,6 +58,7 @@
                 </div>
             </div>
             <x-input-error :messages="$errors->get('password')" class="mt-2 text-left px-2 text-[10px] font-bold" />
+            <p class="text-[9px] text-[#003366]/50 mt-2 px-2 font-bold italic text-left">*Login dapat menggunakan NIP (Username & Password = NIP).</p>
         </div>
 
         <!-- Remember Me -->

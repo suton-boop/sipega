@@ -102,21 +102,25 @@ class UserController extends Controller
     /**
      * Download Template Excel Pegawai
      */
-    public function downloadTemplate()
+    public function downloadTemplate(Request $request)
     {
-        $headers = ['Nama', 'Email', 'Password', 'Role', 'NIP', 'Jabatan', 'Golongan', 'KJ'];
-        $filename = "Template_Import_Pegawai_SIPEGA.csv";
-        
-        $handle = fopen('php://output', 'w');
-        fputcsv($handle, $headers);
-        
-        // Contoh Data dengan tanda kutip di depan NIP agar Excel menganggapnya teks
-        fputcsv($handle, ['Budi Santoso', 'budi@sipega.com', 'sipega123', 'Pegawai', "'198501012010011001", 'Penyusun Laporan', 'III/a', '7']);
+        if ($request->get('format') === 'csv') {
+            $headers = ['Nama', 'NIP', 'Jabatan', 'Golongan', 'KJ', 'Role', 'Email'];
+            $filename = "Template_Import_Pegawai_SIPEGA.csv";
+            
+            $handle = fopen('php://output', 'w');
+            fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
+            fputcsv($handle, $headers, ';');
+            fputcsv($handle, ['Ahmad Fauzi, S.Pd', "'198705122011011002", 'Widyaprada Ahli Muda', 'III/c', '9', 'Pegawai', 'ahmad.fauzi@bpmpkaltim.id'], ';');
+            fputcsv($handle, ['Siti Rahmah, M.Pd', "'199003152014022003", 'Pengembang Penilaian Pendidikan', 'III/b', '8', 'Pegawai', 'siti.rahmah@bpmpkaltim.id'], ';');
 
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment; filename="'.$filename.'"');
-        fclose($handle);
-        exit;
+            header('Content-Type: text/csv; charset=UTF-8');
+            header('Content-Disposition: attachment; filename="'.$filename.'"');
+            fclose($handle);
+            exit;
+        }
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\EmployeeTemplateExport, 'Template_Import_Pegawai_SIPEGA.xlsx');
     }
 
     /**

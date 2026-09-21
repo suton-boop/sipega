@@ -51,8 +51,9 @@
                     <a href="{{ route('rbac.index') }}" class="bg-sipega-navy hover:bg-[#002244] text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest border border-white/10">
                         Matriks Akses
                     </a>
-                    <a href="{{ route('users.index') }}" class="bg-gray-800 hover:bg-black text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest">
-                        Pegawai
+                    <a href="{{ route('users.index') }}" class="bg-gray-800 hover:bg-black text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <span>Data Pegawai & Import</span>
                     </a>
                 </div>
             </div>

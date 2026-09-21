@@ -102,25 +102,84 @@
             @endif
 
             <!-- 1. EXCEL OPERATIONS (Import & Template) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-                <div class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100">
-                    <h3 class="text-xl font-black text-sipega-navy mb-4 flex items-center gap-3">📥 Import Data Pegawai</h3>
-                    <form action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data">
-                        @csrf
-                        <div class="flex flex-col gap-4">
-                            <input type="file" name="file" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-gray-100 file:text-sipega-navy hover:file:bg-gray-200 cursor-pointer" required>
-                            <button type="submit" class="bg-sipega-navy text-white text-[10px] font-black py-4 px-8 rounded-2xl shadow-lg hover:bg-black transition-all hover:-translate-y-1 uppercase tracking-widest">
-                                Proses Upload Excel 🚀
-                            </button>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+                <!-- Card 1: Import Excel -->
+                <div class="lg:col-span-7 bg-white p-8 rounded-[2.5rem] shadow-xl border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-black text-sipega-navy flex items-center gap-3">
+                                📥 Import Data Pegawai
+                            </h3>
+                            <span class="px-3 py-1 bg-blue-50 text-sipega-navy text-[9px] font-black rounded-full uppercase tracking-widest border border-blue-100">
+                                Excel / CSV
+                            </span>
                         </div>
-                    </form>
+                        
+                        <!-- Alert Box: NIP Sebagai Username & Password -->
+                        <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 text-amber-900 text-xs">
+                            <div class="flex items-start gap-3">
+                                <span class="text-lg leading-none">🔑</span>
+                                <div>
+                                    <strong class="font-extrabold block uppercase tracking-wider text-[11px] mb-0.5">Ketentuan Akun Pegawai:</strong>
+                                    <p class="text-[11px] text-amber-800 leading-relaxed">
+                                        Setelah data di-import, pegawai otomatis dapat login menggunakan:
+                                        <br>• <strong>Username:</strong> <code class="bg-amber-100 px-1.5 py-0.5 rounded font-mono font-bold">NIP Pegawai</code>
+                                        <br>• <strong>Password Default:</strong> <code class="bg-amber-100 px-1.5 py-0.5 rounded font-mono font-bold">NIP Pegawai</code>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <form action="{{ route('users.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                            @csrf
+                            <div class="border-2 border-dashed border-gray-200 rounded-2xl p-6 text-center hover:border-sipega-orange transition-colors bg-gray-50/50">
+                                <input type="file" name="file" accept=".xlsx,.xls,.csv" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2.5 file:px-5 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-sipega-navy file:text-white hover:file:bg-black cursor-pointer" required>
+                                <p class="text-[10px] text-gray-400 mt-2 font-bold uppercase tracking-wider">Format yang didukung: .xlsx, .xls, .csv</p>
+                            </div>
+                            
+                            <button type="submit" class="w-full bg-sipega-navy text-white text-[11px] font-black py-4 px-8 rounded-2xl shadow-lg hover:bg-black transition-all hover:-translate-y-0.5 uppercase tracking-widest flex items-center justify-center gap-2">
+                                <span>Mulai Import Data Pegawai</span> 🚀
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <div class="bg-sipega-orange p-8 rounded-[2.5rem] shadow-xl text-white flex flex-col justify-center">
-                    <h3 class="text-xl font-black mb-2 flex items-center gap-3">📋 Template Excel</h3>
-                    <p class="text-xs font-bold text-white/80 mb-6">Gunakan template ini agar format data (Kolom Nama, Email, NIP, dsb) sesuai dengan sistem SIPEGA.</p>
-                    <a href="{{ route('users.template') }}" class="inline-block text-center bg-white text-sipega-orange text-[10px] font-black py-4 px-8 rounded-2xl shadow-lg hover:bg-gray-50 transition-all hover:-translate-y-1 uppercase tracking-widest">
-                        Download Template CSV ⬇️
-                    </a>
+
+                <!-- Card 2: Download Template & Panduan -->
+                <div class="lg:col-span-5 bg-gradient-to-br from-[#003366] to-[#001a33] p-8 rounded-[2.5rem] shadow-xl text-white flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-black flex items-center gap-3">📋 Template Data</h3>
+                            <span class="px-3 py-1 bg-white/10 text-white text-[9px] font-black rounded-full uppercase tracking-widest border border-white/20">Panduan</span>
+                        </div>
+                        
+                        <p class="text-xs text-white/80 mb-5 leading-relaxed">
+                            Unduh template resmi agar susunan kolom sesuai dengan sistem. NIP diformat khusus agar tidak terpotong oleh Excel.
+                        </p>
+
+                        <!-- Tabel Ringkasan Kolom -->
+                        <div class="bg-white/10 rounded-2xl p-4 mb-6 border border-white/10 text-[11px]">
+                            <div class="font-extrabold uppercase tracking-widest text-[9px] text-sipega-orange mb-2">Struktur Kolom Template:</div>
+                            <div class="grid grid-cols-2 gap-y-1 text-white/90 text-[10px]">
+                                <div>1. <strong>Nama</strong> (Lengkap + Gelar)</div>
+                                <div>2. <strong>NIP</strong> (Angka 18 digit)</div>
+                                <div>3. <strong>Jabatan</strong> (Struktural/JFT)</div>
+                                <div>4. <strong>Golongan</strong> (Cth: III/a)</div>
+                                <div>5. <strong>KJ</strong> (Kelas Jabatan, Cth: 8)</div>
+                                <div>6. <strong>Role</strong> (Pegawai/Operator)</div>
+                                <div class="col-span-2">7. <strong>Email</strong> (Opsional, otomatis diisi jika kosong)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                        <a href="{{ route('users.template') }}" class="flex-1 text-center bg-sipega-orange text-white text-[10px] font-black py-4 px-4 rounded-2xl shadow-lg hover:bg-orange-600 transition-all hover:-translate-y-0.5 uppercase tracking-widest flex items-center justify-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span>Unduh Excel (.xlsx)</span>
+                        </a>
+                        <a href="{{ route('users.template', ['format' => 'csv']) }}" class="text-center bg-white/10 hover:bg-white/20 text-white text-[10px] font-black py-4 px-4 rounded-2xl border border-white/20 transition-all uppercase tracking-widest">
+                            CSV
+                        </a>
+                    </div>
                 </div>
             </div>
 

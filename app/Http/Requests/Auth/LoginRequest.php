@@ -28,7 +28,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
         ];
     }
@@ -42,11 +42,36 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $loginInput = trim($this->input('email'));
+        $password = $this->input('password');
+
+        // Deteksi apakah input login adalah Email atau NIP
+        $isEmail = filter_var($loginInput, FILTER_VALIDATE_EMAIL);
+        $credentials = $isEmail 
+            ? ['email' => $loginInput, 'password' => $password]
+            : ['nip' => $loginInput, 'password' => $password];
+
+        if (! Auth::attempt($credentials, $this->boolean('remember'))) {
+            // Jika login dengan NIP gagal, coba cari user berdasarkan NIP dan verifikasi password
+            if (!$isEmail) {
+                // Bersihkan karakter non-numerik dari NIP jika ada
+                $cleanNip = preg_replace('/[^0-9]/', '', $loginInput);
+                if ($cleanNip !== $loginInput && Auth::attempt(['nip' => $cleanNip, 'password' => $password], $this->boolean('remember'))) {
+                    RateLimiter::clear($this->throttleKey());
+                    return;
+                }
+                
+                // Coba fallback dengan email siapa tahu user memasukkan email tanpa format standar
+                if (Auth::attempt(['email' => $loginInput, 'password' => $password], $this->boolean('remember'))) {
+                    RateLimiter::clear($this->throttleKey());
+                    return;
+                }
+            }
+
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => 'NIP / Email atau kata sandi yang Anda masukkan tidak sesuai.',
             ]);
         }
 
