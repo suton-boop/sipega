@@ -1,12 +1,13 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # 1. Jika request mengarah ke file fisik nyata (CSS, JS, Gambar, Dokumen), sajikan langsung
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -f
-    RewriteRule ^(.*)$ public/$1 [L]
+    # 1. Blokir akses ke file rahasia (.env, .git, dll)
+    RewriteRule ^\.(.*)$ - [F,L]
 
-    # 2. Untuk semua rute Laravel (/login, /dashboard, dll), arahkan ke public/index.php
-    RewriteRule ^ public/index.php [L]
+    # 2. Cegah redirect loop (jika sudah di-rewrite atau sudah mengarah ke /public/)
+    RewriteCond %{ENV:REDIRECT_STATUS} ^$
+    RewriteCond %{REQUEST_URI} !^/public/
+
+    # 3. Teruskan semua request ke folder public/
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
