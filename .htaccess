@@ -1,5 +1,12 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # 1. Jika request mengarah ke file fisik nyata (CSS, JS, Gambar, Dokumen), sajikan langsung
     RewriteCond %{REQUEST_URI} !^/public/
-    RewriteRule ^(.*)$ public/$1 [L,QSA]
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # 2. Untuk semua rute Laravel (/login, /dashboard, dll), arahkan ke public/index.php
+    RewriteRule ^ public/index.php [L]
 </IfModule>
