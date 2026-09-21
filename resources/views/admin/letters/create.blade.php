@@ -513,6 +513,19 @@
                         </div>
                     </div>
 
+                    <!-- Opsi Pindahkan Paragraf Penutup ke Halaman Tanda Tangan -->
+                    <div class="pt-4 border-t border-gray-100">
+                        <label class="flex items-start gap-3 p-4 bg-orange-50/70 hover:bg-orange-50 rounded-2xl border border-orange-200 cursor-pointer transition">
+                            <input type="checkbox" name="break_closing_paragraph" value="1" {{ old('break_closing_paragraph') ? 'checked' : '' }} class="mt-1 rounded border-gray-300 text-sipega-orange focus:ring-sipega-orange w-4 h-4">
+                            <div>
+                                <span class="block text-xs font-black text-sipega-navy uppercase tracking-wider">📄 Pindahkan Paragraf Penutup & Tanda Tangan ke Halaman Baru</span>
+                                <span class="block text-[11px] text-gray-600 font-medium mt-0.5 leading-relaxed">
+                                    Aktifkan opsi ini jika jumlah personil banyak sehingga tanda tangan terpisah sendirian di halaman kedua. Paragraf penutup (<i>"Surat tugas ini dibuat untuk dilaksanakan..."</i>) akan dipindahkan bersama tanda tangan ke halaman berikutnya sehingga rapi dan tidak menggantung sendirian.
+                                </span>
+                            </div>
+                        </label>
+                    </div>
+
                     <div class="pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-end items-center gap-4">
                         <!-- Hidden action_type -->
                         <input type="hidden" name="action_type" id="actionType" value="save">

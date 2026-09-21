@@ -23,6 +23,7 @@ class Letter extends Model
         'invitation_subject',
         'dipa_source',
         'show_keterangan',
+        'break_closing_paragraph',
         'signatory_name',
         'signatory_nip',
         'signature_date_type',
@@ -35,6 +36,7 @@ class Letter extends Model
 
     protected $casts = [
         'show_keterangan' => 'boolean',
+        'break_closing_paragraph' => 'boolean',
         'invitation_date' => 'date',
         'date_start' => 'date',
         'date_end' => 'date',

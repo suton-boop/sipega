@@ -280,23 +280,29 @@
         @endif
     </div>
 
-    <div class="paragraf">
-        Surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab.
-    </div>
+    @if($letter->break_closing_paragraph)
+        <div class="page-break"></div>
+    @endif
 
-    <!-- TANDA TANGAN HALAMAN 1 -->
-    <table class="ttd-table">
-        <tr>
-            <td style="width: 58%;"></td>
-            <td style="width: 42%;">
-                <p>{{ $tglSurat }}</p>
-                <p>Kepala,</p>
-                <div class="stamp-area"></div>
-                <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
-                <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
-            </td>
-        </tr>
-    </table>
+    <div style="page-break-inside: avoid;">
+        <div class="paragraf" style="margin-top: {{ $letter->break_closing_paragraph ? '18pt' : '4px' }};">
+            Surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab.
+        </div>
+
+        <!-- TANDA TANGAN HALAMAN 1 -->
+        <table class="ttd-table">
+            <tr>
+                <td style="width: 58%;"></td>
+                <td style="width: 42%;">
+                    <p>{{ $tglSurat }}</p>
+                    <p>Kepala,</p>
+                    <div class="stamp-area"></div>
+                    <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
+                    <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
 
     <!-- PAGE BREAK MENUJU LAMPIRAN -->
     <div class="page-break"></div>
@@ -454,28 +460,34 @@
         </tr>
     </table>
 
-    <!-- DIPA & PENUTUP -->
-    <div class="paragraf" style="margin-top: 6px;">
-        @if($letter->dipa_source)
-            Kegiatan ini dibebankan pada {{ $letter->dipa_source }}, surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab dan membuat laporan setelah 5 hari kerja.
-        @else
-            Surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab dan membuat laporan setelah 5 hari kerja.
-        @endif
-    </div>
+    @if($letter->break_closing_paragraph)
+        <div class="page-break"></div>
+    @endif
 
-    <!-- TANDA TANGAN (PERSIS GAMBAR CONTOH RESMI: TANPA UNDERLINE, FONT REGULAR) -->
-    <table class="ttd-table">
-        <tr>
-            <td style="width: 58%;"></td>
-            <td style="width: 42%;">
-                <p>{{ $tglSurat }}</p>
-                <p>Kepala,</p>
-                <div class="stamp-area"></div>
-                <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
-                <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
-            </td>
-        </tr>
-    </table>
+    <div style="page-break-inside: avoid;">
+        <!-- DIPA & PENUTUP -->
+        <div class="paragraf" style="margin-top: {{ $letter->break_closing_paragraph ? '18pt' : '6px' }};">
+            @if($letter->dipa_source)
+                Kegiatan ini dibebankan pada {{ $letter->dipa_source }}, surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab dan membuat laporan setelah 5 hari kerja.
+            @else
+                Surat tugas ini dibuat untuk dilaksanakan dengan penuh tanggung jawab dan membuat laporan setelah 5 hari kerja.
+            @endif
+        </div>
+
+        <!-- TANDA TANGAN (PERSIS GAMBAR CONTOH RESMI: TANPA UNDERLINE, FONT REGULAR) -->
+        <table class="ttd-table">
+            <tr>
+                <td style="width: 58%;"></td>
+                <td style="width: 42%;">
+                    <p>{{ $tglSurat }}</p>
+                    <p>Kepala,</p>
+                    <div class="stamp-area"></div>
+                    <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
+                    <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
 
     <!-- NOTIS GRATIFIKASI HANYA DI HALAMAN TERAKHIR -->
     <div class="last-page-notice">
