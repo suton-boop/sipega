@@ -198,27 +198,28 @@
             line-height: 1.25;
         }
 
-        /* TANDA TANGAN (Jarak tanggal ke Kepala 1 spasi, Kepala ke Nama 4 spasi = 60pt, kelompok teks geser maju 0.5cm) */
-        .ttd-container {
+        /* TANDA TANGAN (PERSIS GAMBAR: Posisi mulai 58% dari kiri, 4 spasi ~55pt antara Kepala dan Nama) */
+        table.ttd-table {
             width: 100%;
-            margin-top: 14pt; /* 1 spasi dari paragraf penutup */
+            border-collapse: collapse;
+            margin-top: 18pt;
+            border: none;
             page-break-inside: avoid;
         }
-        .ttd-box {
-            float: right;
-            width: 250px;
-            padding-left: 2.5em; /* Geser maju 5 karakter huruf (5 x 0.5em = 2.5em / 30pt) */
-            text-align: left;
-            font-size: 12pt;
+        table.ttd-table td {
+            border: none;
+            padding: 0;
+            vertical-align: top;
         }
-        .ttd-box p {
+        table.ttd-table p {
             margin: 0;
-            line-height: 1.25; /* 1 spasi antara tanggal dan Kepala */
+            line-height: 1.25;
             white-space: nowrap;
             font-size: 12pt;
+            font-family: 'Bookman', 'Bookman Old Style', 'URW Bookman', serif;
         }
         .stamp-area {
-            height: 60pt; /* Tepat 4 spasi (4 baris x 15pt) antara Kepala dan Dr. Jarwoko, M. Pd */
+            height: 55pt; /* Tepat 4 spasi untuk stempel dan tanda tangan fisik persis seperti di gambar */
             position: relative;
         }
 
@@ -284,16 +285,18 @@
     </div>
 
     <!-- TANDA TANGAN HALAMAN 1 -->
-    <div class="ttd-container">
-        <div class="ttd-box">
-            <p>{{ $tglSurat }}</p>
-            <p>Kepala,</p>
-            <div class="stamp-area"></div>
-            <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
-            <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
-        </div>
-        <div style="clear: both;"></div>
-    </div>
+    <table class="ttd-table">
+        <tr>
+            <td style="width: 58%;"></td>
+            <td style="width: 42%;">
+                <p>{{ $tglSurat }}</p>
+                <p>Kepala,</p>
+                <div class="stamp-area"></div>
+                <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
+                <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
+            </td>
+        </tr>
+    </table>
 
     <!-- PAGE BREAK MENUJU LAMPIRAN -->
     <div class="page-break"></div>
@@ -345,15 +348,17 @@
     </table>
 
     <!-- TTD DI AKHIR LAMPIRAN -->
-    <div class="ttd-container">
-        <div class="ttd-box">
-            <p>KEPALA BPMP<br>PROVINSI KALIMANTAN TIMUR</p>
-            <div class="stamp-area"></div>
-            <p style="font-weight: bold; text-decoration: underline;">{{ strtoupper($letter->signatory_name ?? 'JARWOKO') }}</p>
-            <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
-        </div>
-        <div style="clear: both;"></div>
-    </div>
+    <table class="ttd-table">
+        <tr>
+            <td style="width: 58%;"></td>
+            <td style="width: 42%;">
+                <p>KEPALA BPMP<br>PROVINSI KALIMANTAN TIMUR</p>
+                <div class="stamp-area"></div>
+                <p style="font-weight: bold; text-decoration: underline;">{{ strtoupper($letter->signatory_name ?? 'JARWOKO') }}</p>
+                <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
+            </td>
+        </tr>
+    </table>
 
     <!-- NOTIS GRATIFIKASI HANYA DI HALAMAN TERAKHIR LAMPIRAN -->
     <div class="last-page-notice">
@@ -458,17 +463,19 @@
         @endif
     </div>
 
-    <!-- TANDA TANGAN (PERSIS GAMBAR 2: TANPA UNDERLINE, FONT REGULAR) -->
-    <div class="ttd-container">
-        <div class="ttd-box">
-            <p>{{ $tglSurat }}</p>
-            <p>Kepala,</p>
-            <div class="stamp-area"></div>
-            <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
-            <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
-        </div>
-        <div style="clear: both;"></div>
-    </div>
+    <!-- TANDA TANGAN (PERSIS GAMBAR CONTOH RESMI: TANPA UNDERLINE, FONT REGULAR) -->
+    <table class="ttd-table">
+        <tr>
+            <td style="width: 58%;"></td>
+            <td style="width: 42%;">
+                <p>{{ $tglSurat }}</p>
+                <p>Kepala,</p>
+                <div class="stamp-area"></div>
+                <p>{{ $letter->signatory_name ?? 'Dr. Jarwoko, M. Pd' }}</p>
+                <p>NIP. {{ $letter->signatory_nip ?? '197003191997031001' }}</p>
+            </td>
+        </tr>
+    </table>
 
     <!-- NOTIS GRATIFIKASI HANYA DI HALAMAN TERAKHIR -->
     <div class="last-page-notice">

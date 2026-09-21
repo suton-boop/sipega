@@ -63,18 +63,25 @@
             padding: 2px 0;
         }
 
-        .ttd-section {
+        table.ttd-table {
             width: 100%;
-            margin-top: 30px;
+            border-collapse: collapse;
+            margin-top: 25px;
+            border: none;
+            page-break-inside: avoid;
         }
-        .ttd-right {
-            float: right;
-            width: 230px;
-            padding-left: 2.5em; /* Geser maju 5 karakter huruf (5 x 0.5em = 2.5em / 30pt) */
-            text-align: left;
+        table.ttd-table td {
+            border: none;
+            padding: 0;
+            vertical-align: top;
+        }
+        table.ttd-table p {
+            margin: 0;
+            line-height: 1.25;
+            font-size: 11pt;
         }
         .stamp-space {
-            height: 60pt; /* Jarak 4 spasi (4 x 15pt) antara Kepala dan Dr. Jarwoko, M. Pd */
+            height: 55pt;
         }
 
         .page-break {
@@ -170,17 +177,19 @@
         </table>
     </div>
 
-    <div class="ttd-section">
-        <div class="ttd-right" style="margin-top: 20px;">
-            <p>Ditetapkan di Samarinda</p>
-            <p>Pada tanggal {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
-            <p>Kepala,</p>
-            <div class="stamp-space"></div>
-            <p style="font-weight: bold; text-decoration: underline;">Dr. Jarwoko, M.Pd</p>
-            <p>NIP 197003191997031001</p>
-        </div>
-        <div style="clear: both;"></div>
-    </div>
+    <table class="ttd-table">
+        <tr>
+            <td style="width: 58%;"></td>
+            <td style="width: 42%;">
+                <p>Ditetapkan di Samarinda</p>
+                <p>Pada tanggal {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
+                <p>Kepala,</p>
+                <div class="stamp-space"></div>
+                <p style="font-weight: bold; text-decoration: underline;">Dr. Jarwoko, M.Pd</p>
+                <p>NIP 197003191997031001</p>
+            </td>
+        </tr>
+    </table>
 
     <div class="page-break"></div>
 
