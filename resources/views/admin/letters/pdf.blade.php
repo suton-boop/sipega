@@ -206,8 +206,8 @@
         }
         .ttd-box {
             float: right;
-            width: 260px;
-            padding-left: 0.5cm;
+            width: 250px;
+            padding-left: 2.5em; /* Geser maju 5 karakter huruf (5 x 0.5em = 2.5em / 30pt) */
             text-align: left;
             font-size: 12pt;
         }

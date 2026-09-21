@@ -70,7 +70,7 @@
         .ttd-right {
             float: right;
             width: 230px;
-            padding-left: 0.5cm;
+            padding-left: 2.5em; /* Geser maju 5 karakter huruf (5 x 0.5em = 2.5em / 30pt) */
             text-align: left;
         }
         .stamp-space {
