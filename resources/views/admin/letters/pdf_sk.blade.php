@@ -69,11 +69,12 @@
         }
         .ttd-right {
             float: right;
-            width: 250px;
+            width: 230px;
+            padding-left: 0.5cm;
             text-align: left;
         }
         .stamp-space {
-            height: 70px;
+            height: 60pt; /* Jarak 4 spasi (4 x 15pt) antara Kepala dan Dr. Jarwoko, M. Pd */
         }
 
         .page-break {

@@ -198,7 +198,7 @@
             line-height: 1.25;
         }
 
-        /* TANDA TANGAN (Jarak tanggal ke Kepala 1 spasi, Kepala ke Nama 65px agar bisa tanda tangan) */
+        /* TANDA TANGAN (Jarak tanggal ke Kepala 1 spasi, Kepala ke Nama 4 spasi = 60pt, kelompok teks geser maju 0.5cm) */
         .ttd-container {
             width: 100%;
             margin-top: 14pt; /* 1 spasi dari paragraf penutup */
@@ -206,7 +206,8 @@
         }
         .ttd-box {
             float: right;
-            width: 280px;
+            width: 260px;
+            padding-left: 0.5cm;
             text-align: left;
             font-size: 12pt;
         }
@@ -217,7 +218,7 @@
             font-size: 12pt;
         }
         .stamp-area {
-            height: 65px; /* Jarak cukup luas untuk tanda tangan basah & stempel */
+            height: 60pt; /* Tepat 4 spasi (4 baris x 15pt) antara Kepala dan Dr. Jarwoko, M. Pd */
             position: relative;
         }
 
