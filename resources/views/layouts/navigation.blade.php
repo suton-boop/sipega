@@ -82,7 +82,7 @@
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Peralatan Manajemen</div>
                             <x-dropdown-link :href="route('users.index')" class="text-[11px] font-bold py-3 text-sipega-navy bg-orange-50/50 hover:bg-orange-100/50 flex items-center justify-between">
-                                <span>Data & Import Pegawai</span>
+                                <span>Data Pegawai</span>
                                 <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">NIP</span>
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('leader.agenda.index')" class="text-[11px] font-bold py-3">Monitoring & Penilaian</x-dropdown-link>
@@ -192,7 +192,7 @@
                 <span class="text-[7px] bg-sipega-navy text-white px-2 py-0.5 rounded tracking-widest">ADMIN</span>
             </div>
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')" class="text-xs font-bold py-3 ps-8 text-sipega-orange bg-orange-50/50">
-                {{ __('Data & Import Pegawai') }}
+                {{ __('Data Pegawai') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('leader.agenda.index')" :active="request()->routeIs('leader.agenda.index')" class="text-xs font-medium py-3 ps-8 text-sipega-navy">
                 {{ __('Monitoring & Penilaian') }}
