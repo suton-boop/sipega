@@ -18,7 +18,7 @@
         @method('patch')
 
         <div class="space-y-2">
-            <x-input-label for="profile_photo" :value="__('Pas Foto Kerja (Wall of Fame)'))" />
+            <x-input-label for="profile_photo" :value="__('Pas Foto Kerja (Wall of Fame)')" />
             <div class="flex items-center gap-4 py-2">
                 @if($user->profile_photo_path)
                     <img src="{{ asset('storage/' . $user->profile_photo_path) }}" class="h-16 w-16 rounded-full object-cover border-2 border-sipega-navy">
