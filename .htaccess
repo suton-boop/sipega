@@ -1,10 +1,12 @@
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
-
     RewriteEngine On
 
-    # Mengalihkan semua request ke folder public/
+    # 1. Jika request mengarah ke file fisik nyata (CSS, JS, Gambar, Dokumen), sajikan langsung
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^(.*)$ public/$1 [L]
+
+    # 2. Untuk semua rute Laravel (/login, /dashboard, dll), arahkan ke public/index.php
+    RewriteRule ^ public/index.php [L]
 </IfModule>

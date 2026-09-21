@@ -81,9 +81,9 @@
         <header class="fixed top-0 left-0 right-0 z-[100] px-4">
             <div class="glass-header py-4 px-8 flex justify-between items-center">
                 <div class="flex items-center">
-                    <img src="{{ asset('images/Logo Kemendikdasmen BPMP Kaltim.png') }}" class="h-10 w-auto" alt="Kemendikdasmen">
+                    <img src="{{ asset('images/logo-kemendikdasmen-bpmp-kaltim.png') }}" class="h-10 w-auto" alt="Kemendikdasmen">
                     <div class="official-divider"></div>
-                    <img src="{{ asset('images/jenaman SIPEGA.png') }}" class="h-8 w-auto" alt="SIPEGA">
+                    <img src="{{ asset('images/jenaman-sipega.png') }}" class="h-8 w-auto" alt="SIPEGA">
                 </div>
                 
                 <nav class="hidden lg:flex items-center gap-10">
@@ -141,7 +141,7 @@
         <footer class="py-24 bg-sipega-deep border-t border-white/5 relative">
             <div class="max-w-7xl mx-auto px-6 text-center">
                 <div class="flex flex-col items-center gap-10">
-                    <img src="{{ asset('images/logo Sipega.png') }}" class="h-16 w-auto opacity-40 grayscale -mb-10 invert">
+                    <img src="{{ asset('images/logo-sipega.png') }}" class="h-16 w-auto opacity-40 grayscale -mb-10 invert">
                     <p class="text-[9px] font-bold text-white/10 uppercase tracking-[1em]">
                         &copy; 2026 BPMP KALIMANTAN TIMUR
                     </p>

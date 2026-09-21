@@ -108,7 +108,7 @@
 
     <!-- KOP SURAT (Full Image) -->
     <div class="kop">
-        <img src="{{ public_path('images/Kop Surat BPMP Kaltim 2026 oke.png') }}" style="width: 100%;">
+        <img src="{{ public_path('images/kop-surat-bpmp-kaltim-2026.png') }}" style="width: 100%;">
     </div>
 
     <div class="judul-container">
@@ -214,8 +214,8 @@
     </table>
 
     <div class="footer-banner">
-        @if(file_exists(public_path('images/footer bpmp.png')))
-            <img src="{{ public_path('images/footer bpmp.png') }}">
+        @if(file_exists(public_path('images/footer-bpmp.png')))
+            <img src="{{ public_path('images/footer-bpmp.png') }}">
         @endif
     </div>
 

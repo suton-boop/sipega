@@ -5,10 +5,10 @@
     <title>Surat Tugas - {{ $letter->number }}</title>
     @php
         // Konversi Gambar ke Base64 Data URI agar 100% tampil di DomPDF tanpa masalah path Windows/Linux
-        $kopPath = public_path('images/Kop Surat BPMP Kaltim 2026 oke.png');
+        $kopPath = public_path('images/kop-surat-bpmp-kaltim-2026.png');
         $kopBase64 = file_exists($kopPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($kopPath)) : '';
 
-        $footerPath = public_path('images/Footer BPMP ZIWBK.png');
+        $footerPath = public_path('images/footer-bpmp-ziwbk.png');
         $footerBase64 = file_exists($footerPath) ? 'data:image/png;base64,' . base64_encode(file_get_contents($footerPath)) : '';
 
         // Konversi Font Bookman ke Base64 agar selalu tersedia di hosting / local

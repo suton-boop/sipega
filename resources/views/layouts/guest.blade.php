@@ -69,9 +69,9 @@
                 
                 <!-- Official Header Branding -->
                 <div class="mb-14 text-center w-full flex items-center justify-center">
-                    <img src="{{ asset('images/Logo Kemendikdasmen BPMP Kaltim.png') }}" class="h-14 w-auto drop-shadow-sm" alt="Logo Kemendikdasmen">
+                    <img src="{{ asset('images/logo-kemendikdasmen-bpmp-kaltim.png') }}" class="h-14 w-auto drop-shadow-sm" alt="Logo Kemendikdasmen">
                     <div class="official-divider"></div>
-                    <img src="{{ asset('images/jenaman SIPEGA.png') }}" class="h-10 w-auto opacity-100" alt="Jenaman SIPEGA">
+                    <img src="{{ asset('images/jenaman-sipega.png') }}" class="h-10 w-auto opacity-100" alt="Jenaman SIPEGA">
                 </div>
 
                 <div class="w-full">
@@ -81,7 +81,7 @@
                 <!-- Footer Logos -->
                 <div class="mt-14 w-full border-t border-gray-100 pt-12">
                     <div class="flex justify-center items-center gap-10 opacity-70">
-                         <img src="{{ asset('images/ramah bermutu.png') }}" class="h-12 w-auto grayscale hover:grayscale-0 transition-all cursor-pointer">
+                         <img src="{{ asset('images/ramah-bermutu.png') }}" class="h-12 w-auto grayscale hover:grayscale-0 transition-all cursor-pointer">
                     </div>
                     
                     <p class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-[0.4em] leading-relaxed mt-10">
