@@ -9,9 +9,10 @@ export default defineConfig({
         }),
     ],
     server: {
-        host: '0.0.0.0', // Atau '192.168.1.13'
+        host: '0.0.0.0',
         hmr: {
-            host: '192.168.1.13'
-        }
+            host: 'localhost'
+        },
+        cors: true
     }
 });
