@@ -158,17 +158,99 @@
                             </select>
                         </div>
 
-                        <!-- Filter Jabatan -->
-                        <div>
-                            <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                                <span>💼</span> Filter Jabatan
+                        <!-- Filter Jabatan (Bisa Pilih Banyak) -->
+                        <div x-data="{ 
+                                openPos: false, 
+                                searchPos: '',
+                                selectedPositions: @json($selectedJabatan),
+                                togglePos(pos) {
+                                    if (this.selectedPositions.includes(pos)) {
+                                        this.selectedPositions = this.selectedPositions.filter(p => p !== pos);
+                                    } else {
+                                        this.selectedPositions.push(pos);
+                                    }
+                                },
+                                isChecked(pos) {
+                                    return this.selectedPositions.includes(pos);
+                                },
+                                selectAllPos() {
+                                    this.selectedPositions = @json($availablePositions);
+                                },
+                                clearPos() {
+                                    this.selectedPositions = [];
+                                }
+                             }"
+                             @click.outside="openPos = false" 
+                             class="relative">
+                            
+                            <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
+                                <span class="flex items-center gap-1.5"><span>💼</span> Filter Jabatan</span>
+                                <span class="text-[9px] font-bold text-sipega-orange bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">Multi-Pilih</span>
                             </label>
-                            <select name="jabatan" class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
-                                <option value="all">-- Semua Jabatan --</option>
-                                @foreach($availablePositions as $pos)
-                                    <option value="{{ $pos }}" {{ $selectedJabatan === $pos ? 'selected' : '' }}>{{ $pos }}</option>
-                                @endforeach
-                            </select>
+
+                            <!-- Trigger Button -->
+                            <button type="button" 
+                                    @click="openPos = !openPos" 
+                                    class="w-full text-left text-xs font-bold rounded-2xl border border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3 bg-white flex items-center justify-between shadow-sm hover:border-gray-300 transition">
+                                <div class="truncate pr-2">
+                                    <template x-if="selectedPositions.length === 0">
+                                        <span class="text-gray-500">Semua Jabatan</span>
+                                    </template>
+                                    <template x-if="selectedPositions.length === 1">
+                                        <span class="text-sipega-navy font-black truncate block" x-text="selectedPositions[0]"></span>
+                                    </template>
+                                    <template x-if="selectedPositions.length > 1">
+                                        <span class="text-sipega-navy font-black flex items-center gap-1.5">
+                                            <span class="px-2 py-0.5 bg-sipega-orange text-white rounded-lg text-[10px] font-black" x-text="selectedPositions.length"></span>
+                                            <span class="truncate" x-text="selectedPositions[0] + ', +' + (selectedPositions.length - 1) + ' lainnya'"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                                <svg class="w-4 h-4 text-gray-400 transition-transform duration-200 shrink-0" :class="openPos ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </button>
+
+                            <!-- Hidden inputs for form submission -->
+                            <template x-for="pos in selectedPositions" :key="pos">
+                                <input type="hidden" name="jabatan[]" :value="pos">
+                            </template>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="openPos" 
+                                 x-transition 
+                                 x-cloak
+                                 class="absolute z-50 mt-2 w-full sm:w-[320px] bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 space-y-2">
+                                
+                                <!-- Search inside dropdown -->
+                                <input type="text" 
+                                       x-model="searchPos" 
+                                       placeholder="Cari jabatan..." 
+                                       class="w-full text-xs font-bold rounded-xl border-gray-200 px-3 py-2 bg-gray-50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange">
+                                
+                                <!-- Action Buttons: Select All & Clear -->
+                                <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-wider pt-1 border-b border-gray-100 pb-2">
+                                    <button type="button" @click="selectAllPos()" class="text-emerald-700 hover:text-emerald-800">
+                                        ✓ Pilih Semua
+                                    </button>
+                                    <button type="button" @click="clearPos()" class="text-gray-400 hover:text-red-600">
+                                        ✕ Kosongkan
+                                    </button>
+                                </div>
+
+                                <!-- Checkbox List -->
+                                <div class="max-h-56 overflow-y-auto space-y-1 pr-1 divide-y divide-gray-50">
+                                    @foreach($availablePositions as $pos)
+                                        <label x-show="!searchPos || '{{ strtolower(addslashes($pos)) }}'.includes(searchPos.toLowerCase())" 
+                                               class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-orange-50/60 cursor-pointer transition text-xs font-bold text-gray-700">
+                                            <input type="checkbox" 
+                                                   value="{{ $pos }}" 
+                                                   @change="togglePos('{{ addslashes($pos) }}')" 
+                                                   :checked="isChecked('{{ addslashes($pos) }}')"
+                                                   class="rounded text-sipega-orange focus:ring-sipega-orange w-4 h-4 cursor-pointer">
+                                            <span class="leading-tight">{{ $pos }}</span>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -222,6 +304,27 @@
                             </span>
                         </div>
                         <p class="text-xs text-gray-400 font-bold mt-1">Centang pegawai untuk menyusun draft tim tugas dan langsung meneruskannya ke pembuatan Surat Tugas.</p>
+                        
+                        @if(count($selectedJabatan) > 0 || $selectedGugus !== 'all' || !empty($search))
+                            <div class="flex flex-wrap items-center gap-1.5 mt-2.5">
+                                <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 mr-1">Filter Aktif:</span>
+                                @foreach($selectedJabatan as $sj)
+                                    <span class="px-2.5 py-0.5 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-[10px] font-bold">
+                                        💼 {{ $sj }}
+                                    </span>
+                                @endforeach
+                                @if($selectedGugus !== 'all')
+                                    <span class="px-2.5 py-0.5 bg-blue-50 text-blue-900 border border-blue-200 rounded-lg text-[10px] font-bold">
+                                        🏛️ {{ $selectedGugus }}
+                                    </span>
+                                @endif
+                                @if(!empty($search))
+                                    <span class="px-2.5 py-0.5 bg-gray-100 text-gray-800 rounded-lg text-[10px] font-bold">
+                                        🔍 "{{ $search }}"
+                                    </span>
+                                @endif
+                            </div>
+                        @endif
                     </div>
 
                     <!-- Tombol Cepat Seleksi -->

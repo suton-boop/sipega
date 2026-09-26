@@ -28,7 +28,14 @@ class DutySimulationController extends Controller
             $dateEnd = $dateStart;
         }
 
-        $selectedJabatan = $request->get('jabatan', 'all');
+        $rawJabatan = $request->get('jabatan', []);
+        if (is_string($rawJabatan)) {
+            $selectedJabatan = ($rawJabatan === 'all' || empty($rawJabatan)) ? [] : [$rawJabatan];
+        } else {
+            $selectedJabatan = is_array($rawJabatan) ? $rawJabatan : [];
+        }
+        $selectedJabatan = array_values(array_filter($selectedJabatan, fn($j) => $j !== 'all' && !empty($j)));
+
         $selectedGugus = $request->get('gugus_mutu', 'all');
         $selectedStatus = $request->get('status', 'all'); // 'all', 'available', 'busy'
         $search = trim($request->get('search', ''));
@@ -72,8 +79,8 @@ class DutySimulationController extends Controller
             });
         }
 
-        if ($selectedJabatan !== 'all' && !empty($selectedJabatan)) {
-            $userQuery->where('position', $selectedJabatan);
+        if (!empty($selectedJabatan)) {
+            $userQuery->whereIn('position', $selectedJabatan);
         }
 
         if ($selectedGugus !== 'all' && !empty($selectedGugus)) {
