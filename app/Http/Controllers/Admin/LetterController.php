@@ -64,6 +64,21 @@ class LetterController extends Controller
         return view('admin.letters.index', compact('letters', 'stats'));
     }
 
+    public function show($id)
+    {
+        $letter = Letter::with(['users', 'creator'])->findOrFail($id);
+
+        // Jika role Pegawai, pastikan dia ditugaskan di surat ini atau suratnya berstatus Approved
+        if (auth()->user()->role === 'Pegawai') {
+            $isAssigned = $letter->users->contains('id', auth()->id());
+            if (!$isAssigned && $letter->status !== 'Approved') {
+                return abort(403, 'Akses Ditolak: Anda tidak terdaftar pada penugasan surat ini.');
+            }
+        }
+
+        return view('admin.letters.show', compact('letter'));
+    }
+
     public function create()
     {
         $users = User::orderBy('name')->get();
