@@ -74,16 +74,20 @@
                     <!-- Group 3: ADMINISTRASI -->
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*') ? 'text-white bg-sipega-orange rounded-full' : '' }}">
+                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*', 'duty-simulation.*') ? 'text-white bg-sipega-orange rounded-full' : '' }}">
                                 <span>Console</span>
                                 <svg class="ms-1.5 h-3 w-3 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
                             </button>
                         </x-slot>
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Peralatan Manajemen</div>
-                            <x-dropdown-link :href="route('users.index')" class="text-[11px] font-bold py-3 text-sipega-navy bg-orange-50/50 hover:bg-orange-100/50 flex items-center justify-between">
+                            <x-dropdown-link :href="route('duty-simulation.index')" class="text-[11px] font-bold py-3 text-sipega-navy bg-orange-50/60 hover:bg-orange-100/60 flex items-center justify-between border-b border-gray-50">
+                                <span>Simulasi Surat Tugas</span>
+                                <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">SIMULASI</span>
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('users.index')" class="text-[11px] font-bold py-3 text-sipega-navy hover:bg-orange-50/50 flex items-center justify-between">
                                 <span>Data Pegawai</span>
-                                <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">NIP</span>
+                                <span class="text-[8px] bg-sipega-navy text-white px-2 py-0.5 rounded-full font-black">NIP</span>
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('leader.agenda.index')" class="text-[11px] font-bold py-3">Monitoring & Penilaian</x-dropdown-link>
                             <x-dropdown-link :href="route('travel.recap')" class="text-[11px] font-bold py-3">Rekap Dinas Luar</x-dropdown-link>
@@ -191,7 +195,10 @@
                 <span>DASHBOARD MANAJEMEN</span>
                 <span class="text-[7px] bg-sipega-navy text-white px-2 py-0.5 rounded tracking-widest">ADMIN</span>
             </div>
-            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')" class="text-xs font-bold py-3 ps-8 text-sipega-orange bg-orange-50/50">
+            <x-responsive-nav-link :href="route('duty-simulation.index')" :active="request()->routeIs('duty-simulation.*')" class="text-xs font-bold py-3 ps-8 text-sipega-orange bg-orange-50/50">
+                {{ __('Simulasi Surat Tugas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')" class="text-xs font-medium py-3 ps-8 text-sipega-navy">
                 {{ __('Data Pegawai') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('leader.agenda.index')" :active="request()->routeIs('leader.agenda.index')" class="text-xs font-medium py-3 ps-8 text-sipega-navy">

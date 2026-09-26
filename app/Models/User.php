@@ -18,6 +18,7 @@ class User extends Authenticatable
         'password', 
         'role', 
         'position',      // Jabatan
+        'gugus_mutu',    // Gugus Mutu (GM 1 s.d GM 5)
         'golongan',      // Pangkat/Golongan
         'nip', 
         'grade',         // KJ

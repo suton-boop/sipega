@@ -16,6 +16,7 @@ use App\Http\Controllers\CalendarController;
 use App\Http\Controllers\LocationController;
 use App\Http\Controllers\TravelRecapController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\DutySimulationController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page: Korporat & Institusional (SIPEGA-Elite)
@@ -97,6 +98,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // REKAP DINAS LUAR (External & Internal)
     Route::get('/recap/travel', [TravelRecapController::class, 'index'])->name('travel.recap');
+
+    // SIMULASI SURAT TUGAS (Console Perencanaan Tugas)
+    Route::get('/duty-simulation', [DutySimulationController::class, 'index'])->name('duty-simulation.index');
 
     // SURAT-SURAT (SK/ST Admin-Pro)
     Route::get('/letters/check-conflicts', [LetterController::class, 'checkConflicts'])->name('letters.check_conflicts');

@@ -70,6 +70,9 @@ class UserController extends Controller
         
         $request->validate([
             'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
+            'position' => 'nullable|string|max:255',
+            'gugus_mutu' => 'nullable|string|max:100',
+            'golongan' => 'nullable|string|max:50',
             'drive_folder_url' => 'nullable|url',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -80,6 +83,15 @@ class UserController extends Controller
         }
 
         $user->role = $request->role;
+        if ($request->has('position')) {
+            $user->position = $request->position;
+        }
+        if ($request->has('gugus_mutu')) {
+            $user->gugus_mutu = $request->gugus_mutu;
+        }
+        if ($request->has('golongan')) {
+            $user->golongan = $request->golongan;
+        }
         $user->drive_folder_url = $request->drive_folder_url;
         
         // Handle Switch Toggle "Status Aktif"
@@ -170,6 +182,9 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'nip' => 'required|string|unique:users',
             'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
+            'position' => 'nullable|string|max:255',
+            'gugus_mutu' => 'nullable|string|max:100',
+            'golongan' => 'nullable|string|max:50',
             'password' => 'required|string|min:8',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -184,6 +199,9 @@ class UserController extends Controller
             'email' => $request->email,
             'nip' => $request->nip,
             'role' => $request->role,
+            'position' => $request->position,
+            'gugus_mutu' => $request->gugus_mutu,
+            'golongan' => $request->golongan,
             'password' => Hash::make($request->password),
             'is_active' => true,
             'photo' => $photoPath,

@@ -77,6 +77,24 @@
                                     </select>
                                 </div>
 
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Jabatan</label>
+                                        <input type="text" name="position" class="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-sipega-navy" placeholder="Widyaprada Ahli Madya">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Gugus Mutu</label>
+                                        <select name="gugus_mutu" class="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-sipega-navy">
+                                            <option value="">-- Pilih Gugus Mutu --</option>
+                                            <option value="GM 1 - PAUD & Kesetaraan">GM 1 - PAUD & Kesetaraan</option>
+                                            <option value="GM 2 - Sekolah Dasar (SD)">GM 2 - Sekolah Dasar (SD)</option>
+                                            <option value="GM 3 - SMP">GM 3 - SMP</option>
+                                            <option value="GM 4 - SMA, SMK & SLB">GM 4 - SMA, SMK & SLB</option>
+                                            <option value="GM 5 - Tata Usaha & Kemitraan">GM 5 - Tata Usaha & Kemitraan</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div>
                                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Password Default</label>
                                     <input type="password" name="password" required value="12345678" class="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-sipega-navy">
@@ -328,16 +346,21 @@
                                             {{ $u->nip ?? '-' }}
                                         </div>
                                         @if($u->position)
-                                            <div class="text-xs font-bold text-gray-500 leading-tight mb-1">
+                                            <div class="text-xs font-bold text-gray-600 leading-tight mb-1">
                                                 {{ $u->position }}
                                             </div>
                                         @endif
-                                        <div class="flex items-center gap-2 text-[10px] text-gray-400 font-bold">
+                                        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                                            @if($u->gugus_mutu)
+                                                <span class="px-2.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                                    🏛️ {{ $u->gugus_mutu }}
+                                                </span>
+                                            @endif
                                             @if($u->golongan)
-                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 font-black">Gol: {{ $u->golongan }}</span>
+                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 text-[10px] font-black">Gol: {{ $u->golongan }}</span>
                                             @endif
                                             @if($u->grade)
-                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 font-black">KJ: {{ $u->grade }}</span>
+                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 text-[10px] font-black">KJ: {{ $u->grade }}</span>
                                             @endif
                                         </div>
                                     </td>
@@ -375,6 +398,29 @@
                                                 <div>
                                                     <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Update Foto</label>
                                                     <input type="file" name="photo" class="text-[9px] text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-gray-100 file:text-sipega-navy cursor-pointer">
+                                                </div>
+
+                                                <div class="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Jabatan</label>
+                                                        <input type="text" name="position" value="{{ $u->position }}" placeholder="Jabatan..." class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                    </div>
+                                                    <div>
+                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Golongan</label>
+                                                        <input type="text" name="golongan" value="{{ $u->golongan }}" placeholder="Contoh: IV/a" class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Gugus Mutu</label>
+                                                    <select name="gugus_mutu" class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                        <option value="">- Tanpa Gugus Mutu -</option>
+                                                        <option value="GM 1 - PAUD & Kesetaraan" {{ $u->gugus_mutu == 'GM 1 - PAUD & Kesetaraan' ? 'selected' : '' }}>GM 1 - PAUD & Kesetaraan</option>
+                                                        <option value="GM 2 - Sekolah Dasar (SD)" {{ $u->gugus_mutu == 'GM 2 - Sekolah Dasar (SD)' ? 'selected' : '' }}>GM 2 - Sekolah Dasar (SD)</option>
+                                                        <option value="GM 3 - SMP" {{ $u->gugus_mutu == 'GM 3 - SMP' ? 'selected' : '' }}>GM 3 - SMP</option>
+                                                        <option value="GM 4 - SMA, SMK & SLB" {{ $u->gugus_mutu == 'GM 4 - SMA, SMK & SLB' ? 'selected' : '' }}>GM 4 - SMA, SMK & SLB</option>
+                                                        <option value="GM 5 - Tata Usaha & Kemitraan" {{ $u->gugus_mutu == 'GM 5 - Tata Usaha & Kemitraan' ? 'selected' : '' }}>GM 5 - Tata Usaha & Kemitraan</option>
+                                                    </select>
                                                 </div>
 
                                                 <div class="grid grid-cols-2 gap-4">

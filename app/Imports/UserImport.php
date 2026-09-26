@@ -43,6 +43,7 @@ class UserImport implements ToModel, WithHeadingRow
         }
 
         $position = trim($row['jabatan'] ?? $row['position'] ?? '');
+        $gugusMutu = trim($row['gugus_mutu'] ?? $row['gugus'] ?? '');
         $golongan = trim($row['golongan'] ?? $row['pangkat'] ?? '');
         $grade = trim($row['kj'] ?? $row['grade'] ?? '');
 
@@ -54,14 +55,15 @@ class UserImport implements ToModel, WithHeadingRow
 
         if ($user) {
             $user->update([
-                'name'      => $name,
-                'email'     => $email,
-                'password'  => $passwordHashed,
-                'role'      => $role,
-                'position'  => $position ?: $user->position,
-                'golongan'  => $golongan ?: $user->golongan,
-                'grade'     => $grade ?: $user->grade,
-                'is_active' => true,
+                'name'        => $name,
+                'email'       => $email,
+                'password'    => $passwordHashed,
+                'role'        => $role,
+                'position'    => $position ?: $user->position,
+                'gugus_mutu'  => $gugusMutu ?: $user->gugus_mutu,
+                'golongan'    => $golongan ?: $user->golongan,
+                'grade'       => $grade ?: $user->grade,
+                'is_active'   => true,
             ]);
 
             if (method_exists($user, 'syncRoles')) {
@@ -74,15 +76,16 @@ class UserImport implements ToModel, WithHeadingRow
         }
 
         $newUser = new User([
-            'name'      => $name,
-            'nip'       => $nip,
-            'email'     => $email,
-            'password'  => $passwordHashed,
-            'role'      => $role,
-            'position'  => $position,
-            'golongan'  => $golongan,
-            'grade'     => $grade,
-            'is_active' => true,
+            'name'        => $name,
+            'nip'         => $nip,
+            'email'       => $email,
+            'password'    => $passwordHashed,
+            'role'        => $role,
+            'position'    => $position,
+            'gugus_mutu'  => $gugusMutu,
+            'golongan'    => $golongan,
+            'grade'       => $grade,
+            'is_active'   => true,
         ]);
 
         return $newUser;

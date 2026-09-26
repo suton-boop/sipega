@@ -649,16 +649,56 @@
     </div>
 
     <!-- SCRIPT AUTO-FILL & INTERAKSI MODEL -->
+    @php
+        $incomingUserIds = (array) request('users', []);
+        $initialParticipants = [];
+        if (!empty($incomingUserIds)) {
+            foreach ($incomingUserIds as $uid) {
+                $userFound = $users->firstWhere('id', (int)$uid);
+                if ($userFound) {
+                    $initialParticipants[] = [
+                        'user_id' => (string)$userFound->id,
+                        'nip' => ($userFound->nip && $userFound->nip !== '-') ? $userFound->nip : '',
+                        'golongan' => $userFound->golongan ?: 'Pembina, IV/a',
+                        'position' => $userFound->position ?: 'Widyaprada Ahli Madya',
+                        'custom_role' => 'Narasumber',
+                        'keterangan' => '',
+                        'city_destination' => '',
+                        'venue' => '',
+                        'execution_dates' => '',
+                        'person_in_charge' => 'Dr. Jarwoko, M.Pd.'
+                    ];
+                }
+            }
+        }
+        if (empty($initialParticipants)) {
+            $initialParticipants = [
+                [
+                    'user_id' => '',
+                    'nip' => '',
+                    'golongan' => '',
+                    'position' => '',
+                    'custom_role' => 'Narasumber',
+                    'keterangan' => '',
+                    'city_destination' => '',
+                    'venue' => '',
+                    'execution_dates' => '',
+                    'person_in_charge' => 'Dr. Jarwoko, M.Pd.'
+                ]
+            ];
+        }
+        $defaultModel = count($incomingUserIds) > 1 ? 'model_2' : 'model_1';
+    @endphp
     <script>
         // Master Data Pegawai dari Server
         const allUsersData = @json($users);
 
         function suratTugasApp() {
             return {
-                selectedModel: '{{ old('st_model', 'model_1') }}',
+                selectedModel: '{{ old('st_model', $defaultModel) }}',
                 category: '{{ old('category', 'DLK') }}',
-                dateStart: '{{ old('date_start', date('Y-m-d')) }}',
-                dateEnd: '{{ old('date_end', date('Y-m-d')) }}',
+                dateStart: '{{ old('date_start', request('date_start', date('Y-m-d'))) }}',
+                dateEnd: '{{ old('date_end', request('date_end', request('date_start', date('Y-m-d')))) }}',
                 locationText: '{{ old('location', '') }}',
                 showKeterangan: {{ old('show_keterangan') ? 'true' : 'false' }},
                 useDipa: {{ old('dipa_source') ? 'true' : 'false' }},
@@ -671,20 +711,7 @@
                     open: false,
                     data: null
                 },
-                participants: [
-                    {
-                        user_id: '',
-                        nip: '',
-                        golongan: '',
-                        position: '',
-                        custom_role: 'Narasumber',
-                        keterangan: '',
-                        city_destination: '',
-                        venue: '',
-                        execution_dates: '',
-                        person_in_charge: 'Dr. Jarwoko, M.Pd.'
-                    }
-                ],
+                participants: @json($initialParticipants),
 
                 init() {
                     if (this.selectedModel === 'model_5') {
