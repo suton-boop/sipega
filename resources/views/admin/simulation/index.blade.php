@@ -159,29 +159,7 @@
                         </div>
 
                         <!-- Filter Jabatan (Bisa Pilih Banyak) -->
-                        <div x-data="{ 
-                                openPos: false, 
-                                searchPos: '',
-                                selectedPositions: @json($selectedJabatan),
-                                togglePos(pos) {
-                                    if (this.selectedPositions.includes(pos)) {
-                                        this.selectedPositions = this.selectedPositions.filter(p => p !== pos);
-                                    } else {
-                                        this.selectedPositions.push(pos);
-                                    }
-                                },
-                                isChecked(pos) {
-                                    return this.selectedPositions.includes(pos);
-                                },
-                                selectAllPos() {
-                                    this.selectedPositions = @json($availablePositions);
-                                },
-                                clearPos() {
-                                    this.selectedPositions = [];
-                                }
-                             }"
-                             @click.outside="openPos = false" 
-                             class="relative">
+                        <div x-data="jabatanFilterApp()" @click.outside="openPos = false" class="relative">
                             
                             <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2 flex items-center justify-between">
                                 <span class="flex items-center gap-1.5"><span>💼</span> Filter Jabatan</span>
@@ -199,7 +177,7 @@
                                     <template x-if="selectedPositions.length === 1">
                                         <span class="text-sipega-navy font-black truncate block" x-text="selectedPositions[0]"></span>
                                     </template>
-                                    <template x-if="selectedPositions.length > 1">
+                                    <template x-if="selectedPositions.length >= 2">
                                         <span class="text-sipega-navy font-black flex items-center gap-1.5">
                                             <span class="px-2 py-0.5 bg-sipega-orange text-white rounded-lg text-[10px] font-black" x-text="selectedPositions.length"></span>
                                             <span class="truncate" x-text="selectedPositions[0] + ', +' + (selectedPositions.length - 1) + ' lainnya'"></span>
@@ -238,17 +216,17 @@
 
                                 <!-- Checkbox List -->
                                 <div class="max-h-56 overflow-y-auto space-y-1 pr-1 divide-y divide-gray-50">
-                                    @foreach($availablePositions as $pos)
-                                        <label x-show="!searchPos || '{{ strtolower(addslashes($pos)) }}'.includes(searchPos.toLowerCase())" 
+                                    <template x-for="pos in allPositions" :key="pos">
+                                        <label x-show="posMatches(pos)" 
                                                class="flex items-center gap-2.5 p-2 rounded-xl hover:bg-orange-50/60 cursor-pointer transition text-xs font-bold text-gray-700">
                                             <input type="checkbox" 
-                                                   value="{{ $pos }}" 
-                                                   @change="togglePos('{{ addslashes($pos) }}')" 
-                                                   :checked="isChecked('{{ addslashes($pos) }}')"
+                                                   :value="pos" 
+                                                   @change="togglePos(pos)" 
+                                                   :checked="isChecked(pos)"
                                                    class="rounded text-sipega-orange focus:ring-sipega-orange w-4 h-4 cursor-pointer">
-                                            <span class="leading-tight">{{ $pos }}</span>
+                                            <span class="leading-tight" x-text="pos"></span>
                                         </label>
-                                    @endforeach
+                                    </template>
                                 </div>
                             </div>
                         </div>
@@ -579,6 +557,36 @@
                     window.location.href = `{{ route('letters.create') }}?${params.toString()}`;
                 }
             }
+        }
+
+        function jabatanFilterApp() {
+            return {
+                openPos: false,
+                searchPos: '',
+                selectedPositions: @json($selectedJabatan),
+                allPositions: @json($availablePositions),
+                togglePos(pos) {
+                    const idx = this.selectedPositions.indexOf(pos);
+                    if (idx !== -1) {
+                        this.selectedPositions.splice(idx, 1);
+                    } else {
+                        this.selectedPositions.push(pos);
+                    }
+                },
+                isChecked(pos) {
+                    return this.selectedPositions.indexOf(pos) !== -1;
+                },
+                selectAllPos() {
+                    this.selectedPositions = [...this.allPositions];
+                },
+                clearPos() {
+                    this.selectedPositions = [];
+                },
+                posMatches(pos) {
+                    if (!this.searchPos) return true;
+                    return pos.toLowerCase().indexOf(this.searchPos.toLowerCase()) !== -1;
+                }
+            };
         }
     </script>
 </x-app-layout>
