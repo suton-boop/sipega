@@ -13,8 +13,13 @@ class TravelRecapController extends Controller
     {
         $year = $request->year ?? date('Y');
 
-        // Mengambil seluruh pegawai riil (di luar Administrator / Pimpinan / Sekpri)
-        $pegawai = User::realPegawai()->orderBy('name')->get();
+        // Jika role Pegawai, hanya tampilkan rekap perjalanan dinas milik pegawai tersebut
+        if (auth()->user()->role === 'Pegawai') {
+            $pegawai = User::where('id', auth()->id())->get();
+        } else {
+            // Mengambil seluruh pegawai riil (di luar Administrator / Pimpinan / Sekpri)
+            $pegawai = User::realPegawai()->orderBy('name')->get();
+        }
 
         $fullRecap = $pegawai->map(function ($user) use ($year) {
             // Hitung Surat Tugas Approved per Kategori

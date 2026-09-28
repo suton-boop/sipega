@@ -29,8 +29,12 @@
             <!-- SECTION 1: REKAPITULASI AKTIF (ADA DINAS LUAR) -->
             <div class="bg-white overflow-hidden shadow-2xl sm:rounded-[3rem] border border-gray-100 relative group">
                 <div class="p-8 border-b border-gray-50 bg-gray-50/50">
-                    <h3 class="text-xl font-black text-sipega-navy italic">🥇 Peringkat Mobilitas Pegawai (Aktif Mandat)</h3>
-                    <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">Daftar pegawai yang aktif menjalankan tugas luar (Formal & Internal) Periode {{ $year }}</p>
+                    <h3 class="text-xl font-black text-sipega-navy italic">
+                        {{ auth()->user()->role === 'Pegawai' ? '📊 Rekapitulasi Dinas Luar Saya' : '🥇 Peringkat Mobilitas Pegawai (Aktif Mandat)' }}
+                    </h3>
+                    <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">
+                        {{ auth()->user()->role === 'Pegawai' ? 'Akumulasi tugas dinas luar (Formal & Internal) yang Anda laksanakan pada Periode ' . $year : 'Daftar pegawai yang aktif menjalankan tugas luar (Formal & Internal) Periode ' . $year }}
+                    </p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
@@ -74,6 +78,7 @@
                 </div>
             </div>
 
+            @if(auth()->user()->role !== 'Pegawai')
             <!-- SECTION 2: REKAPITULASI STANDBY (TIDAK PERNAH DINAS LUAR) -->
             <div class="bg-gray-50 overflow-hidden shadow-inner sm:rounded-[3rem] p-10 border-4 border-dashed border-gray-200">
                 <div class="mb-10 text-center">
@@ -102,6 +107,7 @@
                     @endforelse
                 </div>
             </div>
+            @endif
 
             <!-- Summary Footer -->
             <div class="bg-sipega-navy p-12 rounded-[4rem] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-8 text-white relative overflow-hidden">

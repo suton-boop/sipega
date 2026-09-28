@@ -4,9 +4,25 @@
             <div>
                 <h2 class="font-black text-2xl text-sipega-navy leading-tight uppercase tracking-wider flex items-center gap-2">
                     <span class="p-2 bg-sipega-orange/10 text-sipega-orange rounded-xl">📋</span>
-                    <span>Modul Surat Tugas (Kasubag)</span>
+                    <span>
+                        @if(auth()->user()->role === 'Pegawai')
+                            Surat Tugas & Rekap Dinas Luar Saya
+                        @elseif(auth()->user()->role === 'Kasubag')
+                            Modul Surat Tugas (Kasubag)
+                        @elseif(auth()->user()->role === 'Pimpinan')
+                            Modul Surat Tugas (Pimpinan)
+                        @else
+                            Modul Surat Tugas
+                        @endif
+                    </span>
                 </h2>
-                <p class="text-xs text-gray-500 font-bold mt-1">Pembuatan, Persetujuan (Approval), dan Cetak PDF 5 Model Surat Tugas BPMP Kalimantan Timur</p>
+                <p class="text-xs text-gray-500 font-bold mt-1">
+                    @if(auth()->user()->role === 'Pegawai')
+                        Daftar Surat Tugas dan Rekapitulasi Perjalanan Dinas yang Menugaskan Anda
+                    @else
+                        Pembuatan, Persetujuan (Approval), dan Cetak PDF 5 Model Surat Tugas BPMP Kalimantan Timur
+                    @endif
+                </p>
             </div>
             @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
             <a href="{{ route('letters.create') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sipega-orange to-amber-500 hover:from-amber-600 hover:to-orange-600 text-white font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-orange-500/20 transition-all transform hover:-translate-y-0.5">
@@ -39,7 +55,7 @@
                 <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition">
                     <span class="text-[10px] font-black uppercase tracking-wider text-gray-400 block">Total Surat</span>
                     <span class="text-2xl font-black text-sipega-navy mt-1 block">{{ $stats['total'] }}</span>
-                    <span class="text-[10px] font-bold text-gray-400 mt-1 block">Semua Dokumen</span>
+                    <span class="text-[10px] font-bold text-gray-400 mt-1 block">{{ auth()->user()->role === 'Pegawai' ? 'Tugas Saya' : 'Semua Dokumen' }}</span>
                 </div>
                 <div class="bg-gradient-to-br from-blue-50 to-white p-5 rounded-3xl border border-blue-100 shadow-sm hover:shadow-md transition">
                     <span class="text-[10px] font-black uppercase tracking-wider text-blue-600 block">🏢 DLK (Kantor)</span>
@@ -64,7 +80,7 @@
                 <div class="bg-gradient-to-br from-teal-50 to-white p-5 rounded-3xl border border-teal-100 shadow-sm hover:shadow-md transition">
                     <span class="text-[10px] font-black uppercase tracking-wider text-teal-600 block">✅ Approved</span>
                     <span class="text-2xl font-black text-teal-900 mt-1 block">{{ $stats['approved'] }}</span>
-                    <span class="text-[10px] font-bold text-teal-500 mt-1 block">Masuk Rekap Tugas</span>
+                    <span class="text-[10px] font-bold text-teal-500 mt-1 block">{{ auth()->user()->role === 'Pegawai' ? 'Tugas Disetujui' : 'Masuk Rekap Tugas' }}</span>
                 </div>
             </div>
 
@@ -238,7 +254,11 @@
                                 <td colspan="6" class="py-12 text-center text-gray-400">
                                     <div class="text-4xl mb-2">📭</div>
                                     <p class="font-bold">Belum ada Surat Tugas yang diterbitkan.</p>
-                                    <p class="text-xs mt-1">Klik tombol <b>Buat Surat Tugas Baru</b> di atas untuk mulai membuat.</p>
+                                    @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
+                                        <p class="text-xs mt-1">Klik tombol <b>Buat Surat Tugas Baru</b> di atas untuk mulai membuat.</p>
+                                    @else
+                                        <p class="text-xs mt-1">Anda belum memiliki riwayat penugasan surat tugas dinas luar.</p>
+                                    @endif
                                 </td>
                             </tr>
                             @endforelse

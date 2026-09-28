@@ -51,15 +51,34 @@ class LetterController extends Controller
 
         $letters = $query->latest()->paginate(15)->withQueryString();
 
-        // Statistik ringkas untuk Kasubag/Admin
-        $stats = [
-            'total' => Letter::count(),
-            'dlk' => Letter::where('category', 'DLK')->count(),
-            'dlp' => Letter::where('category', 'DLP')->count(),
-            'dln' => Letter::where('category', 'DLN')->count(),
-            'draft' => Letter::where('status', 'Draft')->count(),
-            'approved' => Letter::where('status', 'Approved')->count(),
-        ];
+        // Statistik ringkas: Khusus level Pegawai, hanya hitung rekap penugasan DL miliknya sendiri
+        if (auth()->user()->role === 'Pegawai') {
+            $user = auth()->user();
+            $approvedLetters = $user->letters()->where('letters.status', 'Approved');
+
+            $stats = [
+                'total' => (clone $approvedLetters)->count(),
+                'dlk' => (clone $approvedLetters)->where(function($q) {
+                    $q->where('letters.category', 'DLK')->orWhereNull('letters.category');
+                })->count(),
+                'dlp' => (clone $approvedLetters)->where('letters.category', 'DLP')->count(),
+                'dln' => (clone $approvedLetters)->where('letters.category', 'DLN')->count(),
+                'draft' => 0,
+                'approved' => (clone $approvedLetters)->count(),
+            ];
+        } else {
+            // Statistik ringkas untuk Kasubag/Admin/Pimpinan/Operator (Semua Surat)
+            $stats = [
+                'total' => Letter::count(),
+                'dlk' => Letter::where(function($q) {
+                    $q->where('category', 'DLK')->orWhereNull('category');
+                })->count(),
+                'dlp' => Letter::where('category', 'DLP')->count(),
+                'dln' => Letter::where('category', 'DLN')->count(),
+                'draft' => Letter::where('status', 'Draft')->count(),
+                'approved' => Letter::where('status', 'Approved')->count(),
+            ];
+        }
 
         return view('admin.letters.index', compact('letters', 'stats'));
     }
