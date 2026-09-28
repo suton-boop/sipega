@@ -40,27 +40,33 @@ class User extends Authenticatable
     ];
 
     public const PANGKAT_GOLONGAN = [
-        'I/a'   => 'Juru Muda, I/a',
-        'I/b'   => 'Juru Muda Tingkat I, I/b',
-        'I/c'   => 'Juru, I/c',
-        'I/d'   => 'Juru Tingkat I, I/d',
-        'II/a'  => 'Pengatur Muda, II/a',
-        'II/b'  => 'Pengatur Muda Tingkat I, II/b',
-        'II/c'  => 'Pengatur, II/c',
-        'II/d'  => 'Pengatur Tingkat I, II/d',
-        'III/a' => 'Penata Muda, III/a',
-        'III/b' => 'Penata Muda Tingkat I, III/b',
-        'III/c' => 'Penata, III/c',
-        'III/d' => 'Penata Tingkat I, III/d',
-        'IV/a'  => 'Pembina, IV/a',
-        'IV/b'  => 'Pembina Tingkat I, IV/b',
-        'IV/c'  => 'Pembina Utama Muda, IV/c',
-        'IV/d'  => 'Pembina Utama Madya, IV/d',
-        'IV/e'  => 'Pembina Utama, IV/e',
+        'I/a'           => 'Juru Muda, I/a',
+        'I/b'           => 'Juru Muda Tingkat I, I/b',
+        'I/c'           => 'Juru, I/c',
+        'I/d'           => 'Juru Tingkat I, I/d',
+        'II/a'          => 'Pengatur Muda, II/a',
+        'II/b'          => 'Pengatur Muda Tingkat I, II/b',
+        'II/c'          => 'Pengatur, II/c',
+        'II/d'          => 'Pengatur Tingkat I, II/d',
+        'III/a'         => 'Penata Muda, III/a',
+        'III/b'         => 'Penata Muda Tingkat I, III/b',
+        'III/c'         => 'Penata, III/c',
+        'III/d'         => 'Penata Tingkat I, III/d',
+        'IV/a'          => 'Pembina, IV/a',
+        'IV/b'          => 'Pembina Tingkat I, IV/b',
+        'IV/c'          => 'Pembina Utama Muda, IV/c',
+        'IV/d'          => 'Pembina Utama Madya, IV/d',
+        'IV/e'          => 'Pembina Utama, IV/e',
+        'Golongan V'    => 'Golongan V',
+        'Golongan VI'   => 'Golongan VI',
+        'Golongan VII'  => 'Golongan VII',
+        'Golongan VIII' => 'Golongan VIII',
+        'Golongan IX'   => 'Golongan IX',
+        'Golongan X'    => 'Golongan X',
     ];
 
     /**
-     * Konversi atau standarisasi teks golongan/ruang menjadi Pangkat, Golongan resmi
+     * Konversi atau standarisasi teks golongan/ruang menjadi Pangkat, Golongan resmi (PNS & PPPK)
      */
     public static function formatPangkatGolongan(?string $value): ?string
     {
@@ -75,14 +81,30 @@ class User extends Authenticatable
             return $clean;
         }
 
-        // 1. Cek jika persis kode ruang/golongan (case-insensitive, misal "IV/a", "iii/c")
+        // 1. Cek format PPPK (misal: "Golongan IX", "Gol. IX", "Gol IX", "PPPK Golongan IX", "IX")
+        foreach (['VIII', 'VII', 'VI', 'IX', 'X', 'V'] as $roman) {
+            // Hindari tabrakan dengan ruang PNS seperti IV/a
+            if (!preg_match('/' . $roman . '\/[a-e]/i', $clean)) {
+                if (
+                    preg_match('/(?:^|[,\s])gol(?:ongan|\.)?\s*' . $roman . '(?:\b|$)/i', $clean) ||
+                    preg_match('/(?:^|[,\s])pppk\b.*' . $roman . '(?:\b|$)/i', $clean) ||
+                    strcasecmp($clean, $roman) === 0 ||
+                    strcasecmp($clean, 'Golongan ' . $roman) === 0 ||
+                    strcasecmp($clean, 'Gol. ' . $roman) === 0
+                ) {
+                    return 'Golongan ' . $roman;
+                }
+            }
+        }
+
+        // 2. Cek jika persis kode ruang/golongan (case-insensitive, misal "IV/a", "iii/c")
         foreach (self::PANGKAT_GOLONGAN as $code => $full) {
-            if (strcasecmp($clean, $code) === 0) {
+            if (strcasecmp($clean, $code) === 0 || strcasecmp($clean, $full) === 0) {
                 return $full;
             }
         }
 
-        // 2. Cek akhiran kode didahului pemisah (koma atau spasi), urutkan kode terpanjang dahulu (III/.. -> II/.. -> I/..)
+        // 3. Cek akhiran kode didahului pemisah (koma atau spasi), urutkan kode terpanjang dahulu (III/.. -> II/.. -> I/..)
         $sorted = self::PANGKAT_GOLONGAN;
         uksort($sorted, fn($a, $b) => strlen($b) <=> strlen($a));
 
@@ -92,7 +114,7 @@ class User extends Authenticatable
             }
         }
 
-        // 3. Cek jika mengandung nama pangkat
+        // 4. Cek jika mengandung nama pangkat PNS
         foreach ($sorted as $code => $full) {
             $pangkatName = trim(explode(',', $full)[0]);
             if (stripos($clean, $pangkatName) !== false) {

@@ -42,6 +42,15 @@ class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnForma
                 'Pegawai',
                 'bambang.hidayat@bpmpkaltim.id'
             ],
+            [
+                'Dewi Lestari, S.Pd',
+                '199201012022212001',
+                'Guru Ahli Pertama',
+                'Golongan IX',
+                '9',
+                'Pegawai',
+                'dewi.lestari@bpmpkaltim.id'
+            ],
         ];
     }
 
