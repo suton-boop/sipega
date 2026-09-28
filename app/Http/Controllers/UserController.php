@@ -69,6 +69,8 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         
         $request->validate([
+            'name' => 'required|string|max:255',
+            'nip' => ['nullable', 'string', 'max:50', Rule::unique('users', 'nip')->ignore($user->id)],
             'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
             'position' => 'nullable|string|max:255',
             'gugus_mutu' => 'nullable|string|max:100',
@@ -80,6 +82,14 @@ class UserController extends Controller
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('photos', 'public');
             $user->photo = $path;
+        }
+
+        $user->name = trim($request->name);
+
+        if ($request->filled('nip')) {
+            $user->nip = preg_replace('/[^0-9]/', '', (string)$request->nip) ?: trim($request->nip);
+        } else {
+            $user->nip = null;
         }
 
         $user->role = $request->role;
@@ -102,14 +112,26 @@ class UserController extends Controller
             $user->device_id = null; // Membuka kunci HP
         }
         
-        // Handle "Reset Password"
+        // Handle "Reset Password" (Kembali ke NIP pegawai)
+        $passwordResetNote = '';
         if ($request->has('reset_password') && $request->reset_password == '1') {
-            $user->password = Hash::make('12345678'); // Default reset password
+            $cleanNip = !empty($user->nip) ? preg_replace('/[^0-9]/', '', (string)$user->nip) : null;
+            $defaultPassword = $cleanNip ?: '12345678';
+            $user->password = Hash::make($defaultPassword);
+            $passwordResetNote = $cleanNip 
+                ? " dan password berhasil direset ke NIP ({$cleanNip})" 
+                : " dan password direset ke default (12345678)";
         }
 
         $user->save();
 
-        return back()->with('success', "Data {$user->name} berhasil diperbarui.");
+        if (method_exists($user, 'syncRoles')) {
+            try {
+                $user->syncRoles([$user->role]);
+            } catch (\Throwable $e) {}
+        }
+
+        return back()->with('success', "Data {$user->name} berhasil diperbarui{$passwordResetNote}.");
     }
 
     /**

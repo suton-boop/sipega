@@ -130,6 +130,20 @@
                 </div>
             @endif
 
+            @if($errors->any())
+                <div class="bg-red-50 text-red-700 p-6 rounded-3xl mb-8 font-bold border border-red-100 shadow-sm">
+                    <div class="flex items-center gap-2 mb-2 font-black">
+                        <span class="bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black italic">!</span>
+                        <span>Terjadi kesalahan input:</span>
+                    </div>
+                    <ul class="list-disc list-inside text-xs space-y-1 font-semibold">
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
             <!-- 1. TOGGLE BAR: IMPORT & TEMPLATE (Bisa di-hidden & dimunculkan) -->
             <div class="flex items-center justify-between mb-6 bg-white py-4 px-6 rounded-3xl shadow-sm border border-gray-100">
                 <div class="flex items-center gap-3">
@@ -396,8 +410,19 @@
                                                 @method('PUT')
                                                 
                                                 <div>
-                                                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Update Foto</label>
-                                                    <input type="file" name="photo" class="text-[9px] text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:bg-gray-100 file:text-sipega-navy cursor-pointer">
+                                                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Nama Pegawai</label>
+                                                    <input type="text" name="name" value="{{ $u->name }}" required placeholder="Nama Lengkap..." class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                </div>
+
+                                                <div class="grid grid-cols-2 gap-3">
+                                                    <div>
+                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">NIP Pegawai</label>
+                                                        <input type="text" name="nip" value="{{ $u->nip }}" placeholder="NIP (18 Digit)..." class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                    </div>
+                                                    <div>
+                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Update Foto</label>
+                                                        <input type="file" name="photo" class="w-full text-[9px] text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-full file:border-0 file:bg-gray-100 file:text-sipega-navy cursor-pointer">
+                                                    </div>
                                                 </div>
 
                                                 <div class="grid grid-cols-2 gap-3">
@@ -443,13 +468,13 @@
                                                 </div>
 
                                                 <div class="flex items-center gap-2">
-                                                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-red-50 p-2.5 rounded-xl border border-red-50 hover:bg-red-100 transition-colors">
+                                                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-red-50 p-2.5 rounded-xl border border-red-50 hover:bg-red-100 transition-colors" title="Buka kunci HP perangkat pegawai">
                                                         <input type="checkbox" name="reset_device" value="1" class="rounded text-red-600 focus:ring-red-500 w-5 h-5 border-none">
                                                         <span class="text-[9px] font-black text-red-800 uppercase tracking-tighter leading-none">Reset HP</span>
                                                     </label>
-                                                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-orange-50 p-2.5 rounded-xl border border-orange-50 hover:bg-orange-100 transition-colors">
+                                                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-orange-50 p-2.5 rounded-xl border border-orange-50 hover:bg-orange-100 transition-colors" title="Reset password kembali ke NIP pegawai">
                                                         <input type="checkbox" name="reset_password" value="1" class="rounded text-orange-600 focus:ring-orange-500 w-5 h-5 border-none">
-                                                        <span class="text-[9px] font-black text-orange-800 uppercase tracking-tighter leading-none">Reset Pass</span>
+                                                        <span class="text-[9px] font-black text-orange-800 uppercase tracking-tighter leading-none">Reset ke NIP</span>
                                                     </label>
                                                 </div>
 
