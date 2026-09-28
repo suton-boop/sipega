@@ -177,7 +177,12 @@
 
                         <div>
                             <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">Tempat Kegiatan <span class="text-red-500">*</span></label>
-                            <input type="text" name="location" x-model="locationText" required class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
+                            <input type="text" name="location" x-model="locationText" required placeholder="Contoh: Ibis Styles Serpong BSD City" class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">Alamat Tempat Kegiatan <span class="text-gray-400 font-normal">(Ditulis di bawah tempat)</span></label>
+                            <textarea name="address" x-model="addressText" rows="2" placeholder="Contoh: Taman Kota Barat Lot Ii No 9, Kabupaten Tangerang, Banten 15345" class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-2.5"></textarea>
                         </div>
 
                         <!-- DIPA / Pembebanan Anggaran (Checkbox Opsional) -->
@@ -640,6 +645,7 @@
                 dateStart: '{{ old('date_start', $letter->date_start ? $letter->date_start->format('Y-m-d') : '') }}',
                 dateEnd: '{{ old('date_end', $letter->date_end ? $letter->date_end->format('Y-m-d') : '') }}',
                 locationText: '{{ old('location', $letter->location) }}',
+                addressText: '{{ old('address', $letter->address ?? '') }}',
                 showKeterangan: {{ old('show_keterangan', $letter->show_keterangan) ? 'true' : 'false' }},
                 useDipa: {{ old('dipa_source', $letter->dipa_source) ? 'true' : 'false' }},
                 dipaSource: '{{ old('dipa_source', $letter->dipa_source ?? '') }}',

@@ -345,7 +345,12 @@
                     <span style="font-size: 8pt; color: #333;">({{ $u->pivot->custom_role ?? 'Narasumber' }})</span><br>
                     <span style="font-size: 8pt; color: #444;">NIP. {{ $u->pivot->user_nip ?? $u->nip ?? '-' }}</span>
                 </td>
-                <td>{{ $u->pivot->venue ?? $cleanLocation }}</td>
+                <td>
+                    {{ $u->pivot->venue ?? $cleanLocation }}
+                    @if(!empty($letter->address))
+                        <div style="font-size: 8pt; color: #444; margin-top: 2px;">{{ $letter->address }}</div>
+                    @endif
+                </td>
                 <td>{{ $u->pivot->execution_dates ?? $hariTanggal }}</td>
                 <td>{{ $u->pivot->person_in_charge ?? ($letter->signatory_name ?? 'Dr. Jarwoko, M.Pd.') }}</td>
             </tr>
@@ -456,7 +461,13 @@
         <tr>
             <td>Tempat</td>
             <td>:</td>
-            <td>{{ $cleanLocation }}</td>
+            <td>
+                @if(!empty($letter->address))
+                    {{ rtrim(rtrim($cleanLocation), ',') }},<br>{!! nl2br(e($letter->address)) !!}
+                @else
+                    {{ $cleanLocation }}
+                @endif
+            </td>
         </tr>
     </table>
 

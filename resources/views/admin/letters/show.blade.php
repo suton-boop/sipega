@@ -108,6 +108,11 @@
                         <p class="text-sm font-bold text-gray-800">
                             {{ $letter->location ?? '-' }}
                         </p>
+                        @if(!empty($letter->address))
+                            <p class="text-xs text-gray-500 font-medium mt-1">
+                                {!! nl2br(e($letter->address)) !!}
+                            </p>
+                        @endif
                     </div>
 
                     <div>

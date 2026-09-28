@@ -175,6 +175,9 @@
                                     @endif
                                     <p class="text-[10px] text-gray-400 font-bold truncate">
                                         📍 {{ $letter->location }}
+                                        @if(!empty($letter->address))
+                                            <span class="text-gray-400 font-normal">({{ $letter->address }})</span>
+                                        @endif
                                     </p>
                                 </td>
                                 <td class="py-4 px-6 text-center">

@@ -224,7 +224,15 @@
                             <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">
                                 Tempat Kegiatan <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="location" x-model="locationText" required placeholder="Contoh: Harris Hotel & Conventions Gubeng Surabaya / Daring" class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
+                            <input type="text" name="location" x-model="locationText" required placeholder="Contoh: Ibis Styles Serpong BSD City" class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
+                        </div>
+
+                        <!-- Alamat Tempat Kegiatan -->
+                        <div>
+                            <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">
+                                Alamat Tempat Kegiatan <span class="text-gray-400 font-normal">(Ditulis di bawah tempat)</span>
+                            </label>
+                            <textarea name="address" x-model="addressText" rows="2" placeholder="Contoh: Taman Kota Barat Lot Ii No 9, Kabupaten Tangerang, Banten 15345" class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-2.5"></textarea>
                         </div>
 
                         <!-- DIPA / Pembebanan Anggaran (Checkbox Opsional) -->
@@ -706,6 +714,7 @@
                 dateStart: '{{ old('date_start', request('date_start', date('Y-m-d'))) }}',
                 dateEnd: '{{ old('date_end', request('date_end', request('date_start', date('Y-m-d')))) }}',
                 locationText: '{{ old('location', '') }}',
+                addressText: '{{ old('address', '') }}',
                 showKeterangan: {{ old('show_keterangan') ? 'true' : 'false' }},
                 useDipa: {{ old('dipa_source') ? 'true' : 'false' }},
                 dipaSource: '{{ old('dipa_source', '') }}',

@@ -15,6 +15,7 @@ class Letter extends Model
         'date_start',
         'date_end',
         'location',
+        'address',
         'basis',
         'purpose',
         'invitation_from',
