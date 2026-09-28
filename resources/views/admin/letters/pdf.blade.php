@@ -276,7 +276,7 @@
         @elseif($letter->invitation_from && $letter->invitation_number)
             Berdasarkan surat dari {{ $letter->invitation_from }}, nomor {{ $letter->invitation_number }}, tanggal {{ $letter->invitation_date ? $letter->invitation_date->translatedFormat('d F Y') : '-' }} perihal {{ $letter->invitation_subject ?? $letter->title }}, Maka Kepala Balai Penjaminan Mutu Pendidikan Provinsi Kalimantan Timur dengan ini menugaskan kepada nama, tempat, dan tanggal terlampir untuk melakukan Kegiatan {{ $letter->title }}.
         @else
-            Berdasarkan Surat Kepala Balai Penjaminan Mutu Pendidikan Provinsi Kalimantan Timur nomor {{ $letter->number }} tanggal {{ $tglSurat }} Tentang {{ $letter->title }}, Maka Kepala Balai Penjaminan Mutu Pendidikan Provinsi Kalimantan Timur dengan ini menugaskan kepada nama, tempat, dan tanggal terlampir untuk melakukan Kegiatan {{ $letter->title }}.
+            Berdasarkan Keputusan Kepala Balai Penjaminan Mutu Pendidikan Provinsi Kalimantan Timur nomor {{ $letter->sk_number ?: ($letter->number ?: '1188/C6.24/DM.00.02/2026') }} tanggal {{ $letter->sk_date ? \Carbon\Carbon::parse($letter->sk_date)->translatedFormat('d F Y') : $tglSurat }} Tentang {{ $letter->title }}, Maka Kepala Balai Penjaminan Mutu Pendidikan Provinsi Kalimantan Timur dengan ini menugaskan kepada nama, tempat, dan tanggal terlampir untuk melakukan Kegiatan {{ $letter->title }}.
         @endif
     </div>
 
@@ -315,8 +315,8 @@
         LAMPIRAN 1<br>
         KEPUTUSAN KEPALA BALAI PENJAMINAN MUTU PENDIDIKAN<br>
         PROVINSI KALIMANTAN TIMUR<br>
-        NOMOR : {{ $letter->number }}<br>
-        TANGGAL : {{ $tglSurat }}
+        NOMOR : {{ $letter->sk_number ?: ($letter->number ?: '1188/C6.24/DM.00.02/2026') }}<br>
+        TANGGAL : {{ $letter->sk_date ? \Carbon\Carbon::parse($letter->sk_date)->translatedFormat('d F Y') : $tglSurat }}
     </div>
 
     <div class="lampiran-title">
@@ -346,7 +346,7 @@
                     <span style="font-size: 8pt; color: #444;">NIP. {{ $u->pivot->user_nip ?? $u->nip ?? '-' }}</span>
                 </td>
                 <td>
-                    {{ $u->pivot->venue ?? $cleanLocation }}
+                    {!! nl2br(e($u->pivot->venue ?? $cleanLocation)) !!}
                     @if(!empty($letter->address))
                         <div style="font-size: 8pt; color: #444; margin-top: 2px;">{{ $letter->address }}</div>
                     @endif

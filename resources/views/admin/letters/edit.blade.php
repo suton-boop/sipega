@@ -156,6 +156,39 @@
                             <input type="text" name="invitation_subject" value="{{ old('invitation_subject', $letter->invitation_subject) }}" class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
                         </div>
 
+                        <!-- Khusus Model 4: Dasar SK & Tanggal SK Lampiran -->
+                        <div x-show="selectedModel === 'model_4'" x-transition class="md:col-span-2 p-5 bg-orange-50/70 rounded-2xl border-2 border-orange-200 space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">📑</span>
+                                <div>
+                                    <h4 class="text-xs font-black uppercase tracking-wider text-sipega-navy">Dasar Surat Keputusan (SK) Lampiran Model 4</h4>
+                                    <p class="text-[11px] text-gray-500 font-medium">Nomor dan Tanggal SK ini akan dicantumkan pada kop Lampiran 1 dan teks penugasan Model 4</p>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                                <div>
+                                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">
+                                        Nomor SK Kepala BPMP <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           name="sk_number" 
+                                           x-model="skNumber"
+                                           placeholder="Contoh: 1188/C6.24/DM.00.02/2026" 
+                                           class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
+                                    <span class="text-[10px] text-gray-400 mt-1 block">Contoh: 1188/C6.24/DM.00.02/2026</span>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">
+                                        Tanggal SK Kepala BPMP <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="date" 
+                                           name="sk_date" 
+                                           x-model="skDate"
+                                           class="w-full text-xs font-bold rounded-2xl border-gray-200 focus:border-sipega-orange focus:ring-sipega-orange px-4 py-3">
+                                </div>
+                            </div>
+                        </div>
+
                         <div>
                             <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-2">Tanggal Mulai <span class="text-red-500">*</span></label>
                             <input type="date" 
@@ -362,14 +395,32 @@
                                                    class="w-full text-xs font-semibold rounded-xl border-gray-200 py-1.5 px-2.5 focus:border-sipega-orange focus:ring-sipega-orange">
                                         </td>
 
+                                        <!-- Khusus Model 4 -->
                                         <template x-if="selectedModel === 'model_4'">
-                                            <td class="py-3 px-4">
-                                                <input type="text" :name="`participants[${index}][city_destination]`" x-model="row.city_destination" placeholder="Bontang / Paser..." class="w-full text-xs rounded-xl border-gray-200 py-2">
+                                            <td class="py-3 px-4 min-w-[170px]">
+                                                <select :name="`participants[${index}][city_destination]`" x-model="row.city_destination" class="w-full text-xs font-semibold rounded-xl border-gray-200 py-2 focus:border-sipega-orange focus:ring-sipega-orange">
+                                                    <option value="">-- Pilih Kab/Kota/Prov --</option>
+                                                    <option value="Provinsi Kalimantan Timur">Provinsi Kalimantan Timur</option>
+                                                    <option value="Kab. Paser">Kab. Paser</option>
+                                                    <option value="Kab. Kutai Kartanegara">Kab. Kutai Kartanegara</option>
+                                                    <option value="Kab. Berau">Kab. Berau</option>
+                                                    <option value="Kab. Kutai Barat">Kab. Kutai Barat</option>
+                                                    <option value="Kab. Kutai Timur">Kab. Kutai Timur</option>
+                                                    <option value="Kab. Penajam Paser Utara">Kab. Penajam Paser Utara</option>
+                                                    <option value="Kab. Mahakam Ulu">Kab. Mahakam Ulu</option>
+                                                    <option value="Kota Balikpapan">Kota Balikpapan</option>
+                                                    <option value="Kota Bontang">Kota Bontang</option>
+                                                    <option value="Kota Samarinda">Kota Samarinda</option>
+                                                    <template x-if="row.city_destination && !['Provinsi Kalimantan Timur','Kab. Paser','Kab. Kutai Kartanegara','Kab. Berau','Kab. Kutai Barat','Kab. Kutai Timur','Kab. Penajam Paser Utara','Kab. Mahakam Ulu','Kota Balikpapan','Kota Bontang','Kota Samarinda'].includes(row.city_destination)">
+                                                        <option :value="row.city_destination" x-text="row.city_destination" selected></option>
+                                                    </template>
+                                                </select>
                                             </td>
                                         </template>
                                         <template x-if="selectedModel === 'model_4'">
-                                            <td class="py-3 px-4">
-                                                <select :name="`participants[${index}][custom_role]`" x-model="row.custom_role" class="w-full text-xs rounded-xl border-gray-200 py-2">
+                                            <td class="py-3 px-4 min-w-[140px]">
+                                                <select :name="`participants[${index}][custom_role]`" x-model="row.custom_role" class="w-full text-xs font-semibold rounded-xl border-gray-200 py-2 focus:border-sipega-orange focus:ring-sipega-orange">
+                                                    <option value="Petugas">Petugas</option>
                                                     <option value="Narasumber">Narasumber</option>
                                                     <option value="Panitia">Panitia</option>
                                                     <option value="Fasilitator">Fasilitator</option>
@@ -378,17 +429,42 @@
                                             </td>
                                         </template>
                                         <template x-if="selectedModel === 'model_4'">
-                                            <td class="py-3 px-4">
-                                                <input type="text" :name="`participants[${index}][venue]`" x-model="row.venue" placeholder="SMPN 2..." class="w-full text-xs rounded-xl border-gray-200 py-2">
+                                            <td class="py-3 px-4 min-w-[220px]">
+                                                <div class="space-y-1.5">
+                                                    <template x-for="(vItem, vIdx) in (row.venues || [''])" :key="vIdx">
+                                                        <div class="flex items-center gap-1.5">
+                                                            <input type="text" 
+                                                                   x-model="row.venues[vIdx]" 
+                                                                   @input="syncRowVenue(index)"
+                                                                   placeholder="Contoh: SMPN 2 Tanah Grogot" 
+                                                                   class="w-full text-xs rounded-xl border-gray-200 py-1.5 px-2.5 focus:border-sipega-orange focus:ring-sipega-orange">
+                                                            <template x-if="row.venues && row.venues.length > 1">
+                                                                <button type="button" 
+                                                                        @click="removeVenue(index, vIdx)" 
+                                                                        class="text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg p-1 transition" 
+                                                                        title="Hapus tempat ini">
+                                                                    ✕
+                                                                </button>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                    
+                                                    <button type="button" 
+                                                            @click="addVenue(index)" 
+                                                            class="inline-flex items-center gap-1 text-[11px] font-black text-sipega-orange hover:text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl px-2.5 py-1 transition mt-1 shadow-sm">
+                                                        <span>➕</span> Tambah Tempat
+                                                    </button>
+                                                    <input type="hidden" :name="`participants[${index}][venue]`" :value="row.venue">
+                                                </div>
                                             </td>
                                         </template>
                                         <template x-if="selectedModel === 'model_4'">
-                                            <td class="py-3 px-4">
+                                            <td class="py-3 px-4 min-w-[140px]">
                                                 <input type="text" :name="`participants[${index}][execution_dates]`" x-model="row.execution_dates" placeholder="21 s.d 23 Juli 2026" class="w-full text-xs rounded-xl border-gray-200 py-2">
                                             </td>
                                         </template>
                                         <template x-if="selectedModel === 'model_4'">
-                                            <td class="py-3 px-4">
+                                            <td class="py-3 px-4 min-w-[160px]">
                                                 <input type="text" :name="`participants[${index}][person_in_charge]`" x-model="row.person_in_charge" placeholder="Dr. Jarwoko, M.Pd." class="w-full text-xs rounded-xl border-gray-200 py-2">
                                             </td>
                                         </template>
@@ -606,15 +682,20 @@
 
     @php
         $initialParticipants = $letter->users->map(function($u) {
+            $rawVenue = $u->pivot->venue ?? '';
+            $splitVenues = !empty($rawVenue) ? array_values(array_filter(explode("\n", $rawVenue))) : [''];
+            if (empty($splitVenues)) $splitVenues = [''];
+
             return [
                 'user_id' => $u->id,
                 'nip' => $u->pivot->user_nip ?? (($u->nip && $u->nip !== '-') ? $u->nip : ''),
                 'golongan' => \App\Models\User::formatPangkatGolongan($u->pivot->user_golongan) ?? ($u->pangkat_golongan ?? ($u->golongan ?? 'Pembina, IV/a')),
                 'position' => $u->pivot->user_position ?? ($u->position ?? 'Widyaprada Ahli Madya'),
-                'custom_role' => $u->pivot->custom_role ?? 'Narasumber',
+                'custom_role' => $u->pivot->custom_role ?? 'Petugas',
                 'keterangan' => $u->pivot->keterangan ?? '',
                 'city_destination' => $u->pivot->city_destination ?? '',
-                'venue' => $u->pivot->venue ?? '',
+                'venue' => $rawVenue,
+                'venues' => $splitVenues,
                 'execution_dates' => $u->pivot->execution_dates ?? '',
                 'person_in_charge' => $u->pivot->person_in_charge ?? 'Dr. Jarwoko, M.Pd.',
             ];
@@ -625,10 +706,11 @@
                 'nip' => '',
                 'golongan' => '',
                 'position' => '',
-                'custom_role' => 'Narasumber',
+                'custom_role' => 'Petugas',
                 'keterangan' => '',
                 'city_destination' => '',
                 'venue' => '',
+                'venues' => [''],
                 'execution_dates' => '',
                 'person_in_charge' => 'Dr. Jarwoko, M.Pd.'
             ]];
@@ -642,6 +724,8 @@
             return {
                 selectedModel: '{{ old('st_model', $letter->st_model ?? 'model_1') }}',
                 category: '{{ old('category', $letter->category ?? 'DLK') }}',
+                skNumber: '{{ old('sk_number', $letter->sk_number ?? '1188/C6.24/DM.00.02/2026') }}',
+                skDate: '{{ old('sk_date', $letter->sk_date ? $letter->sk_date->format('Y-m-d') : '2026-09-28') }}',
                 dateStart: '{{ old('date_start', $letter->date_start ? $letter->date_start->format('Y-m-d') : '') }}',
                 dateEnd: '{{ old('date_end', $letter->date_end ? $letter->date_end->format('Y-m-d') : '') }}',
                 locationText: '{{ old('location', $letter->location) }}',
@@ -660,10 +744,36 @@
                 participants: @json($initialParticipants),
 
                 init() {
+                    // Pastikan setiap peserta memiliki properti venues
+                    this.participants.forEach(p => {
+                        if (!p.venues || !Array.isArray(p.venues)) {
+                            p.venues = p.venue ? p.venue.split('\n') : [''];
+                        }
+                    });
                     if (this.selectedModel === 'model_5') {
                         this.showKeterangan = true;
                     }
                     this.fetchConflicts();
+                },
+
+                addVenue(rowIndex) {
+                    if (!this.participants[rowIndex].venues) {
+                        this.participants[rowIndex].venues = this.participants[rowIndex].venue ? this.participants[rowIndex].venue.split('\n') : [''];
+                    }
+                    this.participants[rowIndex].venues.push('');
+                    this.syncRowVenue(rowIndex);
+                },
+
+                removeVenue(rowIndex, venueIndex) {
+                    if (this.participants[rowIndex].venues && this.participants[rowIndex].venues.length > 1) {
+                        this.participants[rowIndex].venues.splice(venueIndex, 1);
+                        this.syncRowVenue(rowIndex);
+                    }
+                },
+
+                syncRowVenue(rowIndex) {
+                    const venues = this.participants[rowIndex].venues || [];
+                    this.participants[rowIndex].venue = venues.map(v => v.trim()).filter(Boolean).join('\n');
                 },
 
                 async fetchConflicts() {
@@ -711,10 +821,11 @@
                         nip: '',
                         golongan: '',
                         position: '',
-                        custom_role: 'Narasumber',
+                        custom_role: 'Petugas',
                         keterangan: '',
                         city_destination: '',
                         venue: '',
+                        venues: [''],
                         execution_dates: '',
                         person_in_charge: 'Dr. Jarwoko, M.Pd.'
                     });

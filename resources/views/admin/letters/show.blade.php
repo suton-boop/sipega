@@ -145,6 +145,25 @@
                         </div>
                     </div>
                 @endif
+
+                <!-- Informasi Dasar SK (Khusus Model 4) -->
+                @if($letter->sk_number || $letter->sk_date || $letter->st_model === 'model_4')
+                    <div class="mt-4 p-4 bg-orange-50/70 rounded-2xl border border-orange-200 space-y-2">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-orange-950 block">📑 Dasar Surat Keputusan (SK) Lampiran Model 4:</span>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                            <div>
+                                <span class="text-gray-500 font-medium">Nomor SK Kepala BPMP:</span>
+                                <p class="font-bold text-gray-800">{{ $letter->sk_number ?: '1188/C6.24/DM.00.02/2026' }}</p>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 font-medium">Tanggal SK Kepala BPMP:</span>
+                                <p class="font-bold text-gray-800">
+                                    {{ $letter->sk_date ? \Carbon\Carbon::parse($letter->sk_date)->translatedFormat('d F Y') : '28 September 2026' }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
 
             <!-- 2. DAFTAR PEGAWAI YANG DITUGASKAN -->
@@ -170,6 +189,11 @@
                                 <th class="py-3.5 px-5 min-w-[180px]">NIP & Golongan</th>
                                 <th class="py-3.5 px-5 min-w-[180px]">Jabatan</th>
                                 <th class="py-3.5 px-5 min-w-[150px]">Gugus Mutu</th>
+                                @if($letter->st_model === 'model_4')
+                                    <th class="py-3.5 px-5 min-w-[140px]">Kab / Kota</th>
+                                    <th class="py-3.5 px-5 min-w-[110px]">Peran</th>
+                                    <th class="py-3.5 px-5 min-w-[180px]">Tempat Spesifik</th>
+                                @endif
                                 @if($letter->show_keterangan || $letter->st_model === 'model_5')
                                     <th class="py-3.5 px-5 min-w-[150px]">Keterangan</th>
                                 @endif
@@ -224,6 +248,21 @@
                                             <span class="text-gray-400 italic text-[11px]">-</span>
                                         @endif
                                     </td>
+                                    @if($letter->st_model === 'model_4')
+                                        <td class="py-4 px-5">
+                                            <span class="font-bold text-gray-800">{{ $u->pivot->city_destination ?: '-' }}</span>
+                                        </td>
+                                        <td class="py-4 px-5">
+                                            <span class="px-2.5 py-1 bg-amber-50 text-amber-900 border border-amber-200 rounded-lg text-[10px] font-bold">
+                                                {{ $u->pivot->custom_role ?: 'Petugas' }}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 px-5">
+                                            <span class="text-gray-700 font-medium">
+                                                {!! nl2br(e($u->pivot->venue ?: '-')) !!}
+                                            </span>
+                                        </td>
+                                    @endif
                                     @if($letter->show_keterangan || $letter->st_model === 'model_5')
                                         <td class="py-4 px-5">
                                             <span class="text-gray-700 font-medium">
