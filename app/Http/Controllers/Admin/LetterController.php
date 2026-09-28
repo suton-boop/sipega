@@ -188,7 +188,8 @@ class LetterController extends Controller
         foreach ($request->participants as $p) {
             $userId = $p['user_id'];
             $nip = isset($p['nip']) ? trim($p['nip']) : null;
-            $golongan = isset($p['golongan']) ? trim($p['golongan']) : null;
+            $rawGolongan = isset($p['golongan']) ? trim($p['golongan']) : null;
+            $golongan = User::formatPangkatGolongan($rawGolongan) ?: $rawGolongan;
             $position = isset($p['position']) ? trim($p['position']) : null;
 
             $pivotData[$userId] = [
@@ -298,7 +299,8 @@ class LetterController extends Controller
         foreach ($request->participants as $p) {
             $userId = $p['user_id'];
             $nip = isset($p['nip']) ? trim($p['nip']) : null;
-            $golongan = isset($p['golongan']) ? trim($p['golongan']) : null;
+            $rawGolongan = isset($p['golongan']) ? trim($p['golongan']) : null;
+            $golongan = User::formatPangkatGolongan($rawGolongan) ?: $rawGolongan;
             $position = isset($p['position']) ? trim($p['position']) : null;
 
             $pivotData[$userId] = [

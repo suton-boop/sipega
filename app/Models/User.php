@@ -39,6 +39,78 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    public const PANGKAT_GOLONGAN = [
+        'I/a'   => 'Juru Muda, I/a',
+        'I/b'   => 'Juru Muda Tingkat I, I/b',
+        'I/c'   => 'Juru, I/c',
+        'I/d'   => 'Juru Tingkat I, I/d',
+        'II/a'  => 'Pengatur Muda, II/a',
+        'II/b'  => 'Pengatur Muda Tingkat I, II/b',
+        'II/c'  => 'Pengatur, II/c',
+        'II/d'  => 'Pengatur Tingkat I, II/d',
+        'III/a' => 'Penata Muda, III/a',
+        'III/b' => 'Penata Muda Tingkat I, III/b',
+        'III/c' => 'Penata, III/c',
+        'III/d' => 'Penata Tingkat I, III/d',
+        'IV/a'  => 'Pembina, IV/a',
+        'IV/b'  => 'Pembina Tingkat I, IV/b',
+        'IV/c'  => 'Pembina Utama Muda, IV/c',
+        'IV/d'  => 'Pembina Utama Madya, IV/d',
+        'IV/e'  => 'Pembina Utama, IV/e',
+    ];
+
+    /**
+     * Konversi atau standarisasi teks golongan/ruang menjadi Pangkat, Golongan resmi
+     */
+    public static function formatPangkatGolongan(?string $value): ?string
+    {
+        if (empty($value) || trim($value) === '' || trim($value) === '-') {
+            return null;
+        }
+
+        $clean = trim($value);
+
+        // Jika sudah persis salah satu nilai resmi
+        if (in_array($clean, self::PANGKAT_GOLONGAN)) {
+            return $clean;
+        }
+
+        // 1. Cek jika persis kode ruang/golongan (case-insensitive, misal "IV/a", "iii/c")
+        foreach (self::PANGKAT_GOLONGAN as $code => $full) {
+            if (strcasecmp($clean, $code) === 0) {
+                return $full;
+            }
+        }
+
+        // 2. Cek akhiran kode didahului pemisah (koma atau spasi), urutkan kode terpanjang dahulu (III/.. -> II/.. -> I/..)
+        $sorted = self::PANGKAT_GOLONGAN;
+        uksort($sorted, fn($a, $b) => strlen($b) <=> strlen($a));
+
+        foreach ($sorted as $code => $full) {
+            if (preg_match('/(?:^|[,\s])' . preg_quote($code, '/') . '$/i', $clean)) {
+                return $full;
+            }
+        }
+
+        // 3. Cek jika mengandung nama pangkat
+        foreach ($sorted as $code => $full) {
+            $pangkatName = trim(explode(',', $full)[0]);
+            if (stripos($clean, $pangkatName) !== false) {
+                return $full;
+            }
+        }
+
+        return $clean;
+    }
+
+    /**
+     * Accessor untuk Pangkat & Golongan terformat
+     */
+    public function getPangkatGolonganAttribute(): ?string
+    {
+        return self::formatPangkatGolongan($this->golongan);
+    }
+
     public function jobClass()
     {
         return $this->belongsTo(JobClass::class);

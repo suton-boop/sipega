@@ -202,7 +202,7 @@
                                     <td class="py-4 px-5">
                                         <div class="font-bold text-gray-800">{{ $u->pivot->user_nip ?: ($u->nip ?? '-') }}</div>
                                         <div class="text-[10px] text-gray-500 font-medium mt-0.5">
-                                            Gol: {{ $u->pivot->user_golongan ?: ($u->golongan ?? '-') }}
+                                            {{ \App\Models\User::formatPangkatGolongan($u->pivot->user_golongan) ?: ($u->pangkat_golongan ?? $u->golongan ?? '-') }}
                                         </div>
                                     </td>
                                     <td class="py-4 px-5">

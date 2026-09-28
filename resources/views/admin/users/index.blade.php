@@ -77,10 +77,19 @@
                                     </select>
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                     <div>
                                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Jabatan</label>
                                         <input type="text" name="position" class="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-sipega-navy" placeholder="Widyaprada Ahli Madya">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Pangkat & Golongan</label>
+                                        <select name="golongan" class="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-sipega-navy">
+                                            <option value="">- Tanpa Golongan -</option>
+                                            @foreach(\App\Models\User::PANGKAT_GOLONGAN as $code => $full)
+                                                <option value="{{ $full }}">{{ $full }}</option>
+                                            @endforeach
+                                        </select>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Gugus Mutu</label>
@@ -371,7 +380,7 @@
                                                 </span>
                                             @endif
                                             @if($u->golongan)
-                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 text-[10px] font-black">Gol: {{ $u->golongan }}</span>
+                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 text-[10px] font-black">{{ $u->pangkat_golongan ?? $u->golongan }}</span>
                                             @endif
                                             @if($u->grade)
                                                 <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 text-[10px] font-black">KJ: {{ $u->grade }}</span>
@@ -431,8 +440,15 @@
                                                         <input type="text" name="position" value="{{ $u->position }}" placeholder="Jabatan..." class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
                                                     </div>
                                                     <div>
-                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Golongan</label>
-                                                        <input type="text" name="golongan" value="{{ $u->golongan }}" placeholder="Contoh: IV/a" class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Pangkat & Golongan</label>
+                                                        <select name="golongan" class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                            <option value="">- Tanpa Golongan -</option>
+                                                            @foreach(\App\Models\User::PANGKAT_GOLONGAN as $code => $full)
+                                                                <option value="{{ $full }}" {{ ($u->golongan == $full || $u->pangkat_golongan == $full || $u->golongan == $code) ? 'selected' : '' }}>
+                                                                    {{ $full }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
                                                     </div>
                                                 </div>
 

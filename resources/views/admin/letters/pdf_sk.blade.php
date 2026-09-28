@@ -216,7 +216,7 @@
             <tr>
                 <td style="text-align: center;">{{ $idx + 1 }}</td>
                 <td><b>{{ $user->name }}</b><br>NIP {{ $user->nip ?? '-' }}</td>
-                <td style="text-align: center;">{{ $user->golongan ?? '-' }}</td>
+                <td style="text-align: center;">{{ $user->pangkat_golongan ?? ($user->golongan ?? '-') }}</td>
                 <td style="text-align: center;">Anggota</td>
             </tr>
             @endforeach

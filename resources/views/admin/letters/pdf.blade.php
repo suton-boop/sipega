@@ -423,7 +423,7 @@
                 <td>
                     <b>{{ $user->name }}</b><br>
                     NIP. {{ $user->pivot->user_nip ?? $user->nip ?? '-' }}<br>
-                    {{ $user->pivot->user_golongan ?? $user->golongan ?? 'Pembina Tingkat I, IV/b' }}
+                    {{ \App\Models\User::formatPangkatGolongan($user->pivot->user_golongan) ?? ($user->pangkat_golongan ?? ($user->golongan ?? 'Pembina Tingkat I, IV/b')) }}
                 </td>
                 <td>
                     {{ $user->pivot->user_position ?? $user->position ?? 'Widyaprada Ahli Madya' }}

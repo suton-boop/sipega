@@ -74,7 +74,7 @@ class UserController extends Controller
             'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
             'position' => 'nullable|string|max:255',
             'gugus_mutu' => 'nullable|string|max:100',
-            'golongan' => 'nullable|string|max:50',
+            'golongan' => 'nullable|string|max:100',
             'drive_folder_url' => 'nullable|url',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -100,7 +100,7 @@ class UserController extends Controller
             $user->gugus_mutu = $request->gugus_mutu;
         }
         if ($request->has('golongan')) {
-            $user->golongan = $request->golongan;
+            $user->golongan = User::formatPangkatGolongan($request->golongan) ?: $request->golongan;
         }
         $user->drive_folder_url = $request->drive_folder_url;
         
@@ -182,8 +182,8 @@ class UserController extends Controller
             $handle = fopen('php://output', 'w');
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
             fputcsv($handle, $headers, ';');
-            fputcsv($handle, ['Ahmad Fauzi, S.Pd', "'198705122011011002", 'Widyaprada Ahli Muda', 'III/c', '9', 'Pegawai', 'ahmad.fauzi@bpmpkaltim.id'], ';');
-            fputcsv($handle, ['Siti Rahmah, M.Pd', "'199003152014022003", 'Pengembang Penilaian Pendidikan', 'III/b', '8', 'Pegawai', 'siti.rahmah@bpmpkaltim.id'], ';');
+            fputcsv($handle, ['Ahmad Fauzi, S.Pd', "'198705122011011002", 'Widyaprada Ahli Muda', 'Penata, III/c', '9', 'Pegawai', 'ahmad.fauzi@bpmpkaltim.id'], ';');
+            fputcsv($handle, ['Siti Rahmah, M.Pd', "'199003152014022003", 'Pengembang Penilaian Pendidikan', 'Penata Muda Tingkat I, III/b', '8', 'Pegawai', 'siti.rahmah@bpmpkaltim.id'], ';');
 
             header('Content-Type: text/csv; charset=UTF-8');
             header('Content-Disposition: attachment; filename="'.$filename.'"');
@@ -206,14 +206,15 @@ class UserController extends Controller
             'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
             'position' => 'nullable|string|max:255',
             'gugus_mutu' => 'nullable|string|max:100',
-            'golongan' => 'nullable|string|max:50',
+            'golongan' => 'nullable|string|max:100',
             'password' => 'required|string|min:8',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $photoPath = null;
         if ($request->hasFile('photo')) {
-            $photoPath = $request->file('photo')->store('photos', 'public');
+            $path = $request->file('photo')->store('photos', 'public');
+            $photoPath = $path;
         }
 
         $user = User::create([
@@ -223,7 +224,7 @@ class UserController extends Controller
             'role' => $request->role,
             'position' => $request->position,
             'gugus_mutu' => $request->gugus_mutu,
-            'golongan' => $request->golongan,
+            'golongan' => User::formatPangkatGolongan($request->golongan) ?: $request->golongan,
             'password' => Hash::make($request->password),
             'is_active' => true,
             'photo' => $photoPath,

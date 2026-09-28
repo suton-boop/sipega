@@ -390,7 +390,13 @@
                                                            :name="`participants[${index}][golongan]`" 
                                                            x-model="row.golongan" 
                                                            placeholder="Contoh: Pembina, IV/a" 
+                                                           list="pangkatGolonganList"
                                                            class="w-full text-[11px] font-medium rounded-xl border-gray-200 py-1 px-2.5 focus:border-sipega-orange focus:ring-sipega-orange">
+                                                    <datalist id="pangkatGolonganList">
+                                                        @foreach(\App\Models\User::PANGKAT_GOLONGAN as $full)
+                                                            <option value="{{ $full }}"></option>
+                                                        @endforeach
+                                                    </datalist>
                                                 </div>
                                             </div>
                                         </td>
@@ -659,7 +665,7 @@
                     $initialParticipants[] = [
                         'user_id' => (string)$userFound->id,
                         'nip' => ($userFound->nip && $userFound->nip !== '-') ? $userFound->nip : '',
-                        'golongan' => $userFound->golongan ?: 'Pembina, IV/a',
+                        'golongan' => $userFound->pangkat_golongan ?: ($userFound->golongan ?: 'Pembina, IV/a'),
                         'position' => $userFound->position ?: 'Widyaprada Ahli Madya',
                         'custom_role' => 'Narasumber',
                         'keterangan' => '',

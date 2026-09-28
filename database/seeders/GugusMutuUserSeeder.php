@@ -29,7 +29,15 @@ class GugusMutuUserSeeder extends Seeder
             'Pengolah Data dan Informasi'
         ];
 
-        $golonganList = ['IV/b', 'IV/a', 'III/d', 'III/c', 'III/b', 'III/a', 'II/c'];
+        $golonganList = [
+            'Pembina Tingkat I, IV/b',
+            'Pembina, IV/a',
+            'Penata Tingkat I, III/d',
+            'Penata, III/c',
+            'Penata Muda Tingkat I, III/b',
+            'Penata Muda, III/a',
+            'Pengatur, II/c'
+        ];
 
         $users = User::where('role', 'Pegawai')->get();
         foreach ($users as $idx => $user) {

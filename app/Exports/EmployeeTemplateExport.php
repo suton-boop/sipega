@@ -19,7 +19,7 @@ class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnForma
                 'Ahmad Fauzi, S.Pd',
                 '198705122011011002',
                 'Widyaprada Ahli Muda',
-                'III/c',
+                'Penata, III/c',
                 '9',
                 'Pegawai',
                 'ahmad.fauzi@bpmpkaltim.id'
@@ -28,7 +28,7 @@ class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnForma
                 'Siti Rahmah, M.Pd',
                 '199003152014022003',
                 'Pengembang Penilaian Pendidikan',
-                'III/b',
+                'Penata Muda Tingkat I, III/b',
                 '8',
                 'Pegawai',
                 'siti.rahmah@bpmpkaltim.id'
@@ -37,7 +37,7 @@ class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnForma
                 'Bambang Hidayat, S.Kom',
                 '199508202020121004',
                 'Pranata Komputer Ahli Pertama',
-                'III/a',
+                'Penata Muda, III/a',
                 '8',
                 'Pegawai',
                 'bambang.hidayat@bpmpkaltim.id'

@@ -44,7 +44,8 @@ class UserImport implements ToModel, WithHeadingRow
 
         $position = trim($row['jabatan'] ?? $row['position'] ?? '');
         $gugusMutu = trim($row['gugus_mutu'] ?? $row['gugus'] ?? '');
-        $golongan = trim($row['golongan'] ?? $row['pangkat'] ?? '');
+        $rawGolongan = trim($row['golongan'] ?? $row['pangkat'] ?? '');
+        $golongan = User::formatPangkatGolongan($rawGolongan) ?: $rawGolongan;
         $grade = trim($row['kj'] ?? $row['grade'] ?? '');
 
         // 6. Cek apakah pegawai dengan NIP ini sudah ada (hindari duplicate key error)

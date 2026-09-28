@@ -371,7 +371,7 @@
                                             {{ $u->position ?: 'Belum diatur' }}
                                         </div>
                                         <div class="flex items-center gap-1.5 mt-1 text-[10px] text-gray-500 font-medium">
-                                            <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 font-bold">Gol: {{ $u->golongan ?: '-' }}</span>
+                                            <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 font-bold">{{ $u->pangkat_golongan ?: ($u->golongan ?: '-') }}</span>
                                             @if($u->grade)
                                                 <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 font-bold">KJ: {{ $u->grade }}</span>
                                             @endif

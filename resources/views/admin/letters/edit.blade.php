@@ -336,7 +336,13 @@
                                                            :name="`participants[${index}][golongan]`" 
                                                            x-model="row.golongan" 
                                                            placeholder="Contoh: Pembina, IV/a" 
+                                                           list="pangkatGolonganListEdit"
                                                            class="w-full text-[11px] font-medium rounded-xl border-gray-200 py-1 px-2.5 focus:border-sipega-orange focus:ring-sipega-orange">
+                                                    <datalist id="pangkatGolonganListEdit">
+                                                        @foreach(\App\Models\User::PANGKAT_GOLONGAN as $full)
+                                                            <option value="{{ $full }}"></option>
+                                                        @endforeach
+                                                    </datalist>
                                                 </div>
                                             </div>
                                         </td>
@@ -598,7 +604,7 @@
             return [
                 'user_id' => $u->id,
                 'nip' => $u->pivot->user_nip ?? (($u->nip && $u->nip !== '-') ? $u->nip : ''),
-                'golongan' => $u->pivot->user_golongan ?? ($u->golongan ?? 'Pembina, IV/a'),
+                'golongan' => \App\Models\User::formatPangkatGolongan($u->pivot->user_golongan) ?? ($u->pangkat_golongan ?? ($u->golongan ?? 'Pembina, IV/a')),
                 'position' => $u->pivot->user_position ?? ($u->position ?? 'Widyaprada Ahli Madya'),
                 'custom_role' => $u->pivot->custom_role ?? 'Narasumber',
                 'keterangan' => $u->pivot->keterangan ?? '',
