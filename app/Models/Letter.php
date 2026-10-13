@@ -73,6 +73,11 @@ class Letter extends Model
             ->withTimestamps();
     }
 
+    public function travelReports()
+    {
+        return $this->hasMany(\App\Models\TravelReport::class);
+    }
+
     public function getCategoryLabelAttribute(): string
     {
         return match($this->category) {

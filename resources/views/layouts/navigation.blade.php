@@ -42,7 +42,7 @@
                     <!-- Group 2: PRESENSI -->
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-white/60 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('attendance.*', 'letters.*') ? 'text-white bg-white/5 rounded-full' : '' }}">
+                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-white/60 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('attendance.*', 'letters.*', 'travel-reports.*') ? 'text-white bg-white/5 rounded-full' : '' }}">
                                 <span>Layanan</span>
                                 <svg class="ms-1.5 h-3 w-3 opacity-40" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
                             </button>
@@ -51,6 +51,10 @@
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Administrasi Pegawai</div>
                             <x-dropdown-link :href="route('attendance.index')" class="text-[11px] font-bold py-3">Daftar Hadir</x-dropdown-link>
                             <x-dropdown-link :href="route('letters.index')" class="text-[11px] font-bold py-3">SK & Surat Tugas</x-dropdown-link>
+                            <x-dropdown-link :href="route('travel-reports.index')" class="text-[11px] font-bold py-3 text-sipega-navy bg-sipega-orange/5 flex items-center justify-between">
+                                <span>Laporan Perjalanan Dinas</span>
+                                <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">LAPORAN</span>
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('qrcode.index')" class="text-[11px] font-bold py-3 border-t border-gray-50 bg-slate-50">Pembuat QR Code</x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
@@ -176,6 +180,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('letters.index')" :active="request()->routeIs('letters.*')" class="text-xs font-medium py-3 ps-8">
                 {{ __('SK & Surat Tugas') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('travel-reports.index')" :active="request()->routeIs('travel-reports.*')" class="text-xs font-semibold py-3 ps-8 text-sipega-orange">
+                {{ __('Laporan Perjalanan Dinas') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('qrcode.index')" :active="request()->routeIs('qrcode.*')" class="text-xs font-medium py-3 ps-8 bg-slate-50">
                 {{ __('Pembuat QR Code') }}

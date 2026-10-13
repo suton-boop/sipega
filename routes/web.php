@@ -17,6 +17,7 @@ use App\Http\Controllers\LocationController;
 use App\Http\Controllers\TravelRecapController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DutySimulationController;
+use App\Http\Controllers\TravelReportController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page: Korporat & Institusional (SIPEGA-Elite)
@@ -140,6 +141,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // QR CODE GENERATOR (Layanan Mandiri)
     Route::get('/qrcode', [\App\Http\Controllers\QRCodeController::class, 'index'])->name('qrcode.index');
+
+    // MODUL LAPORAN PERJALANAN DINAS (Laporan Perjadin / Dinas Luar)
+    Route::get('/travel-reports/{id}/pdf', [TravelReportController::class, 'downloadPdf'])->name('travel-reports.pdf');
+    Route::get('/travel-reports/{id}/doc', [TravelReportController::class, 'downloadDoc'])->name('travel-reports.doc');
+    Route::resource('travel-reports', TravelReportController::class);
 });
 
 // TEMPORARY FIX ROUTE FOR HOSTING (visit: /fix-app)

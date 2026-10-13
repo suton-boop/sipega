@@ -200,4 +200,9 @@ class User extends Authenticatable
             )
             ->withTimestamps();
     }
+
+    public function travelReports()
+    {
+        return $this->hasMany(\App\Models\TravelReport::class);
+    }
 }
