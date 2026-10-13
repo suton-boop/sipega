@@ -18,6 +18,7 @@ use App\Http\Controllers\TravelRecapController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DutySimulationController;
 use App\Http\Controllers\TravelReportController;
+use App\Http\Controllers\EmployeeReportController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page: Korporat & Institusional (SIPEGA-Elite)
@@ -99,6 +100,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // REKAP DINAS LUAR (External & Internal)
     Route::get('/recap/travel', [TravelRecapController::class, 'index'])->name('travel.recap');
+
+    // RAPORT & CAPAIAN PEGAWAI (Console)
+    Route::get('/recap/performance', [EmployeeReportController::class, 'index'])->name('performance.recap');
+    Route::post('/recap/performance/recalculate', [EmployeeReportController::class, 'recalculate'])->name('performance.recalculate');
+    Route::get('/recap/performance/pdf', [EmployeeReportController::class, 'exportPdf'])->name('performance.pdf');
 
     // SIMULASI SURAT TUGAS (Console Perencanaan Tugas)
     Route::get('/duty-simulation', [DutySimulationController::class, 'index'])->name('duty-simulation.index');
