@@ -640,13 +640,13 @@
                             <label class="block text-[11px] font-bold text-gray-700 mb-1">
                                 Jam Masuk (Check In)
                             </label>
-                            <input type="time" name="check_in" x-model="form.check_in" @input="recalculateMinutes()" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
+                            <input type="time" step="1" name="check_in" x-model="form.check_in" @input="recalculateMinutes()" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-gray-700 mb-1">
                                 Jam Pulang (Check Out)
                             </label>
-                            <input type="time" name="check_out" x-model="form.check_out" @input="recalculateMinutes()" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
+                            <input type="time" step="1" name="check_out" x-model="form.check_out" @input="recalculateMinutes()" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
                         </div>
                     </div>
 
