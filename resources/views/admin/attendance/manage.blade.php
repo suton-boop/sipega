@@ -156,7 +156,7 @@
                                 {{ $selectedUser->name }}
                             </h3>
                             <p class="text-xs text-white/70 mt-0.5">
-                                {{ $selectedUser->position ?? 'Pegawai' }} &mdash; {{ $selectedUser->unit_kerja ?? 'BPMP Provinsi Kalimantan Timur' }}
+                                {{ $selectedUser->position ?? 'Pegawai' }} &mdash; {{ $selectedUser->gugus_mutu ?? 'BPMP Provinsi Kalimantan Timur' }}
                             </p>
                         </div>
                     </div>

@@ -227,7 +227,7 @@ class AttendanceController extends Controller
         // Ambil list semua pegawai aktif untuk dropdown filter
         $allPegawai = User::where('is_active', true)
             ->orderBy('name', 'asc')
-            ->get(['id', 'name', 'nip', 'position', 'unit_kerja']);
+            ->get(['id', 'name', 'nip', 'position', 'gugus_mutu']);
 
         // Filter bulan & pegawai
         $monthYear = $request->get('month');
