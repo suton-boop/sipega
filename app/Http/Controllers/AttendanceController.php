@@ -104,17 +104,19 @@ class AttendanceController extends Controller
                 $summary['total_alpa']++;
             } else {
                 $status = $log->status ?: 'Hadir';
+                $tlVal = max(0, (int)($log->tl_minutes ?? 0));
+                $pswVal = max(0, (int)($log->psw_minutes ?? 0));
                 $summary['total_present']++;
-                $summary['total_tl_minutes'] += $log->tl_minutes;
-                $summary['total_psw_minutes'] += $log->psw_minutes;
+                $summary['total_tl_minutes'] += $tlVal;
+                $summary['total_psw_minutes'] += $pswVal;
             }
 
             $recapData[] = [
                 'date' => $dateStr,
                 'check_in' => $log ? $log->check_in : null,
                 'check_out' => $log ? $log->check_out : null,
-                'tl_minutes' => $log ? $log->tl_minutes : 0,
-                'psw_minutes' => $log ? $log->psw_minutes : 0,
+                'tl_minutes' => $log ? max(0, (int)($log->tl_minutes ?? 0)) : 0,
+                'psw_minutes' => $log ? max(0, (int)($log->psw_minutes ?? 0)) : 0,
                 'status' => $status
             ];
         }
@@ -269,6 +271,10 @@ class AttendanceController extends Controller
         ];
 
         if ($selectedUser) {
+            // Bersihkan data lama jika ada nilai tl_minutes atau psw_minutes yang negatif
+            AttendanceLog::where('user_id', $selectedUser->id)->where('tl_minutes', '<', 0)->update(['tl_minutes' => 0]);
+            AttendanceLog::where('user_id', $selectedUser->id)->where('psw_minutes', '<', 0)->update(['psw_minutes' => 0]);
+
             $startOfMonth = Carbon::parse($monthYear . '-01')->startOfMonth();
             $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
@@ -358,9 +364,14 @@ class AttendanceController extends Controller
                     $stats['libur']++;
                 }
 
+                $tlVal = 0;
+                $pswVal = 0;
+
                 if ($log) {
-                    $stats['total_tl'] += (int)$log->tl_minutes;
-                    $stats['total_psw'] += (int)$log->psw_minutes;
+                    $tlVal = max(0, (int)($log->tl_minutes ?? 0));
+                    $pswVal = max(0, (int)($log->psw_minutes ?? 0));
+                    $stats['total_tl'] += $tlVal;
+                    $stats['total_psw'] += $pswVal;
                 }
 
                 $dailyData[] = [
@@ -375,8 +386,8 @@ class AttendanceController extends Controller
                     'log_id' => $log ? $log->id : null,
                     'check_in' => $log ? $log->check_in : null,
                     'check_out' => $log ? $log->check_out : null,
-                    'tl_minutes' => $log ? $log->tl_minutes : 0,
-                    'psw_minutes' => $log ? $log->psw_minutes : 0,
+                    'tl_minutes' => $tlVal,
+                    'psw_minutes' => $pswVal,
                     'status' => $status,
                     'notes' => $log ? $log->notes : null,
                     'source' => $log ? ($log->source ?: 'Mesin') : ($hasST ? 'ST' : '-'),

@@ -388,14 +388,30 @@
                                     {{ $row['check_out'] ?? '-' }}
                                 </td>
 
-                                <!-- TL -->
-                                <td class="py-3 px-4 text-center font-bold {{ $row['tl_minutes'] > 0 ? 'text-rose-600 bg-rose-50/50 rounded-xl' : 'text-gray-400' }}">
-                                    {{ $row['tl_minutes'] > 0 ? $row['tl_minutes'] : '-' }}
+                                <!-- TL (Terlambat) -->
+                                <td class="py-3 px-4 text-center">
+                                    @if($row['tl_minutes'] > 0)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 text-rose-700 border border-rose-200 shadow-sm" title="Terlambat {{ $row['tl_minutes'] }} Menit">
+                                            +{{ $row['tl_minutes'] }} mnt
+                                        </span>
+                                    @elseif($row['check_in'])
+                                        <span class="text-emerald-600 font-bold text-[10px]">0 mnt</span>
+                                    @else
+                                        <span class="text-gray-300">-</span>
+                                    @endif
                                 </td>
 
-                                <!-- PSW -->
-                                <td class="py-3 px-4 text-center font-bold {{ $row['psw_minutes'] > 0 ? 'text-amber-600 bg-amber-50/50 rounded-xl' : 'text-gray-400' }}">
-                                    {{ $row['psw_minutes'] > 0 ? $row['psw_minutes'] : '-' }}
+                                <!-- PSW (Pulang Sebelum Waktu) -->
+                                <td class="py-3 px-4 text-center">
+                                    @if($row['psw_minutes'] > 0)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-200 shadow-sm" title="Pulang Cepat {{ $row['psw_minutes'] }} Menit">
+                                            -{{ $row['psw_minutes'] }} mnt
+                                        </span>
+                                    @elseif($row['check_out'])
+                                        <span class="text-emerald-600 font-bold text-[10px]">0 mnt</span>
+                                    @else
+                                        <span class="text-gray-300">-</span>
+                                    @endif
                                 </td>
 
                                 <!-- Status Badge -->
