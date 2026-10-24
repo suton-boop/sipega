@@ -83,10 +83,22 @@
                             <td class="px-6 py-2 border border-gray-300 text-center text-sm font-mono font-bold text-blue-700">{{ $row['check_in'] ?? '-' }}</td>
                             <td class="px-6 py-2 border border-gray-300 text-center text-sm font-mono font-bold text-purple-700">{{ $row['check_out'] ?? '-' }}</td>
                             <td class="px-6 py-2 border border-gray-300 text-center text-sm">
-                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full 
-                                    {{ $row['status'] == 'Hadir' ? 'bg-blue-100 text-blue-800' : 
-                                       ($row['status'] == 'ALPA' ? 'bg-red-100 text-red-800' : 
-                                       (in_array($row['status'], ['DL', 'Tugas Luar (ST)']) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}">
+                                @php
+                                    $statusClass = match($row['status']) {
+                                        'Hadir' => 'bg-blue-100 text-blue-800',
+                                        'DL', 'Tugas Luar (ST)' => 'bg-green-100 text-green-800',
+                                        'Cuti' => 'bg-purple-100 text-purple-800',
+                                        'Sakit' => 'bg-amber-100 text-amber-800',
+                                        'Izin' => 'bg-teal-100 text-teal-800',
+                                        'LD', 'Lupa Absen Datang (LD)' => 'bg-amber-100 text-amber-900',
+                                        'LP', 'Lupa Absen Pulang (LP)' => 'bg-indigo-100 text-indigo-900',
+                                        'LDS' => 'bg-sky-100 text-sky-900',
+                                        'LPS' => 'bg-violet-100 text-violet-900',
+                                        'ALPA' => 'bg-red-100 text-red-800',
+                                        default => 'bg-gray-100 text-gray-800'
+                                    };
+                                @endphp
+                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full {{ $statusClass }}">
                                     {{ in_array($row['status'], ['DL', 'Tugas Luar (ST)']) ? 'Tugas Luar (ST)' : $row['status'] }}
                                 </span>
                             </td>

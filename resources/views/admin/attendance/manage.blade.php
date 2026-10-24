@@ -176,46 +176,66 @@
                 </div>
 
                 <!-- MINI STATS CARDS -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 mt-6 pt-6 border-t border-white/10">
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12 gap-2 mt-6 pt-6 border-t border-white/10">
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
                         <span class="text-[9px] font-black uppercase tracking-wider text-emerald-400 block">Hadir</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['hadir'] }}</span>
-                        <span class="text-[9px] text-white/50">Hari</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['hadir'] }}</span>
+                        <span class="text-[8px] text-white/50">Hari</span>
                     </div>
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
-                        <span class="text-[9px] font-black uppercase tracking-wider text-blue-400 block">Dinas Luar (DL)</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['dl'] }}</span>
-                        <span class="text-[9px] text-white/50">Hari</span>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-blue-400 block">DL</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['dl'] }}</span>
+                        <span class="text-[8px] text-white/50">Hari</span>
                     </div>
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
                         <span class="text-[9px] font-black uppercase tracking-wider text-purple-400 block">Cuti</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['cuti'] }}</span>
-                        <span class="text-[9px] text-white/50">Hari</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['cuti'] }}</span>
+                        <span class="text-[8px] text-white/50">Hari</span>
                     </div>
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
                         <span class="text-[9px] font-black uppercase tracking-wider text-amber-400 block">Sakit</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['sakit'] }}</span>
-                        <span class="text-[9px] text-white/50">Hari</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['sakit'] }}</span>
+                        <span class="text-[8px] text-white/50">Hari</span>
                     </div>
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
                         <span class="text-[9px] font-black uppercase tracking-wider text-teal-400 block">Izin</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['izin'] }}</span>
-                        <span class="text-[9px] text-white/50">Hari</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['izin'] }}</span>
+                        <span class="text-[8px] text-white/50">Hari</span>
                     </div>
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-amber-300 block">LD</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['ld'] }}</span>
+                        <span class="text-[8px] text-white/50">Lupa Dtg</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-indigo-300 block">LP</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['lp'] }}</span>
+                        <span class="text-[8px] text-white/50">Lupa Plg</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-sky-300 block">LDS</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['lds'] }}</span>
+                        <span class="text-[8px] text-white/50">LD Surat</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-violet-300 block">LPS</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['lps'] }}</span>
+                        <span class="text-[8px] text-white/50">LP Surat</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
                         <span class="text-[9px] font-black uppercase tracking-wider text-rose-400 block">ALPA</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['alpa'] }}</span>
-                        <span class="text-[9px] text-white/50">Hari</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['alpa'] }}</span>
+                        <span class="text-[8px] text-white/50">Hari</span>
                     </div>
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
-                        <span class="text-[9px] font-black uppercase tracking-wider text-orange-400 block">Terlambat (TL)</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['total_tl'] }}</span>
-                        <span class="text-[9px] text-white/50">Menit</span>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-orange-400 block">TL</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['total_tl'] }}</span>
+                        <span class="text-[8px] text-white/50">Menit</span>
                     </div>
-                    <div class="bg-white/5 rounded-2xl p-3 border border-white/10 text-center">
-                        <span class="text-[9px] font-black uppercase tracking-wider text-orange-400 block">Plg Cepat (PSW)</span>
-                        <span class="text-xl font-black text-white mt-0.5 block">{{ $stats['total_psw'] }}</span>
-                        <span class="text-[9px] text-white/50">Menit</span>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-orange-400 block">PSW</span>
+                        <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['total_psw'] }}</span>
+                        <span class="text-[8px] text-white/50">Menit</span>
                     </div>
                 </div>
             </div>
@@ -304,6 +324,10 @@
                                             'Cuti' => 'bg-purple-100 text-purple-800 border-purple-200',
                                             'Sakit' => 'bg-amber-100 text-amber-800 border-amber-200',
                                             'Izin' => 'bg-teal-100 text-teal-800 border-teal-200',
+                                            'LD', 'Lupa Absen Datang (LD)' => 'bg-amber-50 text-amber-900 border-amber-300',
+                                            'LP', 'Lupa Absen Pulang (LP)' => 'bg-indigo-50 text-indigo-900 border-indigo-300',
+                                            'LDS' => 'bg-sky-100 text-sky-900 border-sky-300',
+                                            'LPS' => 'bg-violet-100 text-violet-900 border-violet-300',
                                             'ALPA' => 'bg-rose-100 text-rose-800 border-rose-200',
                                             'Libur' => 'bg-gray-100 text-gray-600 border-gray-200',
                                             default => 'bg-slate-100 text-slate-700 border-slate-200'
@@ -407,8 +431,11 @@
                             <option value="Cuti">Cuti</option>
                             <option value="Sakit">Sakit</option>
                             <option value="Izin">Izin</option>
+                            <option value="LD">Lupa Absen Datang (LD)</option>
+                            <option value="LP">Lupa Absen Pulang (LP)</option>
+                            <option value="LDS">LDS (Lupa Absen Datang Bersurat)</option>
+                            <option value="LPS">LPS (Lupa Absen Pulang Bersurat)</option>
                             <option value="ALPA">ALPA (Tanpa Keterangan)</option>
-                            <option value="WFH">WFH / WFA</option>
                             <option value="Libur">Libur / Off</option>
                         </select>
                     </div>
@@ -453,8 +480,8 @@
                             <input type="number" name="psw_minutes" x-model="form.psw_minutes" min="0" class="w-full text-xs font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
                         </div>
                     </div>
-                    <div class="text-[10px] text-gray-400 bg-blue-50/60 p-2.5 rounded-xl border border-blue-100">
-                        <strong>Tips:</strong> Jika status diubah menjadi <em>DL, Cuti, Sakit, atau Izin</em>, sistem secara otomatis mereset penalti TL & PSW ke 0 agar tidak mengurangi Tukin pegawai.
+                    <div class="text-[10px] text-gray-500 bg-blue-50/70 p-3 rounded-2xl border border-blue-100">
+                        <strong>Tips:</strong> Jika status diubah menjadi <em>DL, Cuti, Sakit, Izin, LDS, atau LPS</em>, sistem secara otomatis mereset penalti TL & PSW ke 0 jika tidak diisi khusus agar tidak mengurangi Tukin pegawai.
                     </div>
 
                     <!-- Buttons -->

@@ -246,6 +246,10 @@ class AttendanceController extends Controller
             'cuti' => 0,
             'sakit' => 0,
             'izin' => 0,
+            'ld' => 0,
+            'lp' => 0,
+            'lds' => 0,
+            'lps' => 0,
             'alpa' => 0,
             'libur' => 0,
             'total_tl' => 0,
@@ -328,6 +332,14 @@ class AttendanceController extends Controller
                     $stats['sakit']++;
                 } elseif ($status === 'Izin') {
                     $stats['izin']++;
+                } elseif (in_array($status, ['LD', 'Lupa Absen Datang (LD)'])) {
+                    $stats['ld']++;
+                } elseif (in_array($status, ['LP', 'Lupa Absen Pulang (LP)'])) {
+                    $stats['lp']++;
+                } elseif (in_array($status, ['LDS', 'Lupa Absen Datang Bersurat (LDS)'])) {
+                    $stats['lds']++;
+                } elseif (in_array($status, ['LPS', 'Lupa Absen Pulang Bersurat (LPS)'])) {
+                    $stats['lps']++;
                 } elseif ($status === 'ALPA') {
                     $stats['alpa']++;
                 } elseif ($status === 'Libur') {
@@ -397,8 +409,8 @@ class AttendanceController extends Controller
         $tlMinutes = $request->filled('tl_minutes') ? (int)$request->tl_minutes : 0;
         $pswMinutes = $request->filled('psw_minutes') ? (int)$request->psw_minutes : 0;
 
-        // Jika status DL, Cuti, Sakit, atau Izin dan user tidak mengisi khusus tl/psw, reset ke 0 agar tidak merugikan Tukin
-        if (in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin']) && !$request->filled('tl_minutes')) {
+        // Jika status DL, Cuti, Sakit, Izin, LDS, atau LPS dan user tidak mengisi khusus tl/psw, reset ke 0 agar tidak merugikan Tukin
+        if (in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS']) && !$request->filled('tl_minutes')) {
             $tlMinutes = 0;
             $pswMinutes = 0;
         }
