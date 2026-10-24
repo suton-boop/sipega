@@ -94,10 +94,15 @@
                     this.tl_info = '+' + diff + ' mnt (Standar ' + startTarget + ')';
                 } else {
                     this.form.tl_minutes = 0;
-                    this.tl_info = 'Tepat waktu (<= ' + startTarget + ')';
+                    this.tl_info = 'Tepat / lebih awal (<= ' + startTarget + ')';
                 }
             } else {
-                this.tl_info = '-';
+                this.form.tl_minutes = 0;
+                if (['LD', 'Lupa Absen Datang (LD)'].includes(this.form.status)) {
+                    this.tl_info = '⚠️ Lupa Absen Datang (LD)';
+                } else {
+                    this.tl_info = '⚠️ Jam masuk kosong (Perlu Verifikasi)';
+                }
             }
 
             // Hitung Menit Pulang Sebelum Waktu (PSW)
@@ -118,7 +123,12 @@
                     this.psw_info = 'Tepat / lewat jam (' + endTarget + ')';
                 }
             } else {
-                this.psw_info = '-';
+                this.form.psw_minutes = 0;
+                if (['LP', 'Lupa Absen Pulang (LP)'].includes(this.form.status)) {
+                    this.psw_info = '⚠️ Lupa Absen Pulang (LP)';
+                } else {
+                    this.psw_info = '⚠️ Jam pulang kosong (Perlu Verifikasi)';
+                }
             }
         }
     }">
@@ -251,7 +261,22 @@
                 </div>
 
                 <!-- MINI STATS CARDS -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-12 gap-2 mt-6 pt-6 border-t border-white/10">
+                @if(($stats['needs_verif'] ?? 0) > 0)
+                <div class="mt-4 p-3.5 bg-amber-500/20 border border-amber-400/40 rounded-2xl flex items-center justify-between text-xs text-amber-200">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-lg">⚠️</span>
+                        <div>
+                            <span class="font-black text-amber-300">Perhatian:</span>
+                            <span class="font-medium">Terdapat <strong>{{ $stats['needs_verif'] }} hari</strong> kehadiran yang jam masuk atau jam pulangnya kosong dan memerlukan verifikasi (LD / LP / Surat).</span>
+                        </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 uppercase tracking-wider whitespace-nowrap shadow-sm">
+                        {{ $stats['needs_verif'] }} Perlu Verifikasi
+                    </span>
+                </div>
+                @endif
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 xl:grid-cols-13 gap-2 mt-6 pt-6 border-t border-white/10">
                     <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
                         <span class="text-[9px] font-black uppercase tracking-wider text-emerald-400 block">Hadir</span>
                         <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['hadir'] }}</span>
@@ -300,6 +325,11 @@
                     <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
                         <span class="text-[9px] font-black uppercase tracking-wider text-rose-400 block">ALPA</span>
                         <span class="text-lg font-black text-white mt-0.5 block">{{ $stats['alpa'] }}</span>
+                        <span class="text-[8px] text-white/50">Hari</span>
+                    </div>
+                    <div class="bg-white/5 rounded-2xl p-2.5 border {{ ($stats['needs_verif'] ?? 0) > 0 ? 'border-amber-400/50 bg-amber-500/10' : 'border-white/10' }} text-center">
+                        <span class="text-[9px] font-black uppercase tracking-wider text-amber-300 block">Verif</span>
+                        <span class="text-lg font-black {{ ($stats['needs_verif'] ?? 0) > 0 ? 'text-amber-300' : 'text-white' }} mt-0.5 block">{{ $stats['needs_verif'] ?? 0 }}</span>
                         <span class="text-[8px] text-white/50">Hari</span>
                     </div>
                     <div class="bg-white/5 rounded-2xl p-2.5 border border-white/10 text-center">
@@ -379,23 +409,43 @@
                                 </td>
 
                                 <!-- Check In -->
-                                <td class="py-3 px-4 text-center font-mono font-bold {{ $row['check_in'] ? 'text-emerald-700' : 'text-gray-300' }}">
-                                    {{ $row['check_in'] ?? '-' }}
+                                <td class="py-3 px-4 text-center font-mono font-bold">
+                                    @if($row['check_in'])
+                                        <span class="text-emerald-700">{{ $row['check_in'] }}</span>
+                                    @elseif(!empty($row['needs_check_in_verif']))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300" title="Jam masuk tidak ada scan / Lupa Absen Datang">
+                                            Kosong
+                                        </span>
+                                    @else
+                                        <span class="text-gray-300">-</span>
+                                    @endif
                                 </td>
 
                                 <!-- Check Out -->
-                                <td class="py-3 px-4 text-center font-mono font-bold {{ $row['check_out'] ? 'text-indigo-700' : 'text-gray-300' }}">
-                                    {{ $row['check_out'] ?? '-' }}
+                                <td class="py-3 px-4 text-center font-mono font-bold">
+                                    @if($row['check_out'])
+                                        <span class="text-indigo-700">{{ $row['check_out'] }}</span>
+                                    @elseif(!empty($row['needs_check_out_verif']))
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300" title="Jam pulang tidak ada scan / Lupa Absen Pulang">
+                                            Kosong
+                                        </span>
+                                    @else
+                                        <span class="text-gray-300">-</span>
+                                    @endif
                                 </td>
 
                                 <!-- TL (Terlambat) -->
                                 <td class="py-3 px-4 text-center">
-                                    @if($row['tl_minutes'] > 0)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 text-rose-700 border border-rose-200 shadow-sm" title="Terlambat {{ $row['tl_minutes'] }} Menit">
+                                    @if(!empty($row['needs_check_in_verif']))
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-sm" title="Jam masuk kosong, jangan anggap 0 menit. Tandai untuk verifikasi / LD">
+                                            <span>⚠️</span> Verifikasi
+                                        </span>
+                                    @elseif($row['tl_minutes'] > 0)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 text-rose-700 border border-rose-200 shadow-sm" title="Terlambat {{ $row['tl_minutes'] }} Menit (Masuk > 07.30)">
                                             +{{ $row['tl_minutes'] }} mnt
                                         </span>
                                     @elseif($row['check_in'])
-                                        <span class="text-emerald-600 font-bold text-[10px]">0 mnt</span>
+                                        <span class="text-emerald-600 font-bold text-[10px]" title="Masuk lebih awal atau tepat waktu (0 menit)">0 mnt</span>
                                     @else
                                         <span class="text-gray-300">-</span>
                                     @endif
@@ -403,12 +453,16 @@
 
                                 <!-- PSW (Pulang Sebelum Waktu) -->
                                 <td class="py-3 px-4 text-center">
-                                    @if($row['psw_minutes'] > 0)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-200 shadow-sm" title="Pulang Cepat {{ $row['psw_minutes'] }} Menit">
+                                    @if(!empty($row['needs_check_out_verif']))
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-sm" title="Jam pulang kosong, jangan anggap 0 menit. Tandai untuk verifikasi / LP">
+                                            <span>⚠️</span> Verifikasi
+                                        </span>
+                                    @elseif($row['psw_minutes'] > 0)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-200 shadow-sm" title="Pulang Cepat {{ $row['psw_minutes'] }} Menit (Pulang sebelum jadwal)">
                                             -{{ $row['psw_minutes'] }} mnt
                                         </span>
                                     @elseif($row['check_out'])
-                                        <span class="text-emerald-600 font-bold text-[10px]">0 mnt</span>
+                                        <span class="text-emerald-600 font-bold text-[10px]" title="Pulang setelah jadwal atau tepat waktu (0 menit)">0 mnt</span>
                                     @else
                                         <span class="text-gray-300">-</span>
                                     @endif
@@ -557,6 +611,27 @@
                         </label>
                         <textarea name="notes" x-model="form.notes" rows="3" placeholder="Contoh: Dinas Luar Pendampingan Sekolah Penggerak di Kota Balikpapan / Cuti Tahunan SK No. 123..." class="w-full text-xs font-medium rounded-2xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange transition-all p-3 shadow-sm"></textarea>
                         <p class="text-[10px] text-gray-400 mt-1">Keterangan ini akan tampil pada rekap kehadiran pegawai dan laporan bulanan.</p>
+                    </div>
+
+                    <!-- Peringatan & Panduan Verifikasi Jam Kosong -->
+                    <div x-show="!form.check_in && !['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'Libur', 'ALPA'].includes(form.status)" class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 flex items-start gap-2.5">
+                        <span class="text-base flex-shrink-0">⚠️</span>
+                        <div>
+                            <strong class="font-black text-amber-900 block">Jam Masuk Kosong (Perlu Verifikasi)</strong>
+                            <p class="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
+                                Jam masuk tidak otomatis dianggap 0 menit. Jika pegawai hadir namun tidak scan masuk, tetapkan status <strong>LD (Lupa Absen Datang)</strong> atau <strong>LDS (Lupa Absen Datang Bersurat)</strong>, atau isikan jam masuk hasil verifikasi manual.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div x-show="!form.check_out && !['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'Libur', 'ALPA'].includes(form.status)" class="p-3 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-800 flex items-start gap-2.5">
+                        <span class="text-base flex-shrink-0">⚠️</span>
+                        <div>
+                            <strong class="font-black text-amber-900 block">Jam Pulang Kosong (Perlu Verifikasi)</strong>
+                            <p class="text-[11px] text-amber-700 mt-0.5 leading-relaxed">
+                                Jam pulang tidak otomatis dianggap 0 menit. Jika pegawai hadir namun tidak scan pulang, tetapkan status <strong>LP (Lupa Absen Pulang)</strong> atau <strong>LPS (Lupa Absen Pulang Bersurat)</strong>, atau isikan jam pulang hasil verifikasi manual.
+                            </p>
+                        </div>
                     </div>
 
                     <!-- Jam Masuk & Jam Pulang (Opsional Koreksi) -->

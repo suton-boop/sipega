@@ -94,30 +94,61 @@ class AttendanceController extends Controller
             $status = 'Hadir';
             $isWorkingDay = !$date->isWeekend() && !in_array($dateStr, $holidays);
 
+            $checkIn = $log ? $log->check_in : null;
+            $checkOut = $log ? $log->check_out : null;
+
             if (in_array($dateStr, $activeAssignmentDays) || ($log && in_array($log->status, ['DL', 'Tugas Luar (ST)']))) {
                 $status = 'Tugas Luar (ST)';
                 $summary['total_st']++;
+            } elseif ($log && !empty($log->status)) {
+                $status = $log->status;
+                if ($status === 'Hadir') {
+                    $summary['total_present']++;
+                }
             } elseif (!$isWorkingDay) {
                 $status = 'Libur/Off';
-            } elseif (!$log || (empty($log->check_in) && empty($log->check_out))) {
+            } elseif (!$log || (empty($checkIn) && empty($checkOut))) {
                 $status = 'ALPA';
                 $summary['total_alpa']++;
             } else {
-                $status = $log->status ?: 'Hadir';
+                $status = 'Hadir';
+                $summary['total_present']++;
+            }
+
+            $tlVal = 0;
+            $pswVal = 0;
+            if ($log) {
                 $tlVal = max(0, (int)($log->tl_minutes ?? 0));
                 $pswVal = max(0, (int)($log->psw_minutes ?? 0));
-                $summary['total_present']++;
                 $summary['total_tl_minutes'] += $tlVal;
                 $summary['total_psw_minutes'] += $pswVal;
             }
 
+            $isExempt = in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS', 'Libur']);
+            $needsCheckInVerif = false;
+            $needsCheckOutVerif = false;
+            if ($isWorkingDay && !$isExempt) {
+                if (in_array($status, ['LD', 'Lupa Absen Datang (LD)']) || (empty($checkIn) && !empty($checkOut))) {
+                    $needsCheckInVerif = true;
+                }
+                if (in_array($status, ['LP', 'Lupa Absen Pulang (LP)']) || (!empty($checkIn) && empty($checkOut))) {
+                    $needsCheckOutVerif = true;
+                }
+                if (empty($checkIn) && empty($checkOut) && $log && $status === 'Hadir') {
+                    $needsCheckInVerif = true;
+                    $needsCheckOutVerif = true;
+                }
+            }
+
             $recapData[] = [
                 'date' => $dateStr,
-                'check_in' => $log ? $log->check_in : null,
-                'check_out' => $log ? $log->check_out : null,
-                'tl_minutes' => $log ? max(0, (int)($log->tl_minutes ?? 0)) : 0,
-                'psw_minutes' => $log ? max(0, (int)($log->psw_minutes ?? 0)) : 0,
-                'status' => $status
+                'check_in' => $checkIn,
+                'check_out' => $checkOut,
+                'tl_minutes' => $tlVal,
+                'psw_minutes' => $pswVal,
+                'status' => $status,
+                'needs_check_in_verif' => $needsCheckInVerif,
+                'needs_check_out_verif' => $needsCheckOutVerif,
             ];
         }
 
@@ -266,6 +297,7 @@ class AttendanceController extends Controller
             'lps' => 0,
             'alpa' => 0,
             'libur' => 0,
+            'needs_verif' => 0,
             'total_tl' => 0,
             'total_psw' => 0,
         ];
@@ -374,6 +406,30 @@ class AttendanceController extends Controller
                     $stats['total_psw'] += $pswVal;
                 }
 
+                $checkIn = $log ? $log->check_in : null;
+                $checkOut = $log ? $log->check_out : null;
+
+                $isExempt = in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS', 'Libur']);
+                $needsCheckInVerif = false;
+                $needsCheckOutVerif = false;
+
+                if ($isWorkingDay && !$isExempt) {
+                    if (in_array($status, ['LD', 'Lupa Absen Datang (LD)']) || (empty($checkIn) && !empty($checkOut))) {
+                        $needsCheckInVerif = true;
+                    }
+                    if (in_array($status, ['LP', 'Lupa Absen Pulang (LP)']) || (!empty($checkIn) && empty($checkOut))) {
+                        $needsCheckOutVerif = true;
+                    }
+                    if (empty($checkIn) && empty($checkOut) && $log && $status === 'Hadir') {
+                        $needsCheckInVerif = true;
+                        $needsCheckOutVerif = true;
+                    }
+                }
+
+                if ($needsCheckInVerif || $needsCheckOutVerif) {
+                    $stats['needs_verif']++;
+                }
+
                 $dailyData[] = [
                     'date' => $dateStr,
                     'day_name' => $date->translatedFormat('l'),
@@ -384,10 +440,12 @@ class AttendanceController extends Controller
                     'day_of_week' => $date->dayOfWeek,
                     'has_st' => $hasST,
                     'log_id' => $log ? $log->id : null,
-                    'check_in' => $log ? $log->check_in : null,
-                    'check_out' => $log ? $log->check_out : null,
+                    'check_in' => $checkIn,
+                    'check_out' => $checkOut,
                     'tl_minutes' => $tlVal,
                     'psw_minutes' => $pswVal,
+                    'needs_check_in_verif' => $needsCheckInVerif,
+                    'needs_check_out_verif' => $needsCheckOutVerif,
                     'status' => $status,
                     'notes' => $log ? $log->notes : null,
                     'source' => $log ? ($log->source ?: 'Mesin') : ($hasST ? 'ST' : '-'),
@@ -543,7 +601,20 @@ class AttendanceController extends Controller
                 $log->tl_minutes = 0;
                 $log->psw_minutes = 0;
             } else {
-                // Hitung TL
+                // Tandai verifikasi jika jam masuk / pulang kosong
+                if (empty($log->check_in) && !empty($log->check_out) && in_array($status, ['Hadir', 'LD'])) {
+                    $log->status = 'LD';
+                    if (empty($log->notes)) {
+                        $log->notes = 'Perlu Verifikasi: Jam masuk kosong (LD)';
+                    }
+                } elseif (!empty($log->check_in) && empty($log->check_out) && in_array($status, ['Hadir', 'LP'])) {
+                    $log->status = 'LP';
+                    if (empty($log->notes)) {
+                        $log->notes = 'Perlu Verifikasi: Jam pulang kosong (LP)';
+                    }
+                }
+
+                // Hitung TL: selisih jam masuk aktual dengan standar jika masuk setelah standar, 0 jika lebih awal atau tepat
                 if ($log->check_in) {
                     $checkInFormatted = strlen($log->check_in) === 5 ? ($log->check_in . ':00') : $log->check_in;
                     $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
@@ -553,7 +624,7 @@ class AttendanceController extends Controller
                     $log->tl_minutes = 0;
                 }
 
-                // Hitung PSW
+                // Hitung PSW: selisih jam pulang aktual dengan target jika pulang sebelum target, 0 jika setelah atau tepat
                 if ($log->check_out) {
                     $checkOutFormatted = strlen($log->check_out) === 5 ? ($log->check_out . ':00') : $log->check_out;
                     $dtCheckOut = Carbon::parse($date . ' ' . $checkOutFormatted);
@@ -621,7 +692,20 @@ class AttendanceController extends Controller
                 $log->tl_minutes = 0;
                 $log->psw_minutes = 0;
             } else {
-                // Hitung TL
+                // Tandai verifikasi jika jam masuk / pulang kosong
+                if (empty($log->check_in) && !empty($log->check_out) && in_array($status, ['Hadir', 'LD'])) {
+                    $log->status = 'LD';
+                    if (empty($log->notes)) {
+                        $log->notes = 'Perlu Verifikasi: Jam masuk kosong (LD)';
+                    }
+                } elseif (!empty($log->check_in) && empty($log->check_out) && in_array($status, ['Hadir', 'LP'])) {
+                    $log->status = 'LP';
+                    if (empty($log->notes)) {
+                        $log->notes = 'Perlu Verifikasi: Jam pulang kosong (LP)';
+                    }
+                }
+
+                // Hitung TL: selisih jam masuk aktual dengan standar jika masuk setelah standar, 0 jika lebih awal atau tepat
                 if ($log->check_in) {
                     $checkInFormatted = strlen($log->check_in) === 5 ? ($log->check_in . ':00') : $log->check_in;
                     $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
@@ -631,7 +715,7 @@ class AttendanceController extends Controller
                     $log->tl_minutes = 0;
                 }
 
-                // Hitung PSW
+                // Hitung PSW: selisih jam pulang aktual dengan target jika pulang sebelum target, 0 jika setelah atau tepat
                 if ($log->check_out) {
                     $checkOutFormatted = strlen($log->check_out) === 5 ? ($log->check_out . ':00') : $log->check_out;
                     $dtCheckOut = Carbon::parse($date . ' ' . $checkOutFormatted);

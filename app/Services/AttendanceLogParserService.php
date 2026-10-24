@@ -533,10 +533,25 @@ class AttendanceLogParserService
                         ->exists();
                 }
 
-                $status = $isDL ? 'DL' : 'Hadir';
                 if ($isDL) {
+                    $status = 'DL';
+                    $notes = 'Sinkronisasi Log Mesin (Ada Surat Tugas Resmi).';
                     $tlMinutes = 0;
                     $pswMinutes = 0;
+                } else {
+                    // Logika: Jika jam masuk atau pulang kosong, jangan anggap 0 menit; tandai untuk verifikasi
+                    if (empty($checkIn) && !empty($checkOut)) {
+                        $status = 'LD'; // Lupa Absen Datang
+                        $notes = 'Perlu Verifikasi: Jam masuk kosong (hanya scan pulang).';
+                        $tlMinutes = 0;
+                    } elseif (!empty($checkIn) && empty($checkOut)) {
+                        $status = 'LP'; // Lupa Absen Pulang
+                        $notes = 'Perlu Verifikasi: Jam pulang kosong (hanya scan datang).';
+                        $pswMinutes = 0;
+                    } else {
+                        $status = 'Hadir';
+                        $notes = 'Sinkronisasi Log Mesin Absensi (' . $count . ' scan).';
+                    }
                 }
 
                 $empSummary['total_tl_minutes'] += $tlMinutes;
@@ -554,9 +569,7 @@ class AttendanceLogParserService
                         'tl_minutes' => $tlMinutes,
                         'psw_minutes' => $pswMinutes,
                         'status' => $status,
-                        'notes' => $isDL
-                            ? 'Sinkronisasi Log Mesin (Ada Surat Tugas Resmi).'
-                            : 'Sinkronisasi Log Mesin Absensi (' . $count . ' scan).',
+                        'notes' => $notes,
                         'source' => 'Mesin'
                     ]
                 );

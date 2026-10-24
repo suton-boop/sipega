@@ -102,8 +102,28 @@
                                     {{ in_array($row['status'], ['DL', 'Tugas Luar (ST)']) ? 'Tugas Luar (ST)' : $row['status'] }}
                                 </span>
                             </td>
-                            <td class="px-4 py-2 border border-gray-300 text-center text-sm text-gray-900">{{ $row['tl_minutes'] > 0 ? $row['tl_minutes'] : '-' }}</td>
-                            <td class="px-4 py-2 border border-gray-300 text-center text-sm text-gray-900">{{ $row['psw_minutes'] > 0 ? $row['psw_minutes'] : '-' }}</td>
+                            <td class="px-4 py-2 border border-gray-300 text-center text-sm text-gray-900">
+                                @if(!empty($row['needs_check_in_verif']))
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900" title="Jam masuk kosong (Perlu verifikasi)">⚠️ Verif</span>
+                                @elseif($row['tl_minutes'] > 0)
+                                    <span class="font-bold text-red-600">+{{ $row['tl_minutes'] }} mnt</span>
+                                @elseif($row['check_in'])
+                                    <span class="text-emerald-700 font-semibold text-xs">0 mnt</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
+                            <td class="px-4 py-2 border border-gray-300 text-center text-sm text-gray-900">
+                                @if(!empty($row['needs_check_out_verif']))
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900" title="Jam pulang kosong (Perlu verifikasi)">⚠️ Verif</span>
+                                @elseif($row['psw_minutes'] > 0)
+                                    <span class="font-bold text-amber-700">-{{ $row['psw_minutes'] }} mnt</span>
+                                @elseif($row['check_out'])
+                                    <span class="text-emerald-700 font-semibold text-xs">0 mnt</span>
+                                @else
+                                    -
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
