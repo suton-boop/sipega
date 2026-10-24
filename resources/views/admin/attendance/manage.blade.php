@@ -33,6 +33,8 @@
         editModal: false,
         recalcModal: false,
         recalcRamadhan: false,
+        recalcAllModal: false,
+        recalcAllRamadhan: false,
         tl_info: '',
         psw_info: '',
         form: {
@@ -145,16 +147,16 @@
                 <form method="GET" action="{{ route('admin.attendance.manage') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
                     
                     <!-- Filter Bulan -->
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <label class="block text-xs font-black uppercase tracking-wider text-sipega-navy mb-2 flex items-center gap-1.5">
                             <svg class="w-4 h-4 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            1. Pilih Periode Bulan
+                            1. Periode Bulan
                         </label>
                         <input type="month" name="month" value="{{ $monthYear }}" class="w-full text-sm font-bold rounded-2xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange transition-all py-2.5 px-4 shadow-sm">
                     </div>
 
                     <!-- Filter Nama Pegawai -->
-                    <div class="md:col-span-6">
+                    <div class="md:col-span-5">
                         <label class="block text-xs font-black uppercase tracking-wider text-sipega-navy mb-2 flex items-center gap-1.5">
                             <svg class="w-4 h-4 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                             2. Pilih Nama Pegawai
@@ -169,11 +171,15 @@
                         </select>
                     </div>
 
-                    <!-- Tombol Submit Filter -->
-                    <div class="md:col-span-2">
-                        <button type="submit" class="w-full py-2.5 px-4 bg-sipega-navy hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2">
+                    <!-- Tombol Submit Filter & Tombol Hitung All Pegawai -->
+                    <div class="md:col-span-4 flex items-center gap-2">
+                        <button type="submit" class="flex-1 py-2.5 px-4 bg-sipega-navy hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             Tampilkan
+                        </button>
+                        <button type="button" @click="recalcAllModal = true" class="py-2.5 px-4 bg-sipega-orange hover:bg-orange-600 text-white font-bold text-xs rounded-2xl shadow-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            <span>Hitung TL & PSW All Pegawai</span>
                         </button>
                     </div>
                 </form>
@@ -189,7 +195,11 @@
                 <p class="text-xs text-gray-500 max-w-md mx-auto mt-2 leading-relaxed">
                     Silakan tentukan bulan dan pilih nama pegawai untuk menampilkan tabel kehadiran harian, jam finger, serta memberi atau mengedit keterangan dinas, cuti, sakit, dan izin.
                 </p>
-                <div class="mt-6 flex flex-wrap justify-center gap-3">
+                <div class="mt-6 flex flex-wrap justify-center items-center gap-3">
+                    <button type="button" @click="recalcAllModal = true" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider bg-sipega-orange hover:bg-orange-600 text-white shadow-md transition-all cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        Hitung TL & PSW All Pegawai
+                    </button>
                     <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700">
                         <span class="w-2 h-2 rounded-full bg-blue-600"></span> Total {{ $allPegawai->count() }} Pegawai Terdaftar
                     </span>
@@ -319,7 +329,11 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <button type="button" @click="recalcModal = true" class="inline-flex items-center gap-1.5 px-4 py-2 bg-sipega-navy hover:bg-black text-white text-xs font-bold rounded-2xl shadow-sm transition-all cursor-pointer">
                             <svg class="w-3.5 h-3.5 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            Hitung Otomatis TL & PSW Sebulan
+                            Hitung Pegawai Ini
+                        </button>
+                        <button type="button" @click="recalcAllModal = true" class="inline-flex items-center gap-1.5 px-4 py-2 bg-sipega-orange hover:bg-orange-600 text-white text-xs font-bold rounded-2xl shadow-sm transition-all cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Hitung All Pegawai
                         </button>
                         <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold bg-gray-100 text-gray-700">
                             {{ count($dailyData) }} Hari
@@ -668,6 +682,79 @@
             </div>
         </div>
         @endif
+
+        <!-- MODAL RECALCULATE ALL EMPLOYEES (Hitung Otomatis Seluruh Pegawai) -->
+        <div x-show="recalcAllModal" 
+             x-cloak 
+             x-transition:enter="ease-out duration-300" 
+             x-transition:enter-start="opacity-0" 
+             x-transition:enter-end="opacity-100" 
+             x-transition:leave="ease-in duration-200" 
+             x-transition:leave-start="opacity-100" 
+             x-transition:leave-end="opacity-0" 
+             class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            
+            <div @click.away="recalcAllModal = false" 
+                 class="bg-white rounded-[2.5rem] max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 transform transition-all">
+                
+                <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-sipega-orange block">
+                            Kalkulasi Otomatis Seluruh Pegawai
+                        </span>
+                        <h3 class="text-xl font-black text-sipega-navy mt-0.5">
+                            Hitung Menit TL & PSW All Pegawai
+                        </h3>
+                    </div>
+                    <button @click="recalcAllModal = false" class="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <div class="mt-4 p-4 rounded-2xl bg-orange-50/70 border border-orange-200/60 text-xs space-y-1">
+                    <p class="text-gray-700">Sasaran: <b class="text-sipega-navy">Semua Pegawai Terdaftar ({{ $allPegawai->count() }} Pegawai)</b></p>
+                    <p class="text-gray-700">Periode: <b class="text-sipega-orange">{{ \Carbon\Carbon::parse($monthYear.'-01')->translatedFormat('F Y') }}</b></p>
+                </div>
+
+                <form method="POST" action="{{ route('admin.attendance.recalculate_all') }}" class="mt-5 space-y-4">
+                    @csrf
+                    <input type="hidden" name="month" value="{{ $monthYear }}">
+
+                    <!-- Pola Jam Kerja Pilihan -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-black uppercase tracking-wider text-sipega-navy">
+                            Pilih Pola Jam Kerja:
+                        </label>
+                        <div class="p-3.5 rounded-2xl border transition-all" :class="recalcAllRamadhan ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-gray-200'">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <span class="text-xs font-bold text-sipega-navy flex items-center gap-1.5">
+                                    <span>🌙</span> Pola Jam Kerja Ramadhan / Puasa
+                                </span>
+                                <input type="checkbox" name="is_ramadhan" value="1" x-model="recalcAllRamadhan" class="rounded text-emerald-600 focus:ring-emerald-500 border-gray-300">
+                            </label>
+                            <p class="text-[10px] text-gray-500 mt-1" x-text="recalcAllRamadhan ? 'Standar: Masuk 08:00 | Pulang 15:00 (Jumat 15:30 WITA)' : 'Standar Normal: Masuk 07:30 | Pulang 16:00 (Jumat 16:30 WITA)'"></p>
+                        </div>
+                    </div>
+
+                    <div class="text-[11px] text-gray-600 leading-relaxed bg-slate-50 border border-slate-200 p-3.5 rounded-2xl space-y-1">
+                        <p class="font-bold text-sipega-navy">Informasi Proses:</p>
+                        <ul class="list-disc pl-4 space-y-0.5 text-[10px] text-gray-500">
+                            <li>Sistem akan memproses seluruh log kehadiran seluruh pegawai pada bulan <strong>{{ \Carbon\Carbon::parse($monthYear.'-01')->translatedFormat('F Y') }}</strong>.</li>
+                            <li>Status bebas penalti (DL, Cuti, Sakit, Izin, LDS, LPS, Libur) otomatis diberi TL: 0 dan PSW: 0.</li>
+                            <li>Kalkulasi capaian performa dan raport seluruh pegawai akan otomatis dimutakhirkan.</li>
+                        </ul>
+                    </div>
+
+                    <div class="pt-3 flex items-center justify-end gap-3">
+                        <button type="button" @click="recalcAllModal = false" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-2xl transition-all">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 bg-sipega-orange hover:bg-orange-600 text-white text-xs font-bold rounded-2xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Mulai Hitung All Pegawai
+                        </button>
+                    </div>
+                </form>
 
             </div>
         </div>

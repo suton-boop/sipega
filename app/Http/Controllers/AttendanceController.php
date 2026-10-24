@@ -569,4 +569,86 @@ class AttendanceController extends Controller
         $polaName = $isRamadhan ? 'Pola Ramadhan (08:00 / 15:00 / 15:30)' : 'Pola Normal (07:30 / 16:00 / 16:30)';
         return back()->with('success', "Menit Keterlambatan (TL) & Pulang Sebelum Waktu (PSW) untuk {$user->name} bulan {$month} berhasil dihitung ulang ({$countUpdated} hari data, {$polaName}).");
     }
+
+    /**
+     * SIPEGA: Hitung Ulang Menit TL dan PSW Satu Bulan untuk SEMUA Pegawai (All Pegawai)
+     */
+    public function recalculateAllEmployees(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'month' => 'required|string',
+            'is_ramadhan' => 'nullable|boolean',
+        ]);
+
+        ini_set('max_execution_time', 600);
+
+        $month = $request->month;
+        $isRamadhan = $request->boolean('is_ramadhan');
+
+        $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        $officeStartTime = $isRamadhan ? '08:00:00' : '07:30:00';
+        $officeEndWeekday = $isRamadhan ? '15:00:00' : '16:00:00';
+        $officeEndFriday = $isRamadhan ? '15:30:00' : '16:30:00';
+
+        $logs = AttendanceLog::whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+            ->get();
+
+        $countUpdated = 0;
+        $affectedUsers = [];
+
+        foreach ($logs as $log) {
+            $date = Carbon::parse($log->date)->toDateString();
+            $status = $log->status;
+
+            if (in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS', 'Libur'])) {
+                $log->tl_minutes = 0;
+                $log->psw_minutes = 0;
+            } else {
+                // Hitung TL
+                if ($log->check_in) {
+                    $checkInFormatted = strlen($log->check_in) === 5 ? ($log->check_in . ':00') : $log->check_in;
+                    $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
+                    $dtStart = Carbon::parse($date . ' ' . $officeStartTime);
+                    $log->tl_minutes = $dtCheckIn->gt($dtStart) ? $dtCheckIn->diffInMinutes($dtStart) : 0;
+                } else {
+                    $log->tl_minutes = 0;
+                }
+
+                // Hitung PSW
+                if ($log->check_out) {
+                    $checkOutFormatted = strlen($log->check_out) === 5 ? ($log->check_out . ':00') : $log->check_out;
+                    $dtCheckOut = Carbon::parse($date . ' ' . $checkOutFormatted);
+                    $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+                    $exitTarget = ($dayOfWeek == Carbon::FRIDAY) ? $officeEndFriday : $officeEndWeekday;
+                    $dtEnd = Carbon::parse($date . ' ' . $exitTarget);
+                    $log->psw_minutes = $dtCheckOut->lt($dtEnd) ? $dtEnd->diffInMinutes($dtCheckOut) : 0;
+                } else {
+                    $log->psw_minutes = 0;
+                }
+            }
+
+            $log->save();
+            $countUpdated++;
+            $affectedUsers[$log->user_id] = true;
+        }
+
+        // Hitung ulang performa harian agar data Tukin & Raport Pegawai langsung mutakhir
+        try {
+            \Artisan::call('sipega:calculate-performance');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Calculate performance recalculate all error: ' . $e->getMessage());
+        }
+
+        $totalUsers = count($affectedUsers);
+        $polaName = $isRamadhan ? 'Pola Ramadhan (08:00 / 15:00 / 15:30)' : 'Pola Normal (07:30 / 16:00 / 16:30)';
+        $monthName = Carbon::parse($month . '-01')->translatedFormat('F Y');
+
+        return back()->with('success', "Menit TL & PSW untuk SEMUA Pegawai ({$totalUsers} pegawai, {$countUpdated} hari transaksi) periode {$monthName} berhasil dihitung ulang ({$polaName}).");
+    }
 }
