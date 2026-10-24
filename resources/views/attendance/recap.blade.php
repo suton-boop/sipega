@@ -8,11 +8,24 @@
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <!-- Filter & Print Actions -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 p-6 flex flex-wrap justify-between items-center">
-                <form method="GET" action="{{ route('attendance.recap', $user->id) }}" class="flex items-center space-x-4">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 p-6 flex flex-wrap justify-between items-center gap-4">
+                <form method="GET" action="{{ route('attendance.recap', $user->id) }}" class="flex flex-wrap items-center gap-4">
+                    @if(isset($allPegawai) && count($allPegawai) > 1 && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
                     <div>
-                        <label class="block text-sm font-medium text-gray-700">Pilih Bulan</label>
-                        <input type="month" name="month" value="{{ $monthYear }}" onchange="this.form.submit()" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                        <label class="block text-xs font-black uppercase text-gray-500 mb-1">Pilih Pegawai</label>
+                        <select onchange="window.location.href='{{ url('/attendance/recap') }}/' + this.value + '?month={{ $monthYear }}'" class="text-xs font-bold rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 max-w-xs">
+                            @foreach($allPegawai as $p)
+                            <option value="{{ $p->id }}" {{ $p->id == $user->id ? 'selected' : '' }}>
+                                {{ $p->name }} ({{ $p->nip ?? 'No NIP' }})
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+
+                    <div>
+                        <label class="block text-xs font-black uppercase text-gray-500 mb-1">Pilih Bulan</label>
+                        <input type="month" name="month" value="{{ $monthYear }}" onchange="this.form.submit()" class="text-xs font-bold rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                     </div>
                 </form>
                 

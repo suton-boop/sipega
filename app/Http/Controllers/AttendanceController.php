@@ -40,6 +40,11 @@ class AttendanceController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
+        // Key by date string Y-m-d to ensure 100% accurate matching with $dateStr (avoid Carbon object vs string mismatch)
+        $logsByDate = $logs->keyBy(function ($item) {
+            return Carbon::parse($item->date)->toDateString();
+        });
+
         // Check assigned letters/ST to mark "Tugas Luar" (Sinkronisasi Penugasan Resmi)
         $activeAssignmentDays = \DB::table('assignment_letter_user')
             ->join('assignment_letters', 'assignment_letter_user.assignment_letter_id', '=', 'assignment_letters.id')
@@ -84,7 +89,7 @@ class AttendanceController extends Controller
 
         foreach ($period as $date) {
             $dateStr = $date->toDateString();
-            $log = $logs->where('date', $dateStr)->first();
+            $log = $logsByDate->get($dateStr);
             
             $status = 'Hadir';
             $isWorkingDay = !$date->isWeekend() && !in_array($dateStr, $holidays);
@@ -94,7 +99,7 @@ class AttendanceController extends Controller
                 $summary['total_st']++;
             } elseif (!$isWorkingDay) {
                 $status = 'Libur/Off';
-            } elseif (!$log) {
+            } elseif (!$log || (empty($log->check_in) && empty($log->check_out))) {
                 $status = 'ALPA';
                 $summary['total_alpa']++;
             } else {
@@ -114,7 +119,11 @@ class AttendanceController extends Controller
             ];
         }
 
-        return view('attendance.recap', compact('user', 'recapData', 'summary', 'monthYear'));
+        $allPegawai = in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])
+            ? User::where('is_active', true)->orderBy('name')->get()
+            : collect([$user]);
+
+        return view('attendance.recap', compact('user', 'recapData', 'summary', 'monthYear', 'allPegawai'));
     }
 
     /**
