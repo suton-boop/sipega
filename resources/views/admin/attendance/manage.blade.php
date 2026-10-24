@@ -91,7 +91,7 @@
                 const diff = (h * 60 + m) - (th * 60 + tm);
                 if (diff > 0) {
                     this.form.tl_minutes = diff;
-                    this.tl_info = '+' + diff + ' mnt (Standar ' + startTarget + ')';
+                    this.tl_info = diff + ' mnt (Standar ' + startTarget + ')';
                 } else {
                     this.form.tl_minutes = 0;
                     this.tl_info = 'Tepat / lebih awal (<= ' + startTarget + ')';
@@ -117,7 +117,7 @@
                 const diff = (th * 60 + tm) - (h * 60 + m);
                 if (diff > 0) {
                     this.form.psw_minutes = diff;
-                    this.psw_info = '-' + diff + ' mnt (Standar ' + endTarget + ')';
+                    this.psw_info = diff + ' mnt (Standar ' + endTarget + ')';
                 } else {
                     this.form.psw_minutes = 0;
                     this.psw_info = 'Tepat / lewat jam (' + endTarget + ')';
@@ -437,15 +437,15 @@
                                 <!-- TL (Terlambat) -->
                                 <td class="py-3 px-4 text-center">
                                     @if(!empty($row['needs_check_in_verif']))
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-sm" title="Jam masuk kosong, jangan anggap 0 menit. Tandai untuk verifikasi / LD">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-sm whitespace-nowrap" title="Jam masuk kosong, jangan anggap 0 menit. Tandai untuk verifikasi / LD">
                                             <span>⚠️</span> Verifikasi
                                         </span>
                                     @elseif($row['tl_minutes'] > 0)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 text-rose-700 border border-rose-200 shadow-sm" title="Terlambat {{ $row['tl_minutes'] }} Menit (Masuk > 07.30)">
-                                            +{{ $row['tl_minutes'] }} mnt
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-rose-100 text-rose-700 border border-rose-200 shadow-sm whitespace-nowrap" title="Terlambat {{ $row['tl_minutes'] }} Menit (Masuk > 07.30)">
+                                            {{ $row['tl_minutes'] }} mnt
                                         </span>
                                     @elseif($row['check_in'])
-                                        <span class="text-emerald-600 font-bold text-[10px]" title="Masuk lebih awal atau tepat waktu (0 menit)">0 mnt</span>
+                                        <span class="text-emerald-600 font-bold text-[10px] whitespace-nowrap" title="Masuk lebih awal atau tepat waktu (0 menit)">0 mnt</span>
                                     @else
                                         <span class="text-gray-300">-</span>
                                     @endif
@@ -454,15 +454,15 @@
                                 <!-- PSW (Pulang Sebelum Waktu) -->
                                 <td class="py-3 px-4 text-center">
                                     @if(!empty($row['needs_check_out_verif']))
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-sm" title="Jam pulang kosong, jangan anggap 0 menit. Tandai untuk verifikasi / LP">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-amber-100 text-amber-900 border border-amber-300 shadow-sm whitespace-nowrap" title="Jam pulang kosong, jangan anggap 0 menit. Tandai untuk verifikasi / LP">
                                             <span>⚠️</span> Verifikasi
                                         </span>
                                     @elseif($row['psw_minutes'] > 0)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-200 shadow-sm" title="Pulang Cepat {{ $row['psw_minutes'] }} Menit (Pulang sebelum jadwal)">
-                                            -{{ $row['psw_minutes'] }} mnt
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-200 shadow-sm whitespace-nowrap" title="Pulang Cepat {{ $row['psw_minutes'] }} Menit (Pulang sebelum jadwal)">
+                                            {{ $row['psw_minutes'] }} mnt
                                         </span>
                                     @elseif($row['check_out'])
-                                        <span class="text-emerald-600 font-bold text-[10px]" title="Pulang setelah jadwal atau tepat waktu (0 menit)">0 mnt</span>
+                                        <span class="text-emerald-600 font-bold text-[10px] whitespace-nowrap" title="Pulang setelah jadwal atau tepat waktu (0 menit)">0 mnt</span>
                                     @else
                                         <span class="text-gray-300">-</span>
                                     @endif

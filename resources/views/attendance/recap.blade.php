@@ -106,7 +106,7 @@
                                 @if(!empty($row['needs_check_in_verif']))
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900" title="Jam masuk kosong (Perlu verifikasi)">⚠️ Verif</span>
                                 @elseif($row['tl_minutes'] > 0)
-                                    <span class="font-bold text-red-600">+{{ $row['tl_minutes'] }} mnt</span>
+                                    <span class="font-bold text-red-600">{{ $row['tl_minutes'] }} mnt</span>
                                 @elseif($row['check_in'])
                                     <span class="text-emerald-700 font-semibold text-xs">0 mnt</span>
                                 @else
@@ -117,7 +117,7 @@
                                 @if(!empty($row['needs_check_out_verif']))
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-900" title="Jam pulang kosong (Perlu verifikasi)">⚠️ Verif</span>
                                 @elseif($row['psw_minutes'] > 0)
-                                    <span class="font-bold text-amber-700">-{{ $row['psw_minutes'] }} mnt</span>
+                                    <span class="font-bold text-amber-700">{{ $row['psw_minutes'] }} mnt</span>
                                 @elseif($row['check_out'])
                                     <span class="text-emerald-700 font-semibold text-xs">0 mnt</span>
                                 @else
