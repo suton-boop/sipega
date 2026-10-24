@@ -156,9 +156,10 @@ class AttendanceController extends Controller
         $request->validate([
             'log_file' => 'nullable|file|mimes:html,htm,xls,xlsx,csv,txt|max:20480',
             'raw_content' => 'nullable|string',
-            'office_start_time' => 'nullable|date_format:H:i',
-            'office_end_weekday' => 'nullable|date_format:H:i',
-            'office_end_friday' => 'nullable|date_format:H:i',
+            'office_start_time' => 'nullable|string',
+            'office_end_weekday' => 'nullable|string',
+            'office_end_friday' => 'nullable|string',
+            'is_ramadhan' => 'nullable|boolean',
         ], [
             'log_file.mimes' => 'Format file harus berupa .html, .htm, .xls, .xlsx, .csv, atau .txt',
             'log_file.max' => 'Ukuran file maksimal adalah 20MB',
@@ -171,11 +172,22 @@ class AttendanceController extends Controller
             return back()->withErrors(['log_file' => 'Silakan pilih file untuk diunggah ATAU tempelkan teks/HTML data log transaksi.']);
         }
 
+        $isRamadhan = $request->boolean('is_ramadhan');
+        $startTime = $request->input('office_start_time') ?: ($isRamadhan ? '08:00' : '07:30');
+        if (strlen($startTime) === 5) $startTime .= ':00';
+
+        $endWeekday = $request->input('office_end_weekday') ?: ($isRamadhan ? '15:00' : '16:00');
+        if (strlen($endWeekday) === 5) $endWeekday .= ':00';
+
+        $endFriday = $request->input('office_end_friday') ?: ($isRamadhan ? '15:30' : '16:30');
+        if (strlen($endFriday) === 5) $endFriday .= ':00';
+
         $options = [
-            'office_start_time' => ($request->input('office_start_time') ?: '07:30') . ':00',
-            'office_end_weekday' => ($request->input('office_end_weekday') ?: '16:00') . ':00',
-            'office_end_friday' => ($request->input('office_end_friday') ?: '16:30') . ':00',
+            'office_start_time' => $startTime,
+            'office_end_weekday' => $endWeekday,
+            'office_end_friday' => $endFriday,
             'auto_create_user' => $request->has('auto_create_user') ? $request->boolean('auto_create_user') : true,
+            'is_ramadhan' => $isRamadhan,
         ];
 
         try {

@@ -292,29 +292,85 @@
                     </div>
 
                     <!-- Parameter & Pengaturan Jam Kerja -->
-                    <div class="bg-slate-50 p-6 rounded-3xl border border-slate-200/70 space-y-4">
-                        <div class="flex items-center gap-2">
-                            <span class="text-sm">⚙️</span>
-                            <h4 class="font-black text-xs uppercase tracking-wider text-sipega-navy">Parameter Perhitungan Jam Kerja</h4>
+                    <div class="bg-slate-50 p-6 lg:p-7 rounded-3xl border border-slate-200/70 space-y-5" x-data="{
+                        isRamadhan: false,
+                        startTime: '07:30',
+                        endTimeWeekday: '16:00',
+                        endTimeFriday: '16:30',
+                        setMode(ramadhan) {
+                            this.isRamadhan = ramadhan;
+                            if (ramadhan) {
+                                this.startTime = '08:00';
+                                this.endTimeWeekday = '15:00';
+                                this.endTimeFriday = '15:30';
+                            } else {
+                                this.startTime = '07:30';
+                                this.endTimeWeekday = '16:00';
+                                this.endTimeFriday = '16:30';
+                            }
+                        }
+                    }">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200/60 pb-3">
+                            <div class="flex items-center gap-2">
+                                <span class="text-base">⚙️</span>
+                                <h4 class="font-black text-xs uppercase tracking-wider text-sipega-navy">Parameter Perhitungan Jam Kerja</h4>
+                            </div>
+
+                            <!-- Preset Toggle Buttons -->
+                            <div class="flex items-center gap-1.5 bg-white p-1 rounded-2xl border border-slate-200/80 shadow-sm">
+                                <button type="button" @click="setMode(false)" :class="!isRamadhan ? 'bg-sipega-navy text-white shadow-sm font-black' : 'text-gray-500 hover:text-sipega-navy font-bold'" class="px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition flex items-center gap-1">
+                                    <span>☀️</span> Pola Normal
+                                </button>
+                                <button type="button" @click="setMode(true)" :class="isRamadhan ? 'bg-emerald-600 text-white shadow-sm font-black' : 'text-gray-500 hover:text-emerald-700 font-bold'" class="px-3 py-1.5 rounded-xl text-[10px] uppercase tracking-wider transition flex items-center gap-1">
+                                    <span>🌙</span> Pola Ramadhan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Checkbox Pola Jam Kerja Ramadhan / Puasa -->
+                        <div class="p-4 rounded-2xl border transition-all" :class="isRamadhan ? 'bg-emerald-50/90 border-emerald-300 shadow-sm' : 'bg-white border-slate-200/80'">
+                            <label class="flex items-start gap-3.5 cursor-pointer">
+                                <input type="checkbox" name="is_ramadhan" value="1" x-model="isRamadhan" @change="setMode(isRamadhan)" class="mt-0.5 w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="font-black text-xs text-sipega-navy">Aktifkan Pola Jam Kerja Bulan Ramadhan / Puasa</span>
+                                        <span x-show="isRamadhan" class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white animate-fade-in">
+                                            🌙 Pola Ramadhan Aktif
+                                        </span>
+                                    </div>
+                                    <p class="text-[11px] text-gray-500 mt-0.5 font-medium leading-relaxed">
+                                        Centang opsi ini untuk menerapkan aturan jam kerja khusus Ramadhan: <strong>Jam Masuk 08:00</strong>, <strong>Pulang Senin-Kamis 15:00</strong>, dan <strong>Pulang Jumat 15:30</strong> (WITA).
+                                    </p>
+                                </div>
+                            </label>
                         </div>
                         
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div class="space-y-1">
-                                <label class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Jam Masuk Standar</label>
-                                <input type="time" name="office_start_time" value="07:30" class="w-full text-xs font-bold p-3 rounded-xl border-gray-200 focus:border-sipega-navy focus:ring-sipega-navy bg-white">
+                                <label class="text-[10px] font-black uppercase text-gray-500 tracking-wider flex items-center justify-between">
+                                    <span>Jam Masuk Standar</span>
+                                    <span class="text-[9px] font-bold" :class="isRamadhan ? 'text-emerald-600' : 'text-sipega-orange'" x-text="isRamadhan ? '🌙 Ramadhan: 08:00' : '☀️ Normal: 07:30'"></span>
+                                </label>
+                                <input type="time" name="office_start_time" x-model="startTime" class="w-full text-xs font-bold p-3 rounded-xl border-gray-200 focus:border-sipega-navy focus:ring-sipega-navy bg-white">
                                 <span class="text-[9px] text-gray-400 italic">Lewat dari jam ini = TL (Terlambat)</span>
                             </div>
 
                             <div class="space-y-1">
-                                <label class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Pulang (Senin - Kamis)</label>
-                                <input type="time" name="office_end_weekday" value="16:00" class="w-full text-xs font-bold p-3 rounded-xl border-gray-200 focus:border-sipega-navy focus:ring-sipega-navy bg-white">
+                                <label class="text-[10px] font-black uppercase text-gray-500 tracking-wider flex items-center justify-between">
+                                    <span>Pulang (Senin - Kamis)</span>
+                                    <span class="text-[9px] font-bold" :class="isRamadhan ? 'text-emerald-600' : 'text-sipega-orange'" x-text="isRamadhan ? '🌙 Ramadhan: 15:00' : '☀️ Normal: 16:00'"></span>
+                                </label>
+                                <input type="time" name="office_end_weekday" x-model="endTimeWeekday" class="w-full text-xs font-bold p-3 rounded-xl border-gray-200 focus:border-sipega-navy focus:ring-sipega-navy bg-white">
                                 <span class="text-[9px] text-gray-400 italic">Pulang sebelum jam ini = PSW</span>
                             </div>
 
                             <div class="space-y-1">
-                                <label class="text-[10px] font-black uppercase text-gray-500 tracking-wider">Pulang Hari Jumat</label>
-                                <input type="time" name="office_end_friday" value="16:30" class="w-full text-xs font-bold p-3 rounded-xl border-gray-200 focus:border-sipega-navy focus:ring-sipega-navy bg-white">
-                                <span class="text-[9px] text-gray-400 italic">Standar ASN: 16:30 WITA</span>
+                                <label class="text-[10px] font-black uppercase text-gray-500 tracking-wider flex items-center justify-between">
+                                    <span>Pulang Hari Jumat</span>
+                                    <span class="text-[9px] font-bold" :class="isRamadhan ? 'text-emerald-600' : 'text-sipega-orange'" x-text="isRamadhan ? '🌙 Ramadhan: 15:30' : '☀️ Normal: 16:30'"></span>
+                                </label>
+                                <input type="time" name="office_end_friday" x-model="endTimeFriday" class="w-full text-xs font-bold p-3 rounded-xl border-gray-200 focus:border-sipega-navy focus:ring-sipega-navy bg-white">
+                                <span class="text-[9px] text-gray-400 italic" x-text="isRamadhan ? 'Ramadhan: 15:30 WITA' : 'Standar ASN: 16:30 WITA'">Standar ASN: 16:30 WITA</span>
                             </div>
                         </div>
 
