@@ -232,15 +232,21 @@
                         <label class="block text-xs font-black uppercase tracking-wider text-sipega-navy">
                             Pilih File Laporan Transaksi
                         </label>
-                        <div 
+                        <label 
+                            for="log_file_input"
                             @dragover.prevent="isDragging = true" 
                             @dragleave.prevent="isDragging = false" 
-                            @drop.prevent="isDragging = false; if ($event.dataTransfer.files.length) { $refs.fileInput.files = $event.dataTransfer.files; fileName = $event.dataTransfer.files[0].name; }"
+                            @drop.prevent="isDragging = false; if ($event.dataTransfer.files.length) { document.getElementById('log_file_input').files = $event.dataTransfer.files; fileName = $event.dataTransfer.files[0].name; document.getElementById('fileNameDisplay').innerText = 'File Terpilih: ' + fileName; document.getElementById('fileSelectedBadge').style.display = 'inline-flex'; }"
                             :class="isDragging ? 'border-sipega-orange bg-orange-50/40' : 'border-gray-200 hover:border-sipega-orange hover:bg-slate-50/50'"
-                            class="border-2 border-dashed rounded-3xl p-8 lg:p-12 text-center transition cursor-pointer relative"
-                            onclick="$refs.fileInput.click()">
+                            class="block border-2 border-dashed rounded-3xl p-8 lg:p-12 text-center transition cursor-pointer relative">
                             
-                            <input type="file" x-ref="fileInput" name="log_file" accept=".html,.htm,.xls,.xlsx,.csv,.txt" class="hidden" 
+                            <input 
+                                type="file" 
+                                id="log_file_input"
+                                name="log_file" 
+                                accept=".html,.htm,.xls,.xlsx,.csv,.txt" 
+                                class="sr-only" 
+                                onchange="var name = this.files[0] ? this.files[0].name : ''; document.getElementById('fileNameDisplay').innerText = name ? 'File Terpilih: ' + name : 'Klik di sini atau seret file ke area ini'; document.getElementById('fileSelectedBadge').style.display = name ? 'inline-flex' : 'none';"
                                 @change="fileName = $event.target.files[0] ? $event.target.files[0].name : ''">
                             
                             <div class="flex flex-col items-center justify-center space-y-3">
@@ -248,14 +254,20 @@
                                     📥
                                 </div>
                                 <div class="space-y-1">
-                                    <p class="text-sm font-black text-sipega-navy" x-text="fileName ? 'File Terpilih: ' + fileName : 'Klik di sini atau seret file ke area ini'"></p>
+                                    <p id="fileNameDisplay" class="text-sm font-black text-sipega-navy" x-text="fileName ? 'File Terpilih: ' + fileName : 'Klik di sini atau seret file ke area ini'">Klik di sini atau seret file ke area ini</p>
                                     <p class="text-xs text-gray-400 font-medium">Mendukung format: <b class="text-gray-600">.HTML, .HTM, .XLS, .XLSX, .CSV, .TXT</b> (Maksimal 20MB)</p>
                                 </div>
-                                <div class="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-sipega-navy bg-slate-100 px-4 py-2 rounded-xl border border-slate-200">
+
+                                <div id="fileSelectedBadge" style="display: none;" class="items-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+                                    ✓ File Siap Diimpor
+                                </div>
+
+                                <div class="inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-white bg-sipega-navy hover:bg-black px-6 py-3 rounded-2xl shadow-md transition pointer-events-none">
+                                    <svg class="w-4 h-4 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                     <span>Pilih File Dari Komputer</span>
                                 </div>
                             </div>
-                        </div>
+                        </label>
                         <p class="text-[11px] text-gray-400 font-medium italic">
                             *Tips: Jika Anda mengunduh laporan dari portal presensi Kemendikdasmen berupa halaman web atau file Excel (.xls), Anda dapat langsung mengunggah file tersebut di sini.
                         </p>
