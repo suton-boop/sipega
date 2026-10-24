@@ -370,6 +370,7 @@ class AttendanceController extends Controller
                     'is_working_day' => $isWorkingDay,
                     'is_weekend' => $isWeekend,
                     'is_holiday' => $isHoliday,
+                    'day_of_week' => $date->dayOfWeek,
                     'has_st' => $hasST,
                     'log_id' => $log ? $log->id : null,
                     'check_in' => $log ? $log->check_in : null,
@@ -418,13 +419,46 @@ class AttendanceController extends Controller
         $notes = $request->notes;
         $checkIn = $request->check_in;
         $checkOut = $request->check_out;
-        $tlMinutes = $request->filled('tl_minutes') ? (int)$request->tl_minutes : 0;
-        $pswMinutes = $request->filled('psw_minutes') ? (int)$request->psw_minutes : 0;
+        $isRamadhan = $request->boolean('is_ramadhan');
 
-        // Jika status DL, Cuti, Sakit, Izin, LDS, atau LPS dan user tidak mengisi khusus tl/psw, reset ke 0 agar tidak merugikan Tukin
-        if (in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS']) && !$request->filled('tl_minutes')) {
+        $officeStartTime = $isRamadhan ? '08:00:00' : '07:30:00';
+        $officeEndWeekday = $isRamadhan ? '15:00:00' : '16:00:00';
+        $officeEndFriday = $isRamadhan ? '15:30:00' : '16:30:00';
+
+        // Hitung menit keterlambatan (TL) dan pulang sebelum waktunya (PSW)
+        if (in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS', 'Libur'])) {
             $tlMinutes = 0;
             $pswMinutes = 0;
+        } else {
+            // Menit Terlambat (TL)
+            if ($request->boolean('auto_calculate') || !$request->filled('tl_minutes')) {
+                if (!empty($checkIn)) {
+                    $checkInFormatted = strlen($checkIn) === 5 ? ($checkIn . ':00') : $checkIn;
+                    $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
+                    $dtStart = Carbon::parse($date . ' ' . $officeStartTime);
+                    $tlMinutes = $dtCheckIn->gt($dtStart) ? $dtCheckIn->diffInMinutes($dtStart) : 0;
+                } else {
+                    $tlMinutes = 0;
+                }
+            } else {
+                $tlMinutes = (int)$request->tl_minutes;
+            }
+
+            // Menit Pulang Sebelum Waktu (PSW)
+            if ($request->boolean('auto_calculate') || !$request->filled('psw_minutes')) {
+                if (!empty($checkOut)) {
+                    $checkOutFormatted = strlen($checkOut) === 5 ? ($checkOut . ':00') : $checkOut;
+                    $dtCheckOut = Carbon::parse($date . ' ' . $checkOutFormatted);
+                    $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+                    $exitTarget = ($dayOfWeek == Carbon::FRIDAY) ? $officeEndFriday : $officeEndWeekday;
+                    $dtEnd = Carbon::parse($date . ' ' . $exitTarget);
+                    $pswMinutes = $dtCheckOut->lt($dtEnd) ? $dtEnd->diffInMinutes($dtCheckOut) : 0;
+                } else {
+                    $pswMinutes = 0;
+                }
+            } else {
+                $pswMinutes = (int)$request->psw_minutes;
+            }
         }
 
         $log = AttendanceLog::firstOrNew([
@@ -455,6 +489,84 @@ class AttendanceController extends Controller
         $pegawaiName = User::find($userId)?->name ?? 'Pegawai';
         $formattedDate = Carbon::parse($date)->translatedFormat('d M Y');
 
-        return back()->with('success', "Keterangan kehadiran untuk {$pegawaiName} pada {$formattedDate} berhasil diperbarui.");
+        return back()->with('success', "Keterangan dan kalkulasi kehadiran untuk {$pegawaiName} pada {$formattedDate} berhasil diperbarui (TL: {$tlMinutes} mnt, PSW: {$pswMinutes} mnt).");
+    }
+
+    /**
+     * SIPEGA: Hitung Ulang Menit TL dan PSW Satu Bulan untuk Pegawai Terpilih
+     */
+    public function recalculateMonth(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'month' => 'required|string',
+            'is_ramadhan' => 'nullable|boolean',
+        ]);
+
+        $userId = $request->user_id;
+        $user = User::findOrFail($userId);
+        $month = $request->month;
+        $isRamadhan = $request->boolean('is_ramadhan');
+
+        $startOfMonth = Carbon::parse($month . '-01')->startOfMonth();
+        $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+        $officeStartTime = $isRamadhan ? '08:00:00' : '07:30:00';
+        $officeEndWeekday = $isRamadhan ? '15:00:00' : '16:00:00';
+        $officeEndFriday = $isRamadhan ? '15:30:00' : '16:30:00';
+
+        $logs = AttendanceLog::where('user_id', $userId)
+            ->whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+            ->get();
+
+        $countUpdated = 0;
+        foreach ($logs as $log) {
+            $date = Carbon::parse($log->date)->toDateString();
+            $status = $log->status;
+
+            if (in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS', 'Libur'])) {
+                $log->tl_minutes = 0;
+                $log->psw_minutes = 0;
+            } else {
+                // Hitung TL
+                if ($log->check_in) {
+                    $checkInFormatted = strlen($log->check_in) === 5 ? ($log->check_in . ':00') : $log->check_in;
+                    $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
+                    $dtStart = Carbon::parse($date . ' ' . $officeStartTime);
+                    $log->tl_minutes = $dtCheckIn->gt($dtStart) ? $dtCheckIn->diffInMinutes($dtStart) : 0;
+                } else {
+                    $log->tl_minutes = 0;
+                }
+
+                // Hitung PSW
+                if ($log->check_out) {
+                    $checkOutFormatted = strlen($log->check_out) === 5 ? ($log->check_out . ':00') : $log->check_out;
+                    $dtCheckOut = Carbon::parse($date . ' ' . $checkOutFormatted);
+                    $dayOfWeek = Carbon::parse($date)->dayOfWeek;
+                    $exitTarget = ($dayOfWeek == Carbon::FRIDAY) ? $officeEndFriday : $officeEndWeekday;
+                    $dtEnd = Carbon::parse($date . ' ' . $exitTarget);
+                    $log->psw_minutes = $dtCheckOut->lt($dtEnd) ? $dtEnd->diffInMinutes($dtCheckOut) : 0;
+                } else {
+                    $log->psw_minutes = 0;
+                }
+            }
+
+            $log->save();
+            $countUpdated++;
+        }
+
+        // Hitung ulang performa harian
+        try {
+            \Artisan::call('sipega:calculate-performance');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Calculate performance recalculate error: ' . $e->getMessage());
+        }
+
+        $polaName = $isRamadhan ? 'Pola Ramadhan (08:00 / 15:00 / 15:30)' : 'Pola Normal (07:30 / 16:00 / 16:30)';
+        return back()->with('success', "Menit Keterlambatan (TL) & Pulang Sebelum Waktu (PSW) untuk {$user->name} bulan {$month} berhasil dihitung ulang ({$countUpdated} hari data, {$polaName}).");
     }
 }

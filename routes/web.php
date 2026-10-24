@@ -76,6 +76,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // KELOLA KEHADIRAN & KETERANGAN PEGAWAI (Console Admin)
     Route::get('/admin/attendance/manage', [AttendanceController::class, 'manageIndex'])->name('admin.attendance.manage');
     Route::post('/admin/attendance/update-log', [AttendanceController::class, 'updateLog'])->name('admin.attendance.update_log');
+    Route::post('/admin/attendance/recalculate-month', [AttendanceController::class, 'recalculateMonth'])->name('admin.attendance.recalculate_month');
     
     // SISTEM RAPAT & LOKASI (Digital QR & Geo-Fencing)
     Route::prefix('admin')->name('admin.')->group(function() {

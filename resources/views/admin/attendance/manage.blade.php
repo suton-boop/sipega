@@ -31,20 +31,27 @@
 
     <div class="py-8 bg-slate-50 min-h-screen" x-data="{
         editModal: false,
+        recalcModal: false,
+        recalcRamadhan: false,
+        tl_info: '',
+        psw_info: '',
         form: {
             user_id: '{{ $selectedUser?->id ?? '' }}',
             user_name: '{{ $selectedUser?->name ?? '' }}',
             date: '',
+            day_of_week: 1,
             formatted_date: '',
             status: 'Hadir',
             notes: '',
             check_in: '',
             check_out: '',
             tl_minutes: 0,
-            psw_minutes: 0
+            psw_minutes: 0,
+            is_ramadhan: false
         },
         openEdit(row) {
             this.form.date = row.date;
+            this.form.day_of_week = row.day_of_week ?? 1;
             this.form.formatted_date = row.formatted_date + ' (' + row.day_name + ')';
             this.form.status = (row.status === 'Libur' || row.status === 'Belum Ada Log') ? 'Hadir' : row.status;
             this.form.notes = row.notes || '';
@@ -52,7 +59,65 @@
             this.form.check_out = row.check_out || '';
             this.form.tl_minutes = row.tl_minutes || 0;
             this.form.psw_minutes = row.psw_minutes || 0;
+            this.form.is_ramadhan = false;
+            this.recalculateMinutes();
             this.editModal = true;
+        },
+        recalculateMinutes() {
+            // Status bebas penalti
+            if (['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS', 'Libur'].includes(this.form.status)) {
+                this.form.tl_minutes = 0;
+                this.form.psw_minutes = 0;
+                this.tl_info = 'Bebas penalti TL';
+                this.psw_info = 'Bebas penalti PSW';
+                return;
+            }
+
+            const isFriday = (this.form.day_of_week === 5);
+            const startTarget = this.form.is_ramadhan ? '08:00' : '07:30';
+            const endTarget = this.form.is_ramadhan ? (isFriday ? '15:30' : '15:00') : (isFriday ? '16:30' : '16:00');
+
+            // Hitung Menit Terlambat (TL)
+            if (this.form.check_in && this.form.check_in.length >= 4) {
+                const parts = this.form.check_in.split(':');
+                const h = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                const tParts = startTarget.split(':');
+                const th = parseInt(tParts[0], 10);
+                const tm = parseInt(tParts[1], 10);
+
+                const diff = (h * 60 + m) - (th * 60 + tm);
+                if (diff > 0) {
+                    this.form.tl_minutes = diff;
+                    this.tl_info = '+' + diff + ' mnt (Standar ' + startTarget + ')';
+                } else {
+                    this.form.tl_minutes = 0;
+                    this.tl_info = 'Tepat waktu (<= ' + startTarget + ')';
+                }
+            } else {
+                this.tl_info = '-';
+            }
+
+            // Hitung Menit Pulang Sebelum Waktu (PSW)
+            if (this.form.check_out && this.form.check_out.length >= 4) {
+                const parts = this.form.check_out.split(':');
+                const h = parseInt(parts[0], 10);
+                const m = parseInt(parts[1], 10);
+                const tParts = endTarget.split(':');
+                const th = parseInt(tParts[0], 10);
+                const tm = parseInt(tParts[1], 10);
+
+                const diff = (th * 60 + tm) - (h * 60 + m);
+                if (diff > 0) {
+                    this.form.psw_minutes = diff;
+                    this.psw_info = '-' + diff + ' mnt (Standar ' + endTarget + ')';
+                } else {
+                    this.form.psw_minutes = 0;
+                    this.psw_info = 'Tepat / lewat jam (' + endTarget + ')';
+                }
+            } else {
+                this.psw_info = '-';
+            }
         }
     }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
@@ -248,12 +313,16 @@
                             Rincian Kehadiran & Status Harian
                         </h3>
                         <p class="text-xs text-gray-500 mt-0.5">
-                            Klik tombol <strong>"Beri / Edit Keterangan"</strong> pada tanggal yang ingin diubah statusnya (misal: DL, Sakit, Cuti, Izin).
+                            Klik tombol <strong>"Beri / Edit Keterangan"</strong> pada tanggal yang ingin diubah statusnya, atau klik <strong>"Hitung Otomatis Menit"</strong> untuk mengkalkulasi seluruh log bulan ini.
                         </p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-700">
-                            {{ count($dailyData) }} Hari Kalender
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" @click="recalcModal = true" class="inline-flex items-center gap-1.5 px-4 py-2 bg-sipega-navy hover:bg-black text-white text-xs font-bold rounded-2xl shadow-sm transition-all cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Hitung Otomatis TL & PSW Sebulan
+                        </button>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-2 rounded-2xl text-xs font-bold bg-gray-100 text-gray-700">
+                            {{ count($dailyData) }} Hari
                         </span>
                     </div>
                 </div>
@@ -420,12 +489,23 @@
                     <input type="hidden" name="user_id" :value="form.user_id">
                     <input type="hidden" name="date" :value="form.date">
 
+                    <!-- Pilihan Pola Ramadhan di Modal -->
+                    <div class="p-3 rounded-2xl border transition-all" :class="form.is_ramadhan ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-gray-200'">
+                        <label class="flex items-center justify-between cursor-pointer">
+                            <span class="text-xs font-bold text-sipega-navy flex items-center gap-1.5">
+                                <span>🌙</span> Gunakan Pola Jam Ramadhan
+                            </span>
+                            <input type="checkbox" name="is_ramadhan" value="1" x-model="form.is_ramadhan" @change="recalculateMinutes()" class="rounded text-emerald-600 focus:ring-emerald-500 border-gray-300">
+                        </label>
+                        <p class="text-[10px] text-gray-500 mt-1" x-text="form.is_ramadhan ? 'Standar: Masuk 08:00 | Pulang 15:00 (Jumat 15:30)' : 'Standar Normal: Masuk 07:30 | Pulang 16:00 (Jumat 16:30)'"></p>
+                    </div>
+
                     <!-- Pilihan Status -->
                     <div>
                         <label class="block text-xs font-black uppercase tracking-wider text-sipega-navy mb-1.5">
                             Status Kehadiran <span class="text-red-500">*</span>
                         </label>
-                        <select name="status" x-model="form.status" required class="w-full text-sm font-bold rounded-2xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange transition-all py-2.5 px-4 shadow-sm">
+                        <select name="status" x-model="form.status" @change="recalculateMinutes()" required class="w-full text-sm font-bold rounded-2xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange transition-all py-2.5 px-4 shadow-sm">
                             <option value="Hadir">Hadir</option>
                             <option value="DL">Dinas Luar (DL)</option>
                             <option value="Cuti">Cuti</option>
@@ -455,33 +535,49 @@
                             <label class="block text-[11px] font-bold text-gray-700 mb-1">
                                 Jam Masuk (Check In)
                             </label>
-                            <input type="time" name="check_in" x-model="form.check_in" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
+                            <input type="time" name="check_in" x-model="form.check_in" @input="recalculateMinutes()" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
                         </div>
                         <div>
                             <label class="block text-[11px] font-bold text-gray-700 mb-1">
                                 Jam Pulang (Check Out)
                             </label>
-                            <input type="time" name="check_out" x-model="form.check_out" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
+                            <input type="time" name="check_out" x-model="form.check_out" @input="recalculateMinutes()" class="w-full text-xs font-mono font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
                         </div>
                     </div>
 
-                    <!-- Menit TL & PSW -->
+                    <!-- Menit TL & PSW Otomatis -->
                     <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-700 mb-1">
-                                Terlambat (TL) - Menit
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-700 flex items-center justify-between">
+                                <span>Terlambat (TL)</span>
+                                <span class="text-[9px] font-bold text-rose-500" x-text="tl_info"></span>
                             </label>
-                            <input type="number" name="tl_minutes" x-model="form.tl_minutes" min="0" class="w-full text-xs font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
+                            <div class="relative">
+                                <input type="number" name="tl_minutes" x-model="form.tl_minutes" min="0" class="w-full text-xs font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2 pr-12">
+                                <span class="absolute right-3 top-2 text-[10px] text-gray-400 font-bold">menit</span>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-gray-700 mb-1">
-                                Pulang Cepat (PSW) - Menit
+                        <div class="space-y-1">
+                            <label class="block text-[11px] font-bold text-gray-700 flex items-center justify-between">
+                                <span>Pulang Cepat (PSW)</span>
+                                <span class="text-[9px] font-bold text-amber-500" x-text="psw_info"></span>
                             </label>
-                            <input type="number" name="psw_minutes" x-model="form.psw_minutes" min="0" class="w-full text-xs font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2">
+                            <div class="relative">
+                                <input type="number" name="psw_minutes" x-model="form.psw_minutes" min="0" class="w-full text-xs font-bold rounded-xl border-gray-200 bg-gray-50/50 focus:bg-white focus:border-sipega-orange focus:ring-sipega-orange p-2 pr-12">
+                                <span class="absolute right-3 top-2 text-[10px] text-gray-400 font-bold">menit</span>
+                            </div>
                         </div>
                     </div>
-                    <div class="text-[10px] text-gray-500 bg-blue-50/70 p-3 rounded-2xl border border-blue-100">
-                        <strong>Tips:</strong> Jika status diubah menjadi <em>DL, Cuti, Sakit, Izin, LDS, atau LPS</em>, sistem secara otomatis mereset penalti TL & PSW ke 0 jika tidak diisi khusus agar tidak mengurangi Tukin pegawai.
+
+                    <div class="flex items-center justify-between pt-1">
+                        <button type="button" @click="recalculateMinutes()" class="text-[11px] font-bold text-sipega-orange hover:text-orange-700 transition flex items-center gap-1 cursor-pointer">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            <span>Hitung Ulang Menit Otomatis</span>
+                        </button>
+                    </div>
+
+                    <div class="text-[10px] text-gray-500 bg-blue-50/70 p-3 rounded-2xl border border-blue-100 leading-relaxed">
+                        <strong>Keterangan:</strong> Menit keterlambatan (TL) dihitung otomatis jika masuk lewat dari jam standar. Pulang cepat (PSW) dihitung jika pulang sebelum jam kerja berakhir. Jika status diubah menjadi <em>DL, Cuti, Sakit, Izin, LDS, atau LPS</em>, menit TL & PSW otomatis menjadi 0.
                     </div>
 
                     <!-- Buttons -->
@@ -489,12 +585,89 @@
                         <button type="button" @click="editModal = false" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-2xl transition-all">
                             Batal
                         </button>
-                        <button type="submit" class="px-5 py-2.5 bg-sipega-orange hover:bg-orange-600 text-white text-xs font-bold rounded-2xl shadow-md transition-all flex items-center gap-1.5">
+                        <button type="submit" class="px-5 py-2.5 bg-sipega-orange hover:bg-orange-600 text-white text-xs font-bold rounded-2xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             Simpan Perubahan
                         </button>
                     </div>
                 </form>
+
+            </div>
+        </div>
+
+        <!-- MODAL RECALCULATE MONTH (Hitung Otomatis Seluruh Bulan) -->
+        @if($selectedUser)
+        <div x-show="recalcModal" 
+             x-cloak 
+             x-transition:enter="ease-out duration-300" 
+             x-transition:enter-start="opacity-0" 
+             x-transition:enter-end="opacity-100" 
+             x-transition:leave="ease-in duration-200" 
+             x-transition:leave-start="opacity-100" 
+             x-transition:leave-end="opacity-0" 
+             class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+            
+            <div @click.away="recalcModal = false" 
+                 class="bg-white rounded-[2.5rem] max-w-md w-full p-6 sm:p-8 shadow-2xl border border-gray-100 transform transition-all">
+                
+                <div class="flex items-center justify-between pb-4 border-b border-gray-100">
+                    <div>
+                        <span class="text-[10px] font-black uppercase tracking-widest text-sipega-navy block">
+                            Kalkulasi Otomatis Massal
+                        </span>
+                        <h3 class="text-xl font-black text-sipega-navy mt-0.5">
+                            Hitung Menit TL & PSW Sebulan
+                        </h3>
+                    </div>
+                    <button @click="recalcModal = false" class="text-gray-400 hover:text-gray-600 p-2 rounded-xl hover:bg-gray-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+
+                <div class="mt-4 p-4 rounded-2xl bg-slate-50 border border-gray-200/60 text-xs space-y-1">
+                    <p class="text-gray-500">Pegawai: <b class="text-sipega-navy">{{ $selectedUser->name }}</b></p>
+                    <p class="text-gray-500">Periode: <b class="text-sipega-orange">{{ \Carbon\Carbon::parse($monthYear.'-01')->translatedFormat('F Y') }}</b></p>
+                </div>
+
+                <form method="POST" action="{{ route('admin.attendance.recalculate_month') }}" class="mt-5 space-y-4">
+                    @csrf
+                    <input type="hidden" name="user_id" value="{{ $selectedUser->id }}">
+                    <input type="hidden" name="month" value="{{ $monthYear }}">
+
+                    <!-- Pola Jam Kerja Pilihan -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-black uppercase tracking-wider text-sipega-navy">
+                            Pilih Pola Jam Kerja:
+                        </label>
+                        <div class="p-3 rounded-2xl border transition-all" :class="recalcRamadhan ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-gray-200'">
+                            <label class="flex items-center justify-between cursor-pointer">
+                                <span class="text-xs font-bold text-sipega-navy flex items-center gap-1.5">
+                                    <span>🌙</span> Pola Jam Kerja Ramadhan / Puasa
+                                </span>
+                                <input type="checkbox" name="is_ramadhan" value="1" x-model="recalcRamadhan" class="rounded text-emerald-600 focus:ring-emerald-500 border-gray-300">
+                            </label>
+                            <p class="text-[10px] text-gray-500 mt-1" x-text="recalcRamadhan ? 'Masuk 08:00 | Pulang 15:00 (Jumat 15:30 WITA)' : 'Masuk 07:30 | Pulang 16:00 (Jumat 16:30 WITA)'"></p>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-gray-500 leading-relaxed bg-amber-50/70 border border-amber-200/60 p-3 rounded-2xl">
+                        Sistem akan membaca jam masuk dan jam pulang seluruh hari pada bulan ini, lalu otomatis menghitung menit keterlambatan (TL) dan menit pulang sebelum waktunya (PSW) secara akurat.
+                    </p>
+
+                    <div class="pt-3 flex items-center justify-end gap-3">
+                        <button type="button" @click="recalcModal = false" class="px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-2xl transition-all">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 bg-sipega-navy hover:bg-black text-white text-xs font-bold rounded-2xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer">
+                            <svg class="w-4 h-4 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                            Mulai Hitung Ulang
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+        @endif
 
             </div>
         </div>
