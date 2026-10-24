@@ -328,81 +328,98 @@
                 </div>
             </div>
 
+
             <!-- 3. TABEL DATA PEGAWAI & KENDALI OPERASIONAL -->
-            <div class="bg-white overflow-hidden shadow-2xl rounded-[40px] border border-gray-100 p-2 md:p-6 lg:p-10">
+            <div class="bg-white overflow-hidden shadow-2xl rounded-[40px] border border-gray-100 p-2 md:p-4 lg:p-8">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
+                    <table class="w-full min-w-[1100px] text-left border-collapse">
                         <thead>
-                            <tr class="bg-gray-50/50">
-                                <th class="py-6 px-6 font-black text-[10px] text-gray-400 uppercase tracking-widest rounded-tl-3xl">Pegawai Terdaftar</th>
-                                <th class="py-6 px-6 font-black text-[10px] text-gray-400 uppercase tracking-widest">Identitas NIP & Jabatan</th>
-                                <th class="py-6 px-6 font-black text-[10px] text-gray-400 uppercase tracking-widest text-center">Status</th>
-                                <th class="py-6 px-6 font-black text-[10px] text-gray-400 uppercase tracking-widest text-center rounded-tr-3xl">Kendali Operasional</th>
+                            <tr class="bg-gray-50/80">
+                                <th class="py-5 px-5 font-black text-[10px] text-gray-400 uppercase tracking-widest rounded-tl-3xl w-[26%]">Pegawai Terdaftar</th>
+                                <th class="py-5 px-5 font-black text-[10px] text-gray-400 uppercase tracking-widest w-[22%]">NIP &amp; Jabatan</th>
+                                <th class="py-5 px-5 font-black text-[10px] text-gray-400 uppercase tracking-widest w-[20%]">📁 Folder Drive</th>
+                                <th class="py-5 px-5 font-black text-[10px] text-gray-400 uppercase tracking-widest text-center w-[16%]">Status</th>
+                                <th class="py-5 px-5 font-black text-[10px] text-gray-400 uppercase tracking-widest text-center rounded-tr-3xl w-[16%]">Kendali</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50">
                             @forelse($users as $u)
-                                <tr class="hover:bg-gray-50 transition duration-150 group">
-                                    <!-- Kolom Identitas Pegawai -->
-                                    <td class="py-8 px-6 align-top">
-                                        <div class="flex items-center gap-4">
+                                <tr class="hover:bg-blue-50/30 transition duration-150 group">
+
+                                    {{-- Kolom Identitas Pegawai --}}
+                                    <td class="py-5 px-5 align-middle">
+                                        <div class="flex items-center gap-3">
                                             @if($u->photo)
-                                                <img src="{{ asset('storage/' . $u->photo) }}" class="w-12 h-12 object-cover rounded-2xl border-2 border-sipega-navy shadow-lg">
+                                                <img src="{{ asset('storage/' . $u->photo) }}" class="w-11 h-11 object-cover rounded-2xl border-2 border-sipega-navy shadow flex-shrink-0">
                                             @else
-                                                <div class="w-12 h-12 bg-sipega-navy flex items-center justify-center rounded-2xl text-white font-black text-lg shadow-lg">
+                                                <div class="w-11 h-11 bg-sipega-navy flex items-center justify-center rounded-2xl text-white font-black text-base shadow flex-shrink-0">
                                                     {{ substr($u->name, 0, 1) }}
                                                 </div>
                                             @endif
-                                            <div>
-                                                <div class="font-black text-sipega-navy text-lg leading-none mb-1">{{ $u->name }}</div>
-                                                <div class="text-xs text-gray-400 font-bold tracking-tight lowercase">{{ $u->email }}</div>
-                                                <div class="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-yellow-400/10 text-yellow-700 rounded-lg text-[10px] font-black uppercase tracking-widest">
+                                            <div class="min-w-0">
+                                                <div class="font-black text-sipega-navy text-sm leading-tight mb-0.5 truncate" title="{{ $u->name }}">{{ $u->name }}</div>
+                                                <div class="text-[11px] text-gray-400 font-semibold truncate lowercase" title="{{ $u->email }}">{{ $u->email }}</div>
+                                                <div class="mt-1.5 inline-flex items-center px-2 py-0.5 bg-yellow-400/10 text-yellow-700 rounded-md text-[10px] font-black uppercase tracking-widest">
                                                     {{ $u->role }}
                                                 </div>
                                             </div>
                                         </div>
                                     </td>
 
-                                    <!-- Kolom NIP, Jabatan & Golongan -->
-                                    <td class="py-8 px-6 align-top">
-                                        <div class="text-sm font-black text-gray-700 tracking-tighter mb-1">
-                                            {{ $u->nip ?? '-' }}
-                                        </div>
+                                    {{-- Kolom NIP, Jabatan & Golongan --}}
+                                    <td class="py-5 px-5 align-middle">
+                                        <div class="text-sm font-black text-gray-700 tracking-tight mb-0.5">{{ $u->nip ?? '-' }}</div>
                                         @if($u->position)
-                                            <div class="text-xs font-bold text-gray-600 leading-tight mb-1">
-                                                {{ $u->position }}
-                                            </div>
+                                            <div class="text-[11px] font-semibold text-gray-600 leading-tight mb-1.5">{{ $u->position }}</div>
                                         @endif
-                                        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+                                        <div class="flex flex-col gap-1">
                                             @if($u->gugus_mutu)
-                                                <span class="px-2.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg text-[9px] font-black uppercase tracking-wider">
+                                                <span class="inline-flex px-2 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-md text-[9px] font-black uppercase tracking-wide w-fit">
                                                     🏛️ {{ $u->gugus_mutu }}
                                                 </span>
                                             @endif
                                             @if($u->golongan)
-                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 text-[10px] font-black">{{ $u->pangkat_golongan ?? $u->golongan }}</span>
+                                                <span class="inline-flex px-2 py-0.5 bg-gray-100 rounded-md text-gray-600 text-[9px] font-black w-fit">{{ $u->pangkat_golongan ?? $u->golongan }}</span>
                                             @endif
                                             @if($u->grade)
-                                                <span class="px-2 py-0.5 bg-gray-100 rounded text-gray-600 text-[10px] font-black">KJ: {{ $u->grade }}</span>
+                                                <span class="inline-flex px-2 py-0.5 bg-gray-100 rounded-md text-gray-600 text-[9px] font-black w-fit">KJ: {{ $u->grade }}</span>
                                             @endif
                                         </div>
                                     </td>
 
-                                    <!-- Kolom Status Keamanan & Keaktifan -->
-                                    <td class="py-8 px-6 text-center align-top">
-                                        <div class="flex flex-col items-center gap-3">
+                                    {{-- Kolom Folder Drive --}}
+                                    <td class="py-5 px-5 align-middle">
+                                        @if($u->drive_folder_link)
+                                            <a href="{{ $u->drive_folder_link }}" target="_blank" rel="noopener noreferrer"
+                                               class="inline-flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all group/drive">
+                                                <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+                                                </svg>
+                                                <span>Buka Folder</span>
+                                                <svg class="w-2.5 h-2.5 opacity-60 group-hover/drive:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+                                            </a>
+                                        @else
+                                            <span class="inline-flex items-center gap-1.5 text-[10px] text-gray-300 font-bold italic">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/></svg>
+                                                Belum diisi
+                                            </span>
+                                        @endif
+                                    </td>
+
+                                    {{-- Kolom Status Keamanan & Keaktifan --}}
+                                    <td class="py-5 px-5 text-center align-middle">
+                                        <div class="flex flex-col items-center gap-2">
                                             @if($u->device_id)
-                                                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-red-100 text-red-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-200" title="Terkunci di HP">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-red-100 text-red-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-red-200" title="Terkunci di HP">
                                                     🔒 Locked
                                                 </span>
                                             @else
-                                                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">
+                                                <span class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-200">
                                                     🔓 Unbound
                                                 </span>
                                             @endif
-                                            
-                                            <div class="flex items-center gap-2">
-                                                <div class="h-2.5 w-2.5 {{ $u->is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-300' }} rounded-full"></div>
+                                            <div class="flex items-center gap-1.5">
+                                                <div class="h-2 w-2 {{ $u->is_active ? 'bg-green-500 animate-pulse' : 'bg-gray-300' }} rounded-full"></div>
                                                 <span class="text-[10px] font-black uppercase tracking-widest {{ $u->is_active ? 'text-green-600' : 'text-gray-400' }}">
                                                     {{ $u->is_active ? 'Aktif' : 'Nonaktif' }}
                                                 </span>
@@ -410,114 +427,171 @@
                                         </div>
                                     </td>
 
-                                    <!-- Kolom Kendali Operasional & Hapus Pegawai -->
-                                    <td class="py-8 px-6 align-top">
-                                        <div class="bg-white p-6 rounded-[2rem] border border-gray-100 shadow-xl group-hover:border-gray-200 transition-all flex flex-col gap-4">
-                                            <!-- Form Update Data & Role -->
-                                            <form action="{{ route('users.update', $u->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-4">
-                                                @csrf
-                                                @method('PUT')
-                                                
-                                                <div>
-                                                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Nama Pegawai</label>
-                                                    <input type="text" name="name" value="{{ $u->name }}" required placeholder="Nama Lengkap..." class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
-                                                </div>
+                                    {{-- Kolom Kendali (Tombol Edit) --}}
+                                    <td x-data="{ editOpen: false }" class="py-5 px-5 align-middle text-center">
+                                        <button type="button" @click="editOpen = true"
+                                            class="inline-flex items-center gap-2 bg-sipega-navy hover:bg-black text-white text-[10px] font-black px-4 py-2.5 rounded-xl shadow transition-all uppercase tracking-widest hover:-translate-y-0.5">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                            Edit
+                                        </button>
 
-                                                <div class="grid grid-cols-2 gap-3">
+                                        {{-- MODAL EDIT PEGAWAI --}}
+                                        <div x-show="editOpen"
+                                             x-transition:enter="transition ease-out duration-200"
+                                             x-transition:enter-start="opacity-0"
+                                             x-transition:enter-end="opacity-100"
+                                             x-transition:leave="transition ease-in duration-150"
+                                             x-transition:leave-start="opacity-100"
+                                             x-transition:leave-end="opacity-0"
+                                             @keydown.escape.window="editOpen = false"
+                                             class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                                             style="display:none;">
+                                            <div @click.outside="editOpen = false"
+                                                 class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+
+                                                {{-- Modal Header --}}
+                                                <div class="sticky top-0 bg-white flex justify-between items-center px-8 py-5 border-b border-gray-100 rounded-t-3xl z-10">
                                                     <div>
-                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">NIP Pegawai</label>
-                                                        <input type="text" name="nip" value="{{ $u->nip }}" placeholder="NIP (18 Digit)..." class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
+                                                        <h2 class="text-lg font-black text-sipega-navy">✏️ Edit Data Pegawai</h2>
+                                                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">{{ $u->name }}</p>
                                                     </div>
-                                                    <div>
-                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Update Foto</label>
-                                                        <input type="file" name="photo" class="w-full text-[9px] text-gray-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-full file:border-0 file:bg-gray-100 file:text-sipega-navy cursor-pointer">
-                                                    </div>
-                                                </div>
-
-                                                <div class="grid grid-cols-2 gap-3">
-                                                    <div>
-                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Jabatan</label>
-                                                        <input type="text" name="position" value="{{ $u->position }}" placeholder="Jabatan..." class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
-                                                    </div>
-                                                    <div>
-                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Pangkat & Golongan</label>
-                                                        <select name="golongan" class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
-                                                            <option value="">- Tanpa Golongan -</option>
-                                                            @foreach(\App\Models\User::PANGKAT_GOLONGAN as $code => $full)
-                                                                <option value="{{ $full }}" {{ ($u->golongan == $full || $u->pangkat_golongan == $full || $u->golongan == $code) ? 'selected' : '' }}>
-                                                                    {{ $full }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Gugus Mutu</label>
-                                                    <select name="gugus_mutu" class="w-full text-xs font-bold p-2.5 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white">
-                                                        <option value="">- Tanpa Gugus Mutu -</option>
-                                                        <option value="GM 1 - PAUD & Kesetaraan" {{ $u->gugus_mutu == 'GM 1 - PAUD & Kesetaraan' ? 'selected' : '' }}>GM 1 - PAUD & Kesetaraan</option>
-                                                        <option value="GM 2 - Sekolah Dasar (SD)" {{ $u->gugus_mutu == 'GM 2 - Sekolah Dasar (SD)' ? 'selected' : '' }}>GM 2 - Sekolah Dasar (SD)</option>
-                                                        <option value="GM 3 - SMP" {{ $u->gugus_mutu == 'GM 3 - SMP' ? 'selected' : '' }}>GM 3 - SMP</option>
-                                                        <option value="GM 4 - SMA, SMK & SLB" {{ $u->gugus_mutu == 'GM 4 - SMA, SMK & SLB' ? 'selected' : '' }}>GM 4 - SMA, SMK & SLB</option>
-                                                        <option value="GM 5 - Tata Usaha & Kemitraan" {{ $u->gugus_mutu == 'GM 5 - Tata Usaha & Kemitraan' ? 'selected' : '' }}>GM 5 - Tata Usaha & Kemitraan</option>
-                                                    </select>
-                                                </div>
-
-                                                <div class="grid grid-cols-2 gap-4">
-                                                    <div>
-                                                        <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Tukar Peran</label>
-                                                        <select name="role" class="w-full text-xs font-black p-3 bg-gray-50 rounded-xl border-none focus:ring-sipega-navy focus:bg-white transition-all uppercase tracking-widest">
-                                                            <option value="Admin" {{ $u->role == 'Admin' ? 'selected' : '' }}>Admin</option>
-                                                            <option value="Pimpinan" {{ $u->role == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
-                                                            <option value="Kasubag" {{ $u->role == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
-                                                            <option value="Operator" {{ $u->role == 'Operator' ? 'selected' : '' }}>Operator</option>
-                                                            <option value="Pegawai" {{ $u->role == 'Pegawai' ? 'selected' : '' }}>Pegawai</option>
-                                                        </select>
-                                                    </div>
-                                                    <div class="flex items-center justify-center">
-                                                         <label class="flex items-center gap-3 cursor-pointer group/toggle">
-                                                            <input type="checkbox" name="is_active" value="1" {{ $u->is_active ? 'checked' : '' }} class="rounded-lg text-green-600 focus:ring-green-500 w-6 h-6 border-gray-100 bg-gray-50">
-                                                            <span class="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover/toggle:text-green-600 transition-colors">Aktif</span>
-                                                        </label>
-                                                    </div>
-                                                </div>
-
-                                                <div class="flex items-center gap-2">
-                                                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-red-50 p-2.5 rounded-xl border border-red-50 hover:bg-red-100 transition-colors" title="Buka kunci HP perangkat pegawai">
-                                                        <input type="checkbox" name="reset_device" value="1" class="rounded text-red-600 focus:ring-red-500 w-5 h-5 border-none">
-                                                        <span class="text-[9px] font-black text-red-800 uppercase tracking-tighter leading-none">Reset HP</span>
-                                                    </label>
-                                                    <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-orange-50 p-2.5 rounded-xl border border-orange-50 hover:bg-orange-100 transition-colors" title="Reset password kembali ke NIP pegawai">
-                                                        <input type="checkbox" name="reset_password" value="1" class="rounded text-orange-600 focus:ring-orange-500 w-5 h-5 border-none">
-                                                        <span class="text-[9px] font-black text-orange-800 uppercase tracking-tighter leading-none">Reset ke NIP</span>
-                                                    </label>
-                                                </div>
-
-                                                <button type="submit" class="w-full bg-sipega-navy hover:bg-black text-white text-[10px] font-black py-3.5 rounded-xl mt-1 shadow-lg transition-all uppercase tracking-widest hover:-translate-y-0.5">
-                                                    Simpan Kendali
-                                                </button>
-                                            </form>
-
-                                            <!-- MENU DELETE PEGAWAI: KHUSUS LEVEL ADMIN -->
-                                            @if(auth()->user()->role === 'Admin')
-                                            <div class="pt-3 border-t border-gray-100">
-                                                <form action="{{ route('users.destroy', $u->id) }}" method="POST" onsubmit="return confirm('⚠️ KONFIRMASI PENGHAPUSAN:\n\nApakah Anda yakin ingin MENGHAPUS pegawai ini secara permanen dari sistem?\n\n• Nama: {{ addslashes($u->name) }}\n• NIP: {{ $u->nip ?? '-' }}\n• Email: {{ $u->email }}\n\nTindakan ini tidak dapat dibatalkan.')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white text-[9px] font-black py-2.5 px-4 rounded-xl transition-all uppercase tracking-widest border border-red-100 hover:border-red-600 hover:shadow-md flex items-center justify-center gap-2 group/del">
-                                                        <svg class="w-3.5 h-3.5 text-red-500 group-hover/del:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                                        <span>Hapus Pegawai</span>
+                                                    <button type="button" @click="editOpen = false"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-red-100 hover:text-red-600 text-gray-500 transition-colors font-bold text-lg leading-none">
+                                                        &times;
                                                     </button>
-                                                </form>
+                                                </div>
+
+                                                {{-- Modal Body --}}
+                                                <div class="px-8 py-6">
+                                                    <form action="{{ route('users.update', $u->id) }}" method="POST" enctype="multipart/form-data" class="flex flex-col gap-5">
+                                                        @csrf
+                                                        @method('PUT')
+
+                                                        {{-- Nama & Foto --}}
+                                                        <div class="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Nama Pegawai</label>
+                                                                <input type="text" name="name" value="{{ $u->name }}" required placeholder="Nama Lengkap..." class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">NIP Pegawai</label>
+                                                                <input type="text" name="nip" value="{{ $u->nip }}" placeholder="NIP (18 Digit)..." class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- Jabatan & Golongan --}}
+                                                        <div class="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Jabatan</label>
+                                                                <input type="text" name="position" value="{{ $u->position }}" placeholder="Jabatan..." class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Pangkat &amp; Golongan</label>
+                                                                <select name="golongan" class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
+                                                                    <option value="">- Tanpa Golongan -</option>
+                                                                    @foreach(\App\Models\User::PANGKAT_GOLONGAN as $code => $full)
+                                                                        <option value="{{ $full }}" {{ ($u->golongan == $full || $u->pangkat_golongan == $full || $u->golongan == $code) ? 'selected' : '' }}>{{ $full }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- Gugus Mutu --}}
+                                                        <div>
+                                                            <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Gugus Mutu</label>
+                                                            <select name="gugus_mutu" class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
+                                                                <option value="">- Tanpa Gugus Mutu -</option>
+                                                                <option value="GM 1 - PAUD & Kesetaraan" {{ $u->gugus_mutu == 'GM 1 - PAUD & Kesetaraan' ? 'selected' : '' }}>GM 1 - PAUD &amp; Kesetaraan</option>
+                                                                <option value="GM 2 - Sekolah Dasar (SD)" {{ $u->gugus_mutu == 'GM 2 - Sekolah Dasar (SD)' ? 'selected' : '' }}>GM 2 - Sekolah Dasar (SD)</option>
+                                                                <option value="GM 3 - SMP" {{ $u->gugus_mutu == 'GM 3 - SMP' ? 'selected' : '' }}>GM 3 - SMP</option>
+                                                                <option value="GM 4 - SMA, SMK & SLB" {{ $u->gugus_mutu == 'GM 4 - SMA, SMK & SLB' ? 'selected' : '' }}>GM 4 - SMA, SMK &amp; SLB</option>
+                                                                <option value="GM 5 - Tata Usaha & Kemitraan" {{ $u->gugus_mutu == 'GM 5 - Tata Usaha & Kemitraan' ? 'selected' : '' }}>GM 5 - Tata Usaha &amp; Kemitraan</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {{-- Link Drive Folder --}}
+                                                        <div>
+                                                            <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">📁 Link Folder Drive Pegawai</label>
+                                                            <div class="flex gap-2 items-center">
+                                                                <input type="url" name="drive_folder_link" value="{{ $u->drive_folder_link }}" placeholder="https://drive.google.com/drive/folders/..." class="flex-1 text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-green-400 focus:bg-white outline-none transition">
+                                                                @if($u->drive_folder_link)
+                                                                    <a href="{{ $u->drive_folder_link }}" target="_blank" class="flex-shrink-0 px-3 py-3 bg-green-50 hover:bg-green-100 text-green-700 rounded-xl border border-green-200 transition" title="Buka folder">
+                                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                                                    </a>
+                                                                @endif
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- Role & Aktif --}}
+                                                        <div class="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Tukar Peran</label>
+                                                                <select name="role" class="w-full text-sm font-black p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition uppercase tracking-widest">
+                                                                    <option value="Admin" {{ $u->role == 'Admin' ? 'selected' : '' }}>Admin</option>
+                                                                    <option value="Pimpinan" {{ $u->role == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
+                                                                    <option value="Kasubag" {{ $u->role == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
+                                                                    <option value="Operator" {{ $u->role == 'Operator' ? 'selected' : '' }}>Operator</option>
+                                                                    <option value="Pegawai" {{ $u->role == 'Pegawai' ? 'selected' : '' }}>Pegawai</option>
+                                                                </select>
+                                                            </div>
+                                                            <div class="flex items-center justify-center">
+                                                                <label class="flex items-center gap-3 cursor-pointer group/toggle">
+                                                                    <input type="checkbox" name="is_active" value="1" {{ $u->is_active ? 'checked' : '' }} class="rounded-lg text-green-600 focus:ring-green-500 w-6 h-6 border-gray-200 bg-gray-50">
+                                                                    <span class="text-[11px] font-black uppercase tracking-widest text-gray-400 group-hover/toggle:text-green-600 transition-colors">Aktif</span>
+                                                                </label>
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- Update Foto --}}
+                                                        <div>
+                                                            <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Update Foto</label>
+                                                            <input type="file" name="photo" class="w-full text-[11px] text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:bg-gray-100 file:text-sipega-navy file:font-bold cursor-pointer p-2 bg-gray-50 rounded-xl border border-gray-100">
+                                                        </div>
+
+                                                        {{-- Reset HP & Password --}}
+                                                        <div class="flex items-center gap-3">
+                                                            <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-red-50 p-3 rounded-xl border border-red-100 hover:bg-red-100 transition-colors" title="Buka kunci HP perangkat pegawai">
+                                                                <input type="checkbox" name="reset_device" value="1" class="rounded text-red-600 focus:ring-red-500 w-4 h-4">
+                                                                <span class="text-[10px] font-black text-red-800 uppercase tracking-tighter">Reset HP</span>
+                                                            </label>
+                                                            <label class="flex-1 flex items-center justify-center gap-2 cursor-pointer bg-orange-50 p-3 rounded-xl border border-orange-100 hover:bg-orange-100 transition-colors" title="Reset password ke NIP">
+                                                                <input type="checkbox" name="reset_password" value="1" class="rounded text-orange-600 focus:ring-orange-500 w-4 h-4">
+                                                                <span class="text-[10px] font-black text-orange-800 uppercase tracking-tighter">Reset ke NIP</span>
+                                                            </label>
+                                                        </div>
+
+                                                        {{-- Tombol Simpan --}}
+                                                        <button type="submit" class="w-full bg-sipega-navy hover:bg-black text-white text-[11px] font-black py-4 rounded-2xl shadow-lg transition-all uppercase tracking-widest hover:-translate-y-0.5 mt-1">
+                                                            💾 Simpan Perubahan
+                                                        </button>
+
+                                                    </form>
+                                                    {{-- AKHIR FORM UPDATE — form delete HARUS di luar form update --}}
+
+                                                    {{-- Hapus Pegawai (Admin only) — FORM TERPISAH, DI LUAR FORM UPDATE --}}
+                                                    @if(auth()->user()->role === 'Admin')
+                                                    <div class="pt-4 mt-2 border-t border-gray-100">
+                                                        <form action="{{ route('users.destroy', $u->id) }}" method="POST"
+                                                            onsubmit="return confirm('⚠️ KONFIRMASI PENGHAPUSAN:\n\nApakah Anda yakin ingin MENGHAPUS pegawai ini secara permanen?\n\n• Nama: {{ addslashes($u->name) }}\n• NIP: {{ $u->nip ?? '-' }}\n\nTindakan ini tidak dapat dibatalkan.')">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="w-full bg-red-50 hover:bg-red-600 text-red-600 hover:text-white text-[10px] font-black py-3 px-4 rounded-xl transition-all uppercase tracking-widest border border-red-200 hover:border-red-600 flex items-center justify-center gap-2 group/del">
+                                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                                Hapus Pegawai Permanen
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    @endif
+                                                </div>
                                             </div>
-                                            @endif
                                         </div>
+                                        {{-- END MODAL --}}
                                     </td>
+
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="py-16 text-center text-gray-400">
+                                    <td colspan="5" class="py-16 text-center text-gray-400">
                                         <div class="text-4xl mb-3">🔍</div>
                                         <p class="text-sm font-extrabold text-sipega-navy uppercase tracking-wider">Tidak ada data pegawai yang sesuai dengan filter.</p>
                                         <p class="text-xs text-gray-400 mt-1">Coba gunakan kata kunci pencarian lain atau klik tombol reset di bawah.</p>

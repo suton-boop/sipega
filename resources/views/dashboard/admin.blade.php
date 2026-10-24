@@ -329,13 +329,16 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
                     <div>
                         <h3 class="text-3xl font-black text-emerald-700 tracking-tighter uppercase mb-2">SIPEGA-Check</h3>
-                        <p class="text-gray-400 font-medium italic">Upload file <b>Laporan Log Transaksi</b> (Excel) dari mesin absensi. Sistem akan mencocokkan NIP dan menghitung TL/PSW secara otomatis.</p>
+                        <p class="text-gray-400 font-medium italic mb-3">Upload file <b>Laporan Log Transaksi</b> (HTML / Excel) dari portal Kehadiran Kemendikdasmen atau mesin absensi. Sistem akan mencocokkan NIP dan menghitung TL/PSW otomatis.</p>
+                        <a href="{{ route('attendance.import.index') }}" class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-700 hover:text-emerald-900 bg-emerald-100/70 hover:bg-emerald-200 px-4 py-2 rounded-xl transition">
+                            <span>Buka Menu Import Log Lengkap (Form & Tempel Teks) →</span>
+                        </a>
                     </div>
 
                     <form action="{{ route('attendance.import') }}" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row items-center gap-4 bg-emerald-50/50 p-4 rounded-3xl border border-emerald-50">
                         @csrf
-                        <input type="file" name="excel_file" accept=".xlsx,.csv,.xls" required class="block w-full text-xs text-emerald-800 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-emerald-600 file:text-white file:uppercase file:tracking-widest cursor-pointer"/>
-                        <button type="submit" class="w-full md:w-auto bg-emerald-700 hover:bg-emerald-800 text-white font-black py-4 px-8 rounded-2xl transition-all shadow-lg text-[10px] uppercase tracking-widest">
+                        <input type="file" name="excel_file" accept=".html,.htm,.xlsx,.csv,.xls,.txt" required class="block w-full text-xs text-emerald-800 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-emerald-600 file:text-white file:uppercase file:tracking-widest cursor-pointer"/>
+                        <button type="submit" class="w-full md:w-auto bg-emerald-700 hover:bg-emerald-800 text-white font-black py-4 px-8 rounded-2xl transition-all shadow-lg text-[10px] uppercase tracking-widest shrink-0">
                             Sync Data
                         </button>
                     </form>

@@ -112,6 +112,129 @@
             </div>
             @endif
 
+            <!-- 1.3. Log Kehadiran Pribadi (Sesuai Log Masing-Masing) -->
+            <div class="bg-white overflow-hidden shadow-2xl sm:rounded-[3rem] p-8 md:p-10 border border-gray-100 relative group">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-gray-100 pb-5">
+                    <div>
+                        <div class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-2 border border-blue-100">
+                            <span>⏱️ Log Presensi Mesin</span>
+                            <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                            <span>{{ $myAttendanceSummary['month_label'] ?? now('Asia/Makassar')->translatedFormat('F Y') }}</span>
+                        </div>
+                        <h3 class="text-2xl md:text-3xl font-black text-sipega-navy tracking-tight">Data Kehadiran Saya</h3>
+                        <p class="text-xs text-gray-500 font-medium mt-0.5">Riwayat jam kedatangan dan kepulangan resmi hasil sinkronisasi log mesin / portal Kehadiran Kemendikdasmen.</p>
+                    </div>
+                    <div class="shrink-0">
+                        <a href="{{ route('attendance.recap', $user->id) }}" class="inline-flex items-center gap-2 px-5 py-3 bg-sipega-navy hover:bg-black text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-lg transition transform hover:-translate-y-0.5">
+                            <span>Lihat Rekap Seluruh Bulan</span>
+                            <svg class="w-3.5 h-3.5 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Monthly Quick KPI Cards -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p class="text-[9px] font-black uppercase text-gray-400 tracking-wider">Total Hari Hadir</p>
+                        <p class="text-2xl font-black text-sipega-navy mt-0.5">
+                            {{ $myAttendanceSummary['total_present'] ?? 0 }} <span class="text-xs font-bold text-gray-400">Hari</span>
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl {{ ($myAttendanceSummary['total_tl_minutes'] ?? 0) > 0 ? 'bg-red-50/60 border border-red-100' : 'bg-slate-50 border border-slate-100' }}">
+                        <p class="text-[9px] font-black uppercase text-gray-400 tracking-wider">Terlambat (TL)</p>
+                        <p class="text-2xl font-black {{ ($myAttendanceSummary['total_tl_minutes'] ?? 0) > 0 ? 'text-red-600' : 'text-emerald-600' }} mt-0.5">
+                            {{ $myAttendanceSummary['total_tl_minutes'] ?? 0 }} <span class="text-xs font-bold text-gray-400">Menit</span>
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl {{ ($myAttendanceSummary['total_psw_minutes'] ?? 0) > 0 ? 'bg-orange-50/60 border border-orange-100' : 'bg-slate-50 border border-slate-100' }}">
+                        <p class="text-[9px] font-black uppercase text-gray-400 tracking-wider">Pulang Cepat (PSW)</p>
+                        <p class="text-2xl font-black {{ ($myAttendanceSummary['total_psw_minutes'] ?? 0) > 0 ? 'text-orange-600' : 'text-emerald-600' }} mt-0.5">
+                            {{ $myAttendanceSummary['total_psw_minutes'] ?? 0 }} <span class="text-xs font-bold text-gray-400">Menit</span>
+                        </p>
+                    </div>
+
+                    <div class="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                        <p class="text-[9px] font-black uppercase text-gray-400 tracking-wider">Tugas Luar / DL</p>
+                        <p class="text-2xl font-black text-emerald-600 mt-0.5">
+                            {{ $myAttendanceSummary['total_dl'] ?? 0 }} <span class="text-xs font-bold text-gray-400">Hari</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Recent Logs Table -->
+                @if(isset($myAttendanceSummary['recent_logs']) && count($myAttendanceSummary['recent_logs']) > 0)
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <p class="text-[10px] font-black uppercase tracking-wider text-gray-400">Log Kehadiran Terakhir (Maks. 10 Hari):</p>
+                        <span class="text-[10px] font-bold text-gray-400">Batas Masuk: 07:30 WITA | Pulang: 16:00 WITA (Jumat 16:30)</span>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-2xl border border-gray-100">
+                        <table class="w-full text-left text-xs divide-y divide-gray-100">
+                            <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-wider text-gray-500">
+                                <tr>
+                                    <th class="py-3 px-4">Tanggal</th>
+                                    <th class="py-3 px-4 text-center">Scan Masuk</th>
+                                    <th class="py-3 px-4 text-center">Scan Pulang</th>
+                                    <th class="py-3 px-4 text-center">Status</th>
+                                    <th class="py-3 px-4 text-center">TL (Menit)</th>
+                                    <th class="py-3 px-4 text-center">PSW (Menit)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-50 font-medium">
+                                @foreach($myAttendanceSummary['recent_logs'] as $log)
+                                <tr class="hover:bg-slate-50/60 transition {{ in_array($log->status, ['DL', 'Tugas Luar (ST)']) ? 'bg-emerald-50/20' : '' }}">
+                                    <td class="py-3 px-4 font-bold text-sipega-navy">
+                                        {{ \Carbon\Carbon::parse($log->date)->translatedFormat('l, d F Y') }}
+                                    </td>
+                                    <td class="py-3 px-4 text-center font-mono font-bold text-blue-700">
+                                        {{ $log->check_in ? substr($log->check_in, 0, 8) : '-' }}
+                                    </td>
+                                    <td class="py-3 px-4 text-center font-mono font-bold text-purple-700">
+                                        {{ $log->check_out ? substr($log->check_out, 0, 8) : '-' }}
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
+                                            {{ in_array($log->status, ['DL', 'Tugas Luar (ST)']) ? 'bg-emerald-100 text-emerald-800' : 
+                                               ($log->status === 'Alpa' ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800') }}">
+                                            {{ in_array($log->status, ['DL', 'Tugas Luar (ST)']) ? 'Dinas Luar' : ($log->status ?: 'Hadir') }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        @if($log->tl_minutes > 0)
+                                        <span class="bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                                            +{{ $log->tl_minutes }}m
+                                        </span>
+                                        @else
+                                        <span class="text-gray-300">-</span>
+                                        @endif
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        @if($log->psw_minutes > 0)
+                                        <span class="bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-bold text-[10px]">
+                                            -{{ $log->psw_minutes }}m
+                                        </span>
+                                        @else
+                                        <span class="text-gray-300">-</span>
+                                        @endif
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                @else
+                <div class="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-2xl border border-dashed border-gray-200 text-center">
+                    <span class="text-4xl mb-2 opacity-50">📂</span>
+                    <p class="text-xs font-black uppercase tracking-wider text-sipega-navy">Belum Ada Riwayat Log Kehadiran</p>
+                    <p class="text-[11px] text-gray-400 font-medium mt-1 max-w-md">Log transaksi kehadiran Anda belum tercatat atau belum diimpor oleh Administrator dari portal kehadiran.</p>
+                </div>
+                @endif
+            </div>
+
             <!-- 1.5. Agenda Rapat & Pribadi (NEW) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Agenda Rapat (Mentions & Target_type all) -->

@@ -8,6 +8,7 @@ use App\Imports\AttendanceImport;
 use App\Models\User;
 use App\Models\AttendanceLog;
 use App\Models\CalendarEvent;
+use App\Services\AttendanceLogParserService;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
@@ -25,7 +26,11 @@ class AttendanceController extends Controller
             abort(403);
         }
 
-        $monthYear = $request->get('month', Carbon::now('Asia/Makassar')->format('Y-m'));
+        $monthYear = $request->get('month');
+        if (!$monthYear) {
+            $latestDate = AttendanceLog::where('user_id', $user->id)->max('date');
+            $monthYear = $latestDate ? Carbon::parse($latestDate)->format('Y-m') : Carbon::now('Asia/Makassar')->format('Y-m');
+        }
         $startOfMonth = Carbon::parse($monthYear . '-01')->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
@@ -84,7 +89,7 @@ class AttendanceController extends Controller
             $status = 'Hadir';
             $isWorkingDay = !$date->isWeekend() && !in_array($dateStr, $holidays);
 
-            if (in_array($dateStr, $activeAssignmentDays)) {
+            if (in_array($dateStr, $activeAssignmentDays) || ($log && in_array($log->status, ['DL', 'Tugas Luar (ST)']))) {
                 $status = 'Tugas Luar (ST)';
                 $summary['total_st']++;
             } elseif (!$isWorkingDay) {
@@ -93,6 +98,7 @@ class AttendanceController extends Controller
                 $status = 'ALPA';
                 $summary['total_alpa']++;
             } else {
+                $status = $log->status ?: 'Hadir';
                 $summary['total_present']++;
                 $summary['total_tl_minutes'] += $log->tl_minutes;
                 $summary['total_psw_minutes'] += $log->psw_minutes;
@@ -112,24 +118,91 @@ class AttendanceController extends Controller
     }
 
     /**
+     * SIPEGA: Halaman Form Menu Import Log Daftar Hadir
+     */
+    public function importView(Request $request)
+    {
+        // Hanya Admin, Kasubag, Pimpinan, dan Operator yang dapat mengakses
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])) {
+            abort(403, 'Akses tidak diizinkan. Hanya Admin dan Pimpinan yang dapat mengimpor log daftar hadir.');
+        }
+
+        // Ambil summary log terbaru untuk statistik tampilan
+        $recentLogsCount = AttendanceLog::where('source', 'Mesin')->count();
+        $latestLogDate = AttendanceLog::where('source', 'Mesin')->max('date');
+        $totalRegisteredEmployees = User::whereNotNull('nip')->where('is_active', true)->count();
+
+        return view('attendance.import_log', compact('recentLogsCount', 'latestLogDate', 'totalRegisteredEmployees'));
+    }
+
+    /**
+     * SIPEGA: Proses Eksekusi Import Log Daftar Hadir (File atau Tempel HTML/Teks)
+     */
+    public function processImport(Request $request, AttendanceLogParserService $parser)
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])) {
+            abort(403);
+        }
+
+        $request->validate([
+            'log_file' => 'nullable|file|mimes:html,htm,xls,xlsx,csv,txt|max:20480',
+            'raw_content' => 'nullable|string',
+            'office_start_time' => 'nullable|date_format:H:i',
+            'office_end_weekday' => 'nullable|date_format:H:i',
+            'office_end_friday' => 'nullable|date_format:H:i',
+        ], [
+            'log_file.mimes' => 'Format file harus berupa .html, .htm, .xls, .xlsx, .csv, atau .txt',
+            'log_file.max' => 'Ukuran file maksimal adalah 20MB',
+        ]);
+
+        $file = $request->file('log_file');
+        $rawContent = $request->input('raw_content');
+
+        if (!$file && empty(trim((string)$rawContent))) {
+            return back()->withErrors(['log_file' => 'Silakan pilih file untuk diunggah ATAU tempelkan teks/HTML data log transaksi.']);
+        }
+
+        $options = [
+            'office_start_time' => ($request->input('office_start_time') ?: '07:30') . ':00',
+            'office_end_weekday' => ($request->input('office_end_weekday') ?: '16:00') . ':00',
+            'office_end_friday' => ($request->input('office_end_friday') ?: '16:30') . ':00',
+            'auto_create_user' => $request->boolean('auto_create_user'),
+        ];
+
+        try {
+            $source = $file ?: $rawContent;
+            $result = $parser->parseAndImport($source, $options);
+
+            if (!$result['success']) {
+                return back()->withErrors(['log_file' => $result['message']])->withInput();
+            }
+
+            return back()->with('import_result', $result)->with('success_import', $result['message']);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Import Log Transaksi Error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            return back()->withErrors(['log_file' => 'Terjadi kesalahan saat memproses data: ' . $e->getMessage()])->withInput();
+        }
+    }
+
+    /**
      * SIPEGA: Import Excel Absensi Mingguan/Bulanan dari Mesin (Log Transaksi)
      */
-    public function importExcel(Request $request)
+    public function importExcel(Request $request, AttendanceLogParserService $parser)
     {
         ini_set('max_execution_time', 600);
-        $request->validate(['excel_file' => 'required|mimes:xlsx,xls,csv|max:10240']);
+        $request->validate(['excel_file' => 'required|file|max:20480']);
         
         try {
-            // Gunakan importer baru yang mendukung format Laporan Log Transaksi Mesin
-            Excel::import(new \App\Imports\MachineTransactionImport, $request->file('excel_file'));
-            
-            // Rekalkulasi performa setelah import (Optional but helpful)
-            \Illuminate\Support\Facades\Artisan::call('sipega:calculate-performance');
+            $result = $parser->parseAndImport($request->file('excel_file'));
 
-            return back()->with('success_import', 'Log Mesin berhasil disinkronisasi! Data TL/PSW dihitung otomatis.');
+            if (!$result['success']) {
+                return back()->withErrors(['excel_file' => $result['message']]);
+            }
+
+            return back()->with('success_import', $result['message']);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Import Error: ' . $e->getMessage());
-            return back()->withErrors(['excel_file' => 'Gagal Import: Format file mungkin tidak sesuai atau data NIP tidak ditemukan di SIPEGA.']);
+            return back()->withErrors(['excel_file' => 'Gagal Import: ' . $e->getMessage()]);
         }
     }
 }

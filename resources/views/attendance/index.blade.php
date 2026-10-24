@@ -4,8 +4,16 @@
             <h2 class="font-semibold text-xl text-sipega-navy leading-tight font-sans tracking-wide">
                 {{ __('Daftar Hadir Kegiatan') }} 📅
             </h2>
-            <div id="mobileScannerBadge" class="hidden md:hidden">
-                <span class="bg-sipega-orange text-white text-[10px] font-black px-3 py-1 rounded-full uppercase animate-pulse">Auto-Scanner Ready</span>
+            <div class="flex items-center gap-3">
+                @if(in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
+                <a href="{{ route('attendance.import.index') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl text-[11px] font-black uppercase tracking-wider shadow-md transition">
+                    <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                    <span>Import Log Mesin</span>
+                </a>
+                @endif
+                <div id="mobileScannerBadge" class="hidden md:hidden">
+                    <span class="bg-sipega-orange text-white text-[10px] font-black px-3 py-1 rounded-full uppercase animate-pulse">Auto-Scanner Ready</span>
+                </div>
             </div>
         </div>
     </x-slot>

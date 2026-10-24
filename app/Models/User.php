@@ -31,7 +31,8 @@ class User extends Authenticatable
         'job_class_id', 
         'is_active',
         'photo',
-        'profile_photo_path'
+        'profile_photo_path',
+        'drive_folder_link',
     ];
 
     protected $hidden = [

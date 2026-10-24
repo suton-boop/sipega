@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\DailyAgenda;
 use App\Models\AssignmentLetter;
+use App\Models\AttendanceLog;
 use Carbon\Carbon;
 
 class DashboardController extends Controller
@@ -73,7 +74,39 @@ class DashboardController extends Controller
         } else {
             // Pegawai: Fokus Overview & Performa
             $myAssignmentsCount = \DB::table('assignment_letter_user')->where('user_id', $user->id)->count();
-            return view('dashboard.pegawai', compact('user', 'top5Highest', 'todayAgenda', 'myAssignmentsCount', 'upcomingMeetings'));
+
+            // Log Kehadiran Pribadi Pegawai (Sesuai Log Masing-Masing)
+            $todayLog = AttendanceLog::where('user_id', $user->id)->where('date', $today)->first();
+
+            $latestLogDate = AttendanceLog::where('user_id', $user->id)->max('date');
+            $targetMonth = $latestLogDate ? Carbon::parse($latestLogDate)->format('Y-m') : Carbon::now('Asia/Makassar')->format('Y-m');
+            $startOfMonth = Carbon::parse($targetMonth . '-01')->startOfMonth();
+            $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+            $myMonthlyLogs = AttendanceLog::where('user_id', $user->id)
+                ->whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                ->orderBy('date', 'desc')
+                ->get();
+
+            $myAttendanceSummary = [
+                'month_label' => Carbon::parse($targetMonth . '-01')->translatedFormat('F Y'),
+                'target_month' => $targetMonth,
+                'total_present' => $myMonthlyLogs->filter(function($l) { return $l->check_in || $l->check_out || $l->status === 'DL'; })->count(),
+                'total_tl_minutes' => $myMonthlyLogs->sum('tl_minutes'),
+                'total_psw_minutes' => $myMonthlyLogs->sum('psw_minutes'),
+                'total_dl' => $myMonthlyLogs->where('status', 'DL')->count(),
+                'recent_logs' => $myMonthlyLogs->take(10),
+            ];
+
+            return view('dashboard.pegawai', compact(
+                'user',
+                'top5Highest',
+                'todayAgenda',
+                'myAssignmentsCount',
+                'upcomingMeetings',
+                'todayLog',
+                'myAttendanceSummary'
+            ));
         }
     }
 }

@@ -70,6 +70,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // REKAP KEHADIRAN PERORANGAN (Sesuai Contoh Excel)
     Route::get('/attendance/recap/{id?}', [AttendanceController::class, 'recap'])->name('attendance.recap');
     Route::post('/attendance/import', [AttendanceController::class, 'importExcel'])->name('attendance.import');
+    Route::get('/attendance/import-log', [AttendanceController::class, 'importView'])->name('attendance.import.index');
+    Route::post('/attendance/import-log', [AttendanceController::class, 'processImport'])->name('attendance.import.process');
     
     // SISTEM RAPAT & LOKASI (Digital QR & Geo-Fencing)
     Route::prefix('admin')->name('admin.')->group(function() {

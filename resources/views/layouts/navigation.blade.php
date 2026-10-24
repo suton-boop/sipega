@@ -49,7 +49,17 @@
                         </x-slot>
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Administrasi Pegawai</div>
-                            <x-dropdown-link :href="route('attendance.index')" class="text-[11px] font-bold py-3">Daftar Hadir</x-dropdown-link>
+                            <x-dropdown-link :href="route('attendance.recap')" class="text-[11px] font-bold py-3 text-sipega-navy bg-blue-50/60 hover:bg-blue-100/60 flex items-center justify-between">
+                                <span>Kehadiran Saya</span>
+                                <span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black">LOG</span>
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('attendance.index')" class="text-[11px] font-bold py-3">Presensi Rapat / Kegiatan</x-dropdown-link>
+                            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
+                            <x-dropdown-link :href="route('attendance.import.index')" class="text-[11px] font-bold py-3 text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-between">
+                                <span>Import Log Daftar Hadir</span>
+                                <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">LOG</span>
+                            </x-dropdown-link>
+                            @endif
                             <x-dropdown-link :href="route('letters.index')" class="text-[11px] font-bold py-3">SK & Surat Tugas</x-dropdown-link>
                             <x-dropdown-link :href="route('travel-reports.index')" class="text-[11px] font-bold py-3 text-sipega-navy bg-sipega-orange/5 flex items-center justify-between">
                                 <span>Laporan Perjalanan Dinas</span>
@@ -78,13 +88,17 @@
                     <!-- Group 3: ADMINISTRASI -->
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*', 'duty-simulation.*', 'performance.*') ? 'text-white bg-sipega-orange rounded-full' : '' }}">
+                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*', 'duty-simulation.*', 'performance.*', 'attendance.import.*') ? 'text-white bg-sipega-orange rounded-full' : '' }}">
                                 <span>Console</span>
                                 <svg class="ms-1.5 h-3 w-3 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
                             </button>
                         </x-slot>
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Peralatan Manajemen</div>
+                            <x-dropdown-link :href="route('attendance.import.index')" class="text-[11px] font-bold py-3 text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-between border-b border-gray-50">
+                                <span>Import Log Daftar Hadir</span>
+                                <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">IMPORT</span>
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('performance.recap')" class="text-[11px] font-bold py-3 text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-between border-b border-gray-50">
                                 <span>Raport Capaian Pegawai</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">SKOR</span>
@@ -179,9 +193,17 @@
             <div class="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50 flex items-center gap-3 mt-2">
                 <span class="w-1.5 h-1.5 bg-sipega-navy rounded-full"></span> LAYANAN & ABSENSI
             </div>
-            <x-responsive-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.index')" class="text-xs font-medium py-3 ps-8">
-                {{ __('Daftar Hadir') }}
+            <x-responsive-nav-link :href="route('attendance.recap')" :active="request()->routeIs('attendance.recap')" class="text-xs font-bold py-3 ps-8 text-blue-700 bg-blue-50/50">
+                {{ __('Kehadiran Saya (Log Mesin)') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.index')" class="text-xs font-medium py-3 ps-8">
+                {{ __('Presensi Rapat / Kegiatan') }}
+            </x-responsive-nav-link>
+            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
+            <x-responsive-nav-link :href="route('attendance.import.index')" :active="request()->routeIs('attendance.import.*')" class="text-xs font-bold py-3 ps-8 text-emerald-700 bg-emerald-50/50">
+                {{ __('Import Log Daftar Hadir') }}
+            </x-responsive-nav-link>
+            @endif
             <x-responsive-nav-link :href="route('letters.index')" :active="request()->routeIs('letters.*')" class="text-xs font-medium py-3 ps-8">
                 {{ __('SK & Surat Tugas') }}
             </x-responsive-nav-link>
@@ -206,6 +228,9 @@
                 <span>DASHBOARD MANAJEMEN</span>
                 <span class="text-[7px] bg-sipega-navy text-white px-2 py-0.5 rounded tracking-widest">ADMIN</span>
             </div>
+            <x-responsive-nav-link :href="route('attendance.import.index')" :active="request()->routeIs('attendance.import.*')" class="text-xs font-bold py-3 ps-8 text-emerald-700 bg-emerald-50/50">
+                {{ __('Import Log Kehadiran') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('performance.recap')" :active="request()->routeIs('performance.*')" class="text-xs font-bold py-3 ps-8 text-emerald-700 bg-emerald-50/50">
                 {{ __('Raport Capaian Pegawai') }}
             </x-responsive-nav-link>

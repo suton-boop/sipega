@@ -56,7 +56,7 @@ class UserController extends Controller
         }
 
         $totalUsers = User::where('id', '!=', auth()->id())->count();
-        $users = $query->orderBy('name')->get();
+        $users = $query->orderBy('name')->paginate(20)->withQueryString();
 
         return view('admin.users.index', compact('users', 'totalUsers'));
     }
@@ -69,52 +69,60 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         
         $request->validate([
-            'name' => 'required|string|max:255',
-            'nip' => ['nullable', 'string', 'max:50', Rule::unique('users', 'nip')->ignore($user->id)],
-            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
-            'position' => 'nullable|string|max:255',
-            'gugus_mutu' => 'nullable|string|max:100',
-            'golongan' => 'nullable|string|max:100',
-            'drive_folder_url' => 'nullable|url',
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+            'name'              => 'required|string|max:255',
+            'nip'               => ['nullable', 'string', 'max:50', Rule::unique('users', 'nip')->ignore($user->id)],
+            'role'              => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
+            'position'          => 'nullable|string|max:255',
+            'gugus_mutu'        => 'nullable|string|max:100',
+            'golongan'          => 'nullable|string|max:100',
+            'drive_folder_link' => 'nullable|string|max:1000', // pakai string, bukan url, agar URL Google Drive tidak ditolak
+            'photo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
 
+        // Update foto jika ada file baru diupload
         if ($request->hasFile('photo')) {
             $path = $request->file('photo')->store('photos', 'public');
             $user->photo = $path;
         }
 
-        $user->name = trim($request->name);
+        // Data utama
+        $user->name     = trim($request->name);
+        $user->role     = $request->role;
+        $user->position  = $request->input('position');   // simpan apa adanya (boleh null/kosong)
+        $user->gugus_mutu = $request->input('gugus_mutu'); // simpan apa adanya (boleh null/kosong)
 
-        if ($request->filled('nip')) {
-            $user->nip = preg_replace('/[^0-9]/', '', (string)$request->nip) ?: trim($request->nip);
+        // NIP: simpan hanya angka jika ada, jangan null-kan kalau memang diisi
+        $nipInput = trim($request->input('nip', ''));
+        if ($nipInput !== '') {
+            $cleanNip = preg_replace('/[^0-9]/', '', $nipInput);
+            $user->nip = $cleanNip !== '' ? $cleanNip : $nipInput;
         } else {
             $user->nip = null;
         }
 
-        $user->role = $request->role;
-        if ($request->has('position')) {
-            $user->position = $request->position;
+        // Golongan
+        $golonganInput = $request->input('golongan');
+        if (!empty($golonganInput)) {
+            $user->golongan = User::formatPangkatGolongan($golonganInput) ?: $golonganInput;
+        } else {
+            $user->golongan = null;
         }
-        if ($request->has('gugus_mutu')) {
-            $user->gugus_mutu = $request->gugus_mutu;
-        }
-        if ($request->has('golongan')) {
-            $user->golongan = User::formatPangkatGolongan($request->golongan) ?: $request->golongan;
-        }
-        $user->drive_folder_url = $request->drive_folder_url;
-        
-        // Handle Switch Toggle "Status Aktif"
+
+        // Link folder Drive — simpan langsung tanpa strict URL validation
+        $driveLink = trim($request->input('drive_folder_link', ''));
+        $user->drive_folder_link = $driveLink !== '' ? $driveLink : null;
+
+        // Status Aktif (checkbox)
         $user->is_active = $request->has('is_active');
 
-        // Handle Fitur "Reset Device Binding"
-        if ($request->has('reset_device') && $request->reset_device == '1') {
-            $user->device_id = null; // Membuka kunci HP
+        // Reset Device Binding (buka kunci HP)
+        if ($request->input('reset_device') == '1') {
+            $user->device_id = null;
         }
         
-        // Handle "Reset Password" (Kembali ke NIP pegawai)
+        // Reset Password ke NIP
         $passwordResetNote = '';
-        if ($request->has('reset_password') && $request->reset_password == '1') {
+        if ($request->input('reset_password') == '1') {
             $cleanNip = !empty($user->nip) ? preg_replace('/[^0-9]/', '', (string)$user->nip) : null;
             $defaultPassword = $cleanNip ?: '12345678';
             $user->password = Hash::make($defaultPassword);
@@ -125,13 +133,14 @@ class UserController extends Controller
 
         $user->save();
 
+        // Sync role Spatie jika digunakan
         if (method_exists($user, 'syncRoles')) {
             try {
                 $user->syncRoles([$user->role]);
             } catch (\Throwable $e) {}
         }
 
-        return back()->with('success', "Data {$user->name} berhasil diperbarui{$passwordResetNote}.");
+        return back()->with('success', "✅ Data {$user->name} berhasil diperbarui{$passwordResetNote}.");
     }
 
     /**

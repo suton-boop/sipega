@@ -64,17 +64,17 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @foreach($recapData as $index => $row)
-                        <tr class="{{ $row['status'] == 'ALPA' ? 'bg-red-50' : ($row['status'] == 'Tugas Luar (ST)' ? 'bg-green-50' : '') }}">
+                        <tr class="{{ $row['status'] == 'ALPA' ? 'bg-red-50' : (in_array($row['status'], ['DL', 'Tugas Luar (ST)']) ? 'bg-green-50' : '') }}">
                             <td class="px-3 py-2 border border-gray-300 text-center text-sm font-medium text-gray-900">{{ $index + 1 }}</td>
-                            <td class="px-6 py-2 border border-gray-300 text-sm text-gray-900">{{ \Carbon\Carbon::parse($row['date'])->translatedFormat('d F Y') }}</td>
-                            <td class="px-6 py-2 border border-gray-300 text-center text-sm text-gray-900">{{ $row['check_in'] ?? '-' }}</td>
-                            <td class="px-6 py-2 border border-gray-300 text-center text-sm text-gray-900">{{ $row['check_out'] ?? '-' }}</td>
+                            <td class="px-6 py-2 border border-gray-300 text-sm text-gray-900">{{ \Carbon\Carbon::parse($row['date'])->translatedFormat('l, d F Y') }}</td>
+                            <td class="px-6 py-2 border border-gray-300 text-center text-sm font-mono font-bold text-blue-700">{{ $row['check_in'] ?? '-' }}</td>
+                            <td class="px-6 py-2 border border-gray-300 text-center text-sm font-mono font-bold text-purple-700">{{ $row['check_out'] ?? '-' }}</td>
                             <td class="px-6 py-2 border border-gray-300 text-center text-sm">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-bold rounded-full 
                                     {{ $row['status'] == 'Hadir' ? 'bg-blue-100 text-blue-800' : 
                                        ($row['status'] == 'ALPA' ? 'bg-red-100 text-red-800' : 
-                                       ($row['status'] == 'Tugas Luar (ST)' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}">
-                                    {{ $row['status'] }}
+                                       (in_array($row['status'], ['DL', 'Tugas Luar (ST)']) ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800')) }}">
+                                    {{ in_array($row['status'], ['DL', 'Tugas Luar (ST)']) ? 'Tugas Luar (ST)' : $row['status'] }}
                                 </span>
                             </td>
                             <td class="px-4 py-2 border border-gray-300 text-center text-sm text-gray-900">{{ $row['tl_minutes'] > 0 ? $row['tl_minutes'] : '-' }}</td>
