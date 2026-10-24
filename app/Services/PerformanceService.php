@@ -29,7 +29,7 @@ class PerformanceService
             $officeStart = Carbon::parse($date . ' 07:30:00');
             
             if ($checkIn->gt($officeStart)) {
-                $minutesLate = $checkIn->diffInMinutes($officeStart);
+                $minutesLate = (int)abs($checkIn->diffInMinutes($officeStart));
                 // Deduction: 1 point per minute late, max 40
                 $attendanceScore = max(0, 40 - $minutesLate);
             }

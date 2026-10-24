@@ -72,7 +72,7 @@ class MachineTransactionImport implements ToCollection
                 $officeStart = Carbon::parse($date . ' 07:30:00');
                 
                 if ($dtCheckIn->gt($officeStart)) {
-                    $tlMinutes = $dtCheckIn->diffInMinutes($officeStart);
+                    $tlMinutes = (int)abs($dtCheckIn->diffInMinutes($officeStart));
                 }
 
                 if ($checkOut) {
@@ -84,7 +84,7 @@ class MachineTransactionImport implements ToCollection
                     $officeEnd = Carbon::parse($date . ' ' . $exitTime);
 
                     if ($dtCheckOut->lt($officeEnd)) {
-                        $pswMinutes = $officeEnd->diffInMinutes($dtCheckOut);
+                        $pswMinutes = (int)abs($officeEnd->diffInMinutes($dtCheckOut));
                     }
                 }
 

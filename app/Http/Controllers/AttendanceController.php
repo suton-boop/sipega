@@ -115,15 +115,6 @@ class AttendanceController extends Controller
                 $summary['total_present']++;
             }
 
-            $tlVal = 0;
-            $pswVal = 0;
-            if ($log) {
-                $tlVal = max(0, (int)($log->tl_minutes ?? 0));
-                $pswVal = max(0, (int)($log->psw_minutes ?? 0));
-                $summary['total_tl_minutes'] += $tlVal;
-                $summary['total_psw_minutes'] += $pswVal;
-            }
-
             $isExempt = in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin', 'LDS', 'LPS', 'Libur']);
             $needsCheckInVerif = false;
             $needsCheckOutVerif = false;
@@ -138,6 +129,41 @@ class AttendanceController extends Controller
                     $needsCheckInVerif = true;
                     $needsCheckOutVerif = true;
                 }
+            }
+
+            $tlVal = 0;
+            $pswVal = 0;
+            if ($log) {
+                $tlVal = max(0, (int)($log->tl_minutes ?? 0));
+                $pswVal = max(0, (int)($log->psw_minutes ?? 0));
+
+                if (!$isExempt && $isWorkingDay) {
+                    if (!empty($checkIn) && !$needsCheckInVerif) {
+                        $checkInFormatted = strlen($checkIn) === 5 ? ($checkIn . ':00') : $checkIn;
+                        $dtCheckIn = Carbon::parse($dateStr . ' ' . $checkInFormatted);
+                        $dtStart = Carbon::parse($dateStr . ' 07:30:00');
+                        $realTL = $dtCheckIn->gt($dtStart) ? (int)abs($dtCheckIn->diffInMinutes($dtStart)) : 0;
+                        if ($tlVal !== $realTL) {
+                            $tlVal = $realTL;
+                            $log->update(['tl_minutes' => $tlVal]);
+                        }
+                    }
+
+                    if (!empty($checkOut) && !$needsCheckOutVerif) {
+                        $checkOutFormatted = strlen($checkOut) === 5 ? ($checkOut . ':00') : $checkOut;
+                        $dtCheckOut = Carbon::parse($dateStr . ' ' . $checkOutFormatted);
+                        $exitTarget = ($date->dayOfWeek == Carbon::FRIDAY) ? '16:30:00' : '16:00:00';
+                        $dtEnd = Carbon::parse($dateStr . ' ' . $exitTarget);
+                        $realPSW = $dtCheckOut->lt($dtEnd) ? (int)abs($dtEnd->diffInMinutes($dtCheckOut)) : 0;
+                        if ($pswVal !== $realPSW) {
+                            $pswVal = $realPSW;
+                            $log->update(['psw_minutes' => $pswVal]);
+                        }
+                    }
+                }
+
+                $summary['total_tl_minutes'] += $tlVal;
+                $summary['total_psw_minutes'] += $pswVal;
             }
 
             $recapData[] = [
@@ -396,16 +422,6 @@ class AttendanceController extends Controller
                     $stats['libur']++;
                 }
 
-                $tlVal = 0;
-                $pswVal = 0;
-
-                if ($log) {
-                    $tlVal = max(0, (int)($log->tl_minutes ?? 0));
-                    $pswVal = max(0, (int)($log->psw_minutes ?? 0));
-                    $stats['total_tl'] += $tlVal;
-                    $stats['total_psw'] += $pswVal;
-                }
-
                 $checkIn = $log ? $log->check_in : null;
                 $checkOut = $log ? $log->check_out : null;
 
@@ -428,6 +444,43 @@ class AttendanceController extends Controller
 
                 if ($needsCheckInVerif || $needsCheckOutVerif) {
                     $stats['needs_verif']++;
+                }
+
+                $tlVal = 0;
+                $pswVal = 0;
+
+                if ($log) {
+                    $tlVal = max(0, (int)($log->tl_minutes ?? 0));
+                    $pswVal = max(0, (int)($log->psw_minutes ?? 0));
+
+                    // Auto-heal akurat menit TL & PSW dari jam riil jika status bukan bebas penalti
+                    if (!$isExempt && $isWorkingDay) {
+                        if (!empty($checkIn) && !$needsCheckInVerif) {
+                            $checkInFormatted = strlen($checkIn) === 5 ? ($checkIn . ':00') : $checkIn;
+                            $dtCheckIn = Carbon::parse($dateStr . ' ' . $checkInFormatted);
+                            $dtStart = Carbon::parse($dateStr . ' 07:30:00');
+                            $realTL = $dtCheckIn->gt($dtStart) ? (int)abs($dtCheckIn->diffInMinutes($dtStart)) : 0;
+                            if ($tlVal !== $realTL) {
+                                $tlVal = $realTL;
+                                $log->update(['tl_minutes' => $tlVal]);
+                            }
+                        }
+
+                        if (!empty($checkOut) && !$needsCheckOutVerif) {
+                            $checkOutFormatted = strlen($checkOut) === 5 ? ($checkOut . ':00') : $checkOut;
+                            $dtCheckOut = Carbon::parse($dateStr . ' ' . $checkOutFormatted);
+                            $exitTarget = ($date->dayOfWeek == Carbon::FRIDAY) ? '16:30:00' : '16:00:00';
+                            $dtEnd = Carbon::parse($dateStr . ' ' . $exitTarget);
+                            $realPSW = $dtCheckOut->lt($dtEnd) ? (int)abs($dtEnd->diffInMinutes($dtCheckOut)) : 0;
+                            if ($pswVal !== $realPSW) {
+                                $pswVal = $realPSW;
+                                $log->update(['psw_minutes' => $pswVal]);
+                            }
+                        }
+                    }
+
+                    $stats['total_tl'] += $tlVal;
+                    $stats['total_psw'] += $pswVal;
                 }
 
                 $dailyData[] = [
@@ -505,7 +558,7 @@ class AttendanceController extends Controller
                     $checkInFormatted = strlen($checkIn) === 5 ? ($checkIn . ':00') : $checkIn;
                     $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
                     $dtStart = Carbon::parse($date . ' ' . $officeStartTime);
-                    $tlMinutes = $dtCheckIn->gt($dtStart) ? $dtCheckIn->diffInMinutes($dtStart) : 0;
+                    $tlMinutes = $dtCheckIn->gt($dtStart) ? (int)abs($dtCheckIn->diffInMinutes($dtStart)) : 0;
                 } else {
                     $tlMinutes = 0;
                 }
@@ -521,7 +574,7 @@ class AttendanceController extends Controller
                     $dayOfWeek = Carbon::parse($date)->dayOfWeek;
                     $exitTarget = ($dayOfWeek == Carbon::FRIDAY) ? $officeEndFriday : $officeEndWeekday;
                     $dtEnd = Carbon::parse($date . ' ' . $exitTarget);
-                    $pswMinutes = $dtCheckOut->lt($dtEnd) ? $dtEnd->diffInMinutes($dtCheckOut) : 0;
+                    $pswMinutes = $dtCheckOut->lt($dtEnd) ? (int)abs($dtEnd->diffInMinutes($dtCheckOut)) : 0;
                 } else {
                     $pswMinutes = 0;
                 }
@@ -619,7 +672,7 @@ class AttendanceController extends Controller
                     $checkInFormatted = strlen($log->check_in) === 5 ? ($log->check_in . ':00') : $log->check_in;
                     $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
                     $dtStart = Carbon::parse($date . ' ' . $officeStartTime);
-                    $log->tl_minutes = $dtCheckIn->gt($dtStart) ? $dtCheckIn->diffInMinutes($dtStart) : 0;
+                    $log->tl_minutes = $dtCheckIn->gt($dtStart) ? (int)abs($dtCheckIn->diffInMinutes($dtStart)) : 0;
                 } else {
                     $log->tl_minutes = 0;
                 }
@@ -631,7 +684,7 @@ class AttendanceController extends Controller
                     $dayOfWeek = Carbon::parse($date)->dayOfWeek;
                     $exitTarget = ($dayOfWeek == Carbon::FRIDAY) ? $officeEndFriday : $officeEndWeekday;
                     $dtEnd = Carbon::parse($date . ' ' . $exitTarget);
-                    $log->psw_minutes = $dtCheckOut->lt($dtEnd) ? $dtEnd->diffInMinutes($dtCheckOut) : 0;
+                    $log->psw_minutes = $dtCheckOut->lt($dtEnd) ? (int)abs($dtEnd->diffInMinutes($dtCheckOut)) : 0;
                 } else {
                     $log->psw_minutes = 0;
                 }
@@ -710,7 +763,7 @@ class AttendanceController extends Controller
                     $checkInFormatted = strlen($log->check_in) === 5 ? ($log->check_in . ':00') : $log->check_in;
                     $dtCheckIn = Carbon::parse($date . ' ' . $checkInFormatted);
                     $dtStart = Carbon::parse($date . ' ' . $officeStartTime);
-                    $log->tl_minutes = $dtCheckIn->gt($dtStart) ? $dtCheckIn->diffInMinutes($dtStart) : 0;
+                    $log->tl_minutes = $dtCheckIn->gt($dtStart) ? (int)abs($dtCheckIn->diffInMinutes($dtStart)) : 0;
                 } else {
                     $log->tl_minutes = 0;
                 }
@@ -722,7 +775,7 @@ class AttendanceController extends Controller
                     $dayOfWeek = Carbon::parse($date)->dayOfWeek;
                     $exitTarget = ($dayOfWeek == Carbon::FRIDAY) ? $officeEndFriday : $officeEndWeekday;
                     $dtEnd = Carbon::parse($date . ' ' . $exitTarget);
-                    $log->psw_minutes = $dtCheckOut->lt($dtEnd) ? $dtEnd->diffInMinutes($dtCheckOut) : 0;
+                    $log->psw_minutes = $dtCheckOut->lt($dtEnd) ? (int)abs($dtEnd->diffInMinutes($dtCheckOut)) : 0;
                 } else {
                     $log->psw_minutes = 0;
                 }
