@@ -321,10 +321,10 @@
                         <!-- Checkbox Auto-Create User -->
                         <div class="pt-2 border-t border-slate-200/60">
                             <label class="flex items-start gap-3 cursor-pointer group">
-                                <input type="checkbox" name="auto_create_user" value="1" class="mt-0.5 rounded text-sipega-orange focus:ring-sipega-orange border-gray-300">
+                                <input type="checkbox" name="auto_create_user" value="1" checked class="mt-0.5 rounded text-sipega-orange focus:ring-sipega-orange border-gray-300">
                                 <div class="text-xs">
                                     <span class="font-bold text-gray-800 group-hover:text-sipega-navy">Otomatis daftarkan akun pegawai baru jika NIP belum ada di SIPEGA</span>
-                                    <p class="text-[10px] text-gray-400 font-medium">Jika dicentang, pegawai yang belum tercatat di sistem akan dibuatkan akun otomatis dengan NIP sebagai password default.</p>
+                                    <p class="text-[10px] text-gray-400 font-medium">Jika dicentang, pegawai yang belum tercatat di sistem akan dibuatkan akun otomatis dengan NIP sebagai password default sehingga log kehadirannya langsung tersimpan.</p>
                                 </div>
                             </label>
                         </div>

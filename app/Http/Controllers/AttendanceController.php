@@ -155,7 +155,7 @@ class AttendanceController extends Controller
             'log_file.max' => 'Ukuran file maksimal adalah 20MB',
         ]);
 
-        $file = $request->file('log_file');
+        $file = $request->file('log_file') ?? $request->file('excel_file');
         $rawContent = $request->input('raw_content');
 
         if (!$file && empty(trim((string)$rawContent))) {
@@ -166,7 +166,7 @@ class AttendanceController extends Controller
             'office_start_time' => ($request->input('office_start_time') ?: '07:30') . ':00',
             'office_end_weekday' => ($request->input('office_end_weekday') ?: '16:00') . ':00',
             'office_end_friday' => ($request->input('office_end_friday') ?: '16:30') . ':00',
-            'auto_create_user' => $request->boolean('auto_create_user'),
+            'auto_create_user' => $request->has('auto_create_user') ? $request->boolean('auto_create_user') : true,
         ];
 
         try {
@@ -193,13 +193,13 @@ class AttendanceController extends Controller
         $request->validate(['excel_file' => 'required|file|max:20480']);
         
         try {
-            $result = $parser->parseAndImport($request->file('excel_file'));
+            $result = $parser->parseAndImport($request->file('excel_file'), ['auto_create_user' => true]);
 
             if (!$result['success']) {
                 return back()->withErrors(['excel_file' => $result['message']]);
             }
 
-            return back()->with('success_import', $result['message']);
+            return back()->with('import_result', $result)->with('success_import', $result['message']);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Import Error: ' . $e->getMessage());
             return back()->withErrors(['excel_file' => 'Gagal Import: ' . $e->getMessage()]);

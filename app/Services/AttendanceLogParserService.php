@@ -132,48 +132,66 @@ class AttendanceLogParserService
      */
     protected function extractEmployeeFromHtmlSection(string $section): ?array
     {
+        // Bersihkan komentar HTML <!-- ... --> terlebih dahulu
+        $cleanSection = preg_replace('/<!--.*?-->/s', '', $section);
+
         $nama = '';
-        if (preg_match('/Nama\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $section, $m)) {
+        if (preg_match('/Nama\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $cleanSection, $m)) {
             $nama = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
-        } elseif (preg_match('/Nama\s*:\s*([^\r\n<]+)/i', strip_tags($section), $m)) {
+        } elseif (preg_match('/Nama\s*:\s*([^\r\n<]+)/i', strip_tags($cleanSection), $m)) {
             $nama = trim($m[1]);
         }
 
         $nip = '';
-        if (preg_match('/NIP\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $section, $m)) {
+        if (preg_match('/NIP\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $cleanSection, $m)) {
             $nip = preg_replace('/[^0-9]/', '', $m[1]);
-        } elseif (preg_match('/NIP\s*:\s*([0-9\s]+)/i', strip_tags($section), $m)) {
+        } elseif (preg_match('/NIP\s*:\s*([0-9\s]+)/i', strip_tags($cleanSection), $m)) {
             $nip = preg_replace('/[^0-9]/', '', $m[1]);
         }
 
         $jabatan = '';
-        if (preg_match('/Jabatan\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $section, $m)) {
+        if (preg_match('/Jabatan\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $cleanSection, $m)) {
             $jabatan = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
 
         $organisasi = '';
-        if (preg_match('/Organisasi\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $section, $m)) {
+        if (preg_match('/Organisasi\s*<\/td>\s*<td[^>]*>\s*:\s*([^<]+)<\/td>/i', $cleanSection, $m)) {
             $organisasi = trim(html_entity_decode($m[1], ENT_QUOTES | ENT_HTML5, 'UTF-8'));
         }
 
-        // Ambil baris log (Tanggal & Jam)
+        // Ambil baris log (Tanggal & Jam) secara baris per baris agar fleksibel terhadap berbagai tabel
         $logs = [];
-        // Match <td>DD-MM-YYYY</td><td>HH:MM:SS</td> atau dengan slash DD/MM/YYYY
-        if (preg_match_all('/<td[^>]*>\s*(\d{2}[-\/]\d{2}[-\/]\d{4})\s*<\/td>\s*<td[^>]*>\s*(\d{2}:\d{2}(?::\d{2})?)\s*<\/td>/i', $section, $matches, PREG_SET_ORDER)) {
-            foreach ($matches as $row) {
-                $rawDate = str_replace('/', '-', $row[1]);
-                $dParts = explode('-', $rawDate);
-                $formattedDate = sprintf('%04d-%02d-%02d', (int)$dParts[2], (int)$dParts[1], (int)$dParts[0]);
-                
-                $time = trim($row[2]);
-                if (strlen($time) === 5) {
-                    $time .= ':00';
-                }
+        if (preg_match_all('/<tr[^>]*>(.*?)<\/tr>/is', $cleanSection, $trMatches)) {
+            foreach ($trMatches[1] as $trHtml) {
+                if (preg_match_all('/<td[^>]*>(.*?)<\/td>/is', $trHtml, $tdMatches)) {
+                    $cells = array_map(function($c) {
+                        return trim(strip_tags(html_entity_decode($c, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+                    }, $tdMatches[1]);
 
-                $logs[] = [
-                    'date' => $formattedDate,
-                    'time' => $time
-                ];
+                    $rowDate = null;
+                    $rowTime = null;
+
+                    foreach ($cells as $cell) {
+                        if (!$rowDate && preg_match('/(\d{2}[-\/]\d{2}[-\/]\d{4})/', $cell, $dm)) {
+                            $rawDate = str_replace('/', '-', $dm[1]);
+                            $dParts = explode('-', $rawDate);
+                            $rowDate = sprintf('%04d-%02d-%02d', (int)$dParts[2], (int)$dParts[1], (int)$dParts[0]);
+                        } elseif (!$rowTime && preg_match('/(\d{2}:\d{2}(?::\d{2})?)/', $cell, $tm)) {
+                            $t = $tm[1];
+                            if (strlen($t) === 5) {
+                                $t .= ':00';
+                            }
+                            $rowTime = $t;
+                        }
+                    }
+
+                    if ($rowDate && $rowTime) {
+                        $logs[] = [
+                            'date' => $rowDate,
+                            'time' => $rowTime
+                        ];
+                    }
+                }
             }
         }
 
@@ -359,7 +377,8 @@ class AttendanceLogParserService
         $officeStartTime = $options['office_start_time'] ?? '07:30:00';
         $officeEndWeekday = $options['office_end_weekday'] ?? '16:00:00';
         $officeEndFriday = $options['office_end_friday'] ?? '16:30:00';
-        $autoCreateUser = !empty($options['auto_create_user']);
+        // Default auto-create user adalah TRUE agar pegawai dari portal presensi otomatis terdaftar dan log tidak hilang
+        $autoCreateUser = !array_key_exists('auto_create_user', $options) || !empty($options['auto_create_user']);
 
         $totalEmployees = count($parsedData);
         $matchedEmployees = 0;
@@ -374,10 +393,13 @@ class AttendanceLogParserService
             $nama = trim($emp['nama'] ?? '');
             $jabatan = trim($emp['jabatan'] ?? '');
 
-            // 1. Cari Pegawai di Database SIPEGA
+            // 1. Cari Pegawai di Database SIPEGA (Bersihkan spasi/strip pada NIP di database)
             $user = null;
             if (!empty($nip)) {
-                $user = User::where('nip', $nip)->first();
+                $user = User::whereRaw("REPLACE(REPLACE(COALESCE(nip, ''), ' ', ''), '-', '') = ?", [$nip])->first();
+                if (!$user) {
+                    $user = User::where('nip', 'like', $nip . '%')->first();
+                }
             }
 
             if (!$user && !empty($nama)) {
@@ -388,13 +410,18 @@ class AttendanceLogParserService
                 }
             }
 
-            // 2. Jika tidak ditemukan dan autoCreateUser aktif
+            // 2. Jika tidak ditemukan, daftarkan otomatis akun pegawai
             if (!$user && !empty($nip) && $autoCreateUser) {
                 try {
+                    $email = $nip . '@sipega.local';
+                    if (User::where('email', $email)->exists()) {
+                        $email = $nip . '.' . rand(100, 999) . '@sipega.local';
+                    }
+
                     $user = User::create([
                         'name' => $nama ?: ('Pegawai ' . $nip),
                         'nip' => $nip,
-                        'email' => $nip . '@sipega.local',
+                        'email' => $email,
                         'password' => Hash::make($nip),
                         'position' => $jabatan ?: 'Pegawai',
                         'role' => 'Pegawai',
