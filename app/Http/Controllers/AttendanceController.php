@@ -214,4 +214,223 @@ class AttendanceController extends Controller
             return back()->withErrors(['excel_file' => 'Gagal Import: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * SIPEGA: Menu Admin Kelola Kehadiran & Pemberian/Edit Keterangan Pegawai
+     */
+    public function manageIndex(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])) {
+            abort(403, 'Akses ditolak. Menu ini khusus Admin dan Manajemen.');
+        }
+
+        // Ambil list semua pegawai aktif untuk dropdown filter
+        $allPegawai = User::where('is_active', true)
+            ->orderBy('name', 'asc')
+            ->get(['id', 'name', 'nip', 'position', 'unit_kerja']);
+
+        // Filter bulan & pegawai
+        $monthYear = $request->get('month');
+        if (!$monthYear) {
+            $latestLogDate = AttendanceLog::max('date');
+            $monthYear = $latestLogDate ? Carbon::parse($latestLogDate)->format('Y-m') : Carbon::now('Asia/Makassar')->format('Y-m');
+        }
+
+        $userId = $request->get('user_id');
+        $selectedUser = $userId ? User::find($userId) : null;
+
+        $dailyData = [];
+        $stats = [
+            'hadir' => 0,
+            'dl' => 0,
+            'cuti' => 0,
+            'sakit' => 0,
+            'izin' => 0,
+            'alpa' => 0,
+            'libur' => 0,
+            'total_tl' => 0,
+            'total_psw' => 0,
+        ];
+
+        if ($selectedUser) {
+            $startOfMonth = Carbon::parse($monthYear . '-01')->startOfMonth();
+            $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+            // Logs pegawai terpilih pada bulan yang ditentukan
+            $logs = AttendanceLog::where('user_id', $selectedUser->id)
+                ->whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                ->orderBy('date', 'asc')
+                ->get();
+
+            $logsByDate = $logs->keyBy(function ($item) {
+                return Carbon::parse($item->date)->toDateString();
+            });
+
+            // Sinkronisasi hari penugasan dinas luar dari ST
+            $activeAssignmentDays = \DB::table('assignment_letter_user')
+                ->join('assignment_letters', 'assignment_letter_user.assignment_letter_id', '=', 'assignment_letters.id')
+                ->where('user_id', $selectedUser->id)
+                ->whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                ->pluck('date')
+                ->toArray();
+
+            $approvedLetters = $selectedUser->letters()
+                ->where('status', 'Approved')
+                ->where('date_start', '<=', $endOfMonth->toDateString())
+                ->whereRaw('COALESCE(date_end, date_start) >= ?', [$startOfMonth->toDateString()])
+                ->get();
+
+            foreach ($approvedLetters as $al) {
+                $cur = Carbon::parse($al->date_start);
+                $end = Carbon::parse($al->date_end ?? $al->date_start);
+                while ($cur->lte($end)) {
+                    $activeAssignmentDays[] = $cur->toDateString();
+                    $cur->addDay();
+                }
+            }
+            $activeAssignmentDays = array_values(array_unique($activeAssignmentDays));
+
+            // Hari libur nasional / cuti bersama
+            $holidays = CalendarEvent::whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
+                ->whereIn('type', ['Holiday', 'Shared Leave'])
+                ->pluck('date')
+                ->toArray();
+
+            $period = CarbonPeriod::create($startOfMonth, $endOfMonth);
+
+            foreach ($period as $date) {
+                $dateStr = $date->toDateString();
+                $log = $logsByDate->get($dateStr);
+                $isWeekend = $date->isWeekend();
+                $isHoliday = in_array($dateStr, $holidays);
+                $isWorkingDay = !$isWeekend && !$isHoliday;
+                $hasST = in_array($dateStr, $activeAssignmentDays);
+
+                $status = 'Hadir';
+                if ($log && !empty($log->status)) {
+                    $status = $log->status;
+                } elseif ($hasST) {
+                    $status = 'DL';
+                } elseif (!$isWorkingDay) {
+                    $status = 'Libur';
+                } elseif (!$log || (empty($log->check_in) && empty($log->check_out))) {
+                    $status = ($isWorkingDay && $date->lte(Carbon::today('Asia/Makassar'))) ? 'ALPA' : ($isWorkingDay ? 'Belum Ada Log' : 'Libur');
+                }
+
+                // Hitung statistik
+                if ($status === 'Hadir') {
+                    $stats['hadir']++;
+                } elseif (in_array($status, ['DL', 'Tugas Luar (ST)'])) {
+                    $stats['dl']++;
+                } elseif ($status === 'Cuti') {
+                    $stats['cuti']++;
+                } elseif ($status === 'Sakit') {
+                    $stats['sakit']++;
+                } elseif ($status === 'Izin') {
+                    $stats['izin']++;
+                } elseif ($status === 'ALPA') {
+                    $stats['alpa']++;
+                } elseif ($status === 'Libur') {
+                    $stats['libur']++;
+                }
+
+                if ($log) {
+                    $stats['total_tl'] += (int)$log->tl_minutes;
+                    $stats['total_psw'] += (int)$log->psw_minutes;
+                }
+
+                $dailyData[] = [
+                    'date' => $dateStr,
+                    'day_name' => $date->translatedFormat('l'),
+                    'formatted_date' => $date->translatedFormat('d M Y'),
+                    'is_working_day' => $isWorkingDay,
+                    'is_weekend' => $isWeekend,
+                    'is_holiday' => $isHoliday,
+                    'has_st' => $hasST,
+                    'log_id' => $log ? $log->id : null,
+                    'check_in' => $log ? $log->check_in : null,
+                    'check_out' => $log ? $log->check_out : null,
+                    'tl_minutes' => $log ? $log->tl_minutes : 0,
+                    'psw_minutes' => $log ? $log->psw_minutes : 0,
+                    'status' => $status,
+                    'notes' => $log ? $log->notes : null,
+                    'source' => $log ? ($log->source ?: 'Mesin') : ($hasST ? 'ST' : '-'),
+                ];
+            }
+        }
+
+        return view('admin.attendance.manage', compact(
+            'allPegawai',
+            'monthYear',
+            'selectedUser',
+            'dailyData',
+            'stats'
+        ));
+    }
+
+    /**
+     * SIPEGA: Update / Beri Keterangan & Status Kehadiran Pegawai
+     */
+    public function updateLog(Request $request)
+    {
+        if (!in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'date' => 'required|date',
+            'status' => 'required|string',
+            'notes' => 'nullable|string|max:500',
+            'check_in' => 'nullable|string',
+            'check_out' => 'nullable|string',
+            'tl_minutes' => 'nullable|integer|min:0',
+            'psw_minutes' => 'nullable|integer|min:0',
+        ]);
+
+        $userId = $request->user_id;
+        $date = Carbon::parse($request->date)->toDateString();
+        $status = $request->status;
+        $notes = $request->notes;
+        $checkIn = $request->check_in;
+        $checkOut = $request->check_out;
+        $tlMinutes = $request->filled('tl_minutes') ? (int)$request->tl_minutes : 0;
+        $pswMinutes = $request->filled('psw_minutes') ? (int)$request->psw_minutes : 0;
+
+        // Jika status DL, Cuti, Sakit, atau Izin dan user tidak mengisi khusus tl/psw, reset ke 0 agar tidak merugikan Tukin
+        if (in_array($status, ['DL', 'Tugas Luar (ST)', 'Cuti', 'Sakit', 'Izin']) && !$request->filled('tl_minutes')) {
+            $tlMinutes = 0;
+            $pswMinutes = 0;
+        }
+
+        $log = AttendanceLog::firstOrNew([
+            'user_id' => $userId,
+            'date' => $date,
+        ]);
+
+        $log->status = $status;
+        $log->notes = $notes;
+        if ($request->filled('check_in')) {
+            $log->check_in = $checkIn;
+        }
+        if ($request->filled('check_out')) {
+            $log->check_out = $checkOut;
+        }
+        $log->tl_minutes = $tlMinutes;
+        $log->psw_minutes = $pswMinutes;
+        $log->source = 'Manual';
+        $log->save();
+
+        // Hitung ulang performa harian agar data Tukin & Raport Pegawai langsung mutakhir
+        try {
+            \Artisan::call('sipega:calculate-performance');
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Calculate performance sync error: ' . $e->getMessage());
+        }
+
+        $pegawaiName = User::find($userId)?->name ?? 'Pegawai';
+        $formattedDate = Carbon::parse($date)->translatedFormat('d M Y');
+
+        return back()->with('success', "Keterangan kehadiran untuk {$pegawaiName} pada {$formattedDate} berhasil diperbarui.");
+    }
 }

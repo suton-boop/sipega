@@ -55,6 +55,10 @@
                             </x-dropdown-link>
                             <x-dropdown-link :href="route('attendance.index')" class="text-[11px] font-bold py-3">Presensi Rapat / Kegiatan</x-dropdown-link>
                             @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
+                            <x-dropdown-link :href="route('admin.attendance.manage')" class="text-[11px] font-bold py-3 text-sipega-navy bg-amber-50/60 hover:bg-amber-100/60 flex items-center justify-between">
+                                <span>Kelola Kehadiran & Keterangan</span>
+                                <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">ADMIN</span>
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('attendance.import.index')" class="text-[11px] font-bold py-3 text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-between">
                                 <span>Import Log Daftar Hadir</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">LOG</span>
@@ -88,13 +92,17 @@
                     <!-- Group 3: ADMINISTRASI -->
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*', 'duty-simulation.*', 'performance.*', 'attendance.import.*') ? 'text-white bg-sipega-orange rounded-full' : '' }}">
+                            <button class="inline-flex items-center px-4 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*', 'duty-simulation.*', 'performance.*', 'attendance.import.*', 'admin.attendance.*') ? 'text-white bg-sipega-orange rounded-full' : '' }}">
                                 <span>Console</span>
                                 <svg class="ms-1.5 h-3 w-3 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
                             </button>
                         </x-slot>
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Peralatan Manajemen</div>
+                            <x-dropdown-link :href="route('admin.attendance.manage')" class="text-[11px] font-bold py-3 text-sipega-navy bg-orange-50/70 hover:bg-orange-100/70 flex items-center justify-between border-b border-gray-50">
+                                <span>Kelola Kehadiran Pegawai</span>
+                                <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">KELOLA</span>
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('attendance.import.index')" class="text-[11px] font-bold py-3 text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-between border-b border-gray-50">
                                 <span>Import Log Daftar Hadir</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">IMPORT</span>
@@ -200,6 +208,9 @@
                 {{ __('Presensi Rapat / Kegiatan') }}
             </x-responsive-nav-link>
             @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator']))
+            <x-responsive-nav-link :href="route('admin.attendance.manage')" :active="request()->routeIs('admin.attendance.*')" class="text-xs font-bold py-3 ps-8 text-sipega-orange bg-orange-50/50">
+                {{ __('Kelola Kehadiran & Keterangan') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('attendance.import.index')" :active="request()->routeIs('attendance.import.*')" class="text-xs font-bold py-3 ps-8 text-emerald-700 bg-emerald-50/50">
                 {{ __('Import Log Daftar Hadir') }}
             </x-responsive-nav-link>
@@ -228,6 +239,9 @@
                 <span>DASHBOARD MANAJEMEN</span>
                 <span class="text-[7px] bg-sipega-navy text-white px-2 py-0.5 rounded tracking-widest">ADMIN</span>
             </div>
+            <x-responsive-nav-link :href="route('admin.attendance.manage')" :active="request()->routeIs('admin.attendance.*')" class="text-xs font-bold py-3 ps-8 text-sipega-orange bg-orange-50/50">
+                {{ __('Kelola Kehadiran Pegawai') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('attendance.import.index')" :active="request()->routeIs('attendance.import.*')" class="text-xs font-bold py-3 ps-8 text-emerald-700 bg-emerald-50/50">
                 {{ __('Import Log Kehadiran') }}
             </x-responsive-nav-link>
