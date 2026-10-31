@@ -511,70 +511,107 @@
 
                             <div class="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <!-- SWITCH 1: TOMBOL & KARTU SLIP TUKIN -->
-                                <div class="p-4 rounded-2xl bg-emerald-50/60 border-2 {{ $generalSettings['show_slip_tukin'] == '1' ? 'border-emerald-300' : 'border-gray-200' }} flex flex-col justify-between gap-3">
-                                    <div class="flex items-start justify-between gap-2">
-                                        <div>
-                                            <div class="flex items-center gap-1.5 mb-1">
-                                                <span class="text-base">🎫</span>
-                                                <p class="text-xs font-black text-sipega-navy">Menu & Tombol Slip Tukin</p>
-                                            </div>
-                                            <p class="text-[10px] text-gray-500 leading-relaxed">
-                                                Atur apakah kartu Slip Tukin di Pusat Dokumen, tombol "Unduh PDF", dan menu navbar dimunculkan atau disembunyikan (hidden).
-                                            </p>
+                                <div x-data="{ active: {{ $generalSettings['show_slip_tukin'] == '1' ? 'true' : 'false' }} }"
+                                     :class="active ? 'bg-emerald-50/70 border-emerald-300' : 'bg-slate-50 border-gray-200'"
+                                     class="p-5 rounded-2xl border-2 flex flex-col justify-between gap-4 transition-all duration-200">
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="text-xl">🎫</span>
+                                            <p class="text-xs font-black text-sipega-navy">Menu & Tombol Slip Tukin</p>
                                         </div>
+                                        <p class="text-[10px] text-gray-500 leading-relaxed">
+                                            Atur apakah kartu Slip Tukin di Pusat Dokumen, tombol "Unduh PDF", dan menu navbar dimunculkan atau disembunyikan (hidden).
+                                        </p>
                                     </div>
-                                    <div class="flex items-center justify-between pt-2 border-t border-emerald-200/50">
-                                        <span class="text-[10px] font-black {{ $generalSettings['show_slip_tukin'] == '1' ? 'text-emerald-700 bg-emerald-100' : 'text-gray-500 bg-gray-100' }} px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                            {{ $generalSettings['show_slip_tukin'] == '1' ? 'Tampil (Muncul)' : 'Disembunyikan (Hidden)' }}
+
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200/60">
+                                        <!-- Badge Reaktif -->
+                                        <span x-text="active ? 'TAMPIL (MUNCUL)' : 'DISEMBUNYIKAN (HIDDEN)'"
+                                              :class="active ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-rose-700 bg-rose-100 border-rose-200'"
+                                              class="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border transition-all">
                                         </span>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="show_slip_tukin" value="1" {{ $generalSettings['show_slip_tukin'] == '1' ? 'checked' : '' }} class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                                        </label>
+
+                                        <!-- Nilai yang PASTI terkirim -->
+                                        <input type="hidden" name="show_slip_tukin" :value="active ? '1' : '0'">
+
+                                        <!-- Saklar Toggle Interaktif -->
+                                        <button type="button" 
+                                                @click="active = !active"
+                                                :class="active ? 'bg-emerald-600' : 'bg-gray-300'"
+                                                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-sm"
+                                                role="switch" 
+                                                :aria-checked="active">
+                                            <span :class="active ? 'translate-x-5' : 'translate-x-0'"
+                                                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- SWITCH 2: MASTER MODUL TUKIN -->
-                                <div class="p-4 rounded-2xl bg-slate-50 border border-gray-200 flex flex-col justify-between gap-3">
+                                <div x-data="{ active: {{ $generalSettings['is_tukin_active'] == '1' ? 'true' : 'false' }} }"
+                                     :class="active ? 'bg-emerald-50/70 border-emerald-300' : 'bg-slate-50 border-gray-200'"
+                                     class="p-5 rounded-2xl border-2 flex flex-col justify-between gap-4 transition-all duration-200">
                                     <div>
-                                        <div class="flex items-center gap-1.5 mb-1">
-                                            <span class="text-base">📊</span>
-                                            <p class="text-xs font-black text-gray-800">Modul Perhitungan Tukin</p>
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="text-xl">📊</span>
+                                            <p class="text-xs font-black text-sipega-navy">Modul Perhitungan Tukin</p>
                                         </div>
                                         <p class="text-[10px] text-gray-500 leading-relaxed">
                                             Akses utama modul perhitungan dan slip tunjangan kinerja untuk pegawai umum.
                                         </p>
                                     </div>
-                                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
-                                        <span class="text-[10px] font-black {{ $generalSettings['is_tukin_active'] == '1' ? 'text-emerald-700 bg-emerald-100' : 'text-gray-500 bg-gray-100' }} px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                            {{ $generalSettings['is_tukin_active'] == '1' ? 'Aktif' : 'Nonaktif' }}
+
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200/60">
+                                        <span x-text="active ? 'AKTIF' : 'NONAKTIF'"
+                                              :class="active ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-600 bg-gray-100 border-gray-200'"
+                                              class="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border transition-all">
                                         </span>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="is_tukin_active" value="1" {{ $generalSettings['is_tukin_active'] == '1' ? 'checked' : '' }} class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                                        </label>
+
+                                        <input type="hidden" name="is_tukin_active" :value="active ? '1' : '0'">
+
+                                        <button type="button" 
+                                                @click="active = !active"
+                                                :class="active ? 'bg-emerald-600' : 'bg-gray-300'"
+                                                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-sm"
+                                                role="switch" 
+                                                :aria-checked="active">
+                                            <span :class="active ? 'translate-x-5' : 'translate-x-0'"
+                                                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                        </button>
                                     </div>
                                 </div>
 
                                 <!-- SWITCH 3: REWARD CENTER -->
-                                <div class="p-4 rounded-2xl bg-slate-50 border border-gray-200 flex flex-col justify-between gap-3">
+                                <div x-data="{ active: {{ $generalSettings['is_reward_active'] == '1' ? 'true' : 'false' }} }"
+                                     :class="active ? 'bg-emerald-50/70 border-emerald-300' : 'bg-slate-50 border-gray-200'"
+                                     class="p-5 rounded-2xl border-2 flex flex-col justify-between gap-4 transition-all duration-200">
                                     <div>
-                                        <div class="flex items-center gap-1.5 mb-1">
-                                            <span class="text-base">🏆</span>
-                                            <p class="text-xs font-black text-gray-800">Reward Center (Wall of Fame)</p>
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="text-xl">🏆</span>
+                                            <p class="text-xs font-black text-sipega-navy">Reward Center (Wall of Fame)</p>
                                         </div>
                                         <p class="text-[10px] text-gray-500 leading-relaxed">
                                             Tampilkan peringkat ASN BerAKHLAK dan rekap capaian kinerja di beranda.
                                         </p>
                                     </div>
-                                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
-                                        <span class="text-[10px] font-black {{ $generalSettings['is_reward_active'] == '1' ? 'text-emerald-700 bg-emerald-100' : 'text-gray-500 bg-gray-100' }} px-2 py-0.5 rounded-full uppercase tracking-wider">
-                                            {{ $generalSettings['is_reward_active'] == '1' ? 'Aktif' : 'Nonaktif' }}
+
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200/60">
+                                        <span x-text="active ? 'AKTIF' : 'NONAKTIF'"
+                                              :class="active ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-600 bg-gray-100 border-gray-200'"
+                                              class="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border transition-all">
                                         </span>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" name="is_reward_active" value="1" {{ $generalSettings['is_reward_active'] == '1' ? 'checked' : '' }} class="sr-only peer">
-                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                                        </label>
+
+                                        <input type="hidden" name="is_reward_active" :value="active ? '1' : '0'">
+
+                                        <button type="button" 
+                                                @click="active = !active"
+                                                :class="active ? 'bg-emerald-600' : 'bg-gray-300'"
+                                                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-sm"
+                                                role="switch" 
+                                                :aria-checked="active">
+                                            <span :class="active ? 'translate-x-5' : 'translate-x-0'"
+                                                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                        </button>
                                     </div>
                                 </div>
                             </div>

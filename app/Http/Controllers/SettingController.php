@@ -93,14 +93,16 @@ class SettingController extends Controller
             }
         }
 
-        // 5. Pengaturan Umum
-        if ($request->has('is_reward_active')) {
-            Setting::set('is_reward_active', $request->input('is_reward_active') ? '1' : '0');
-        }
-        if ($request->has('is_tukin_active')) {
-            Setting::set('is_tukin_active', $request->input('is_tukin_active') ? '1' : '0');
-        }
-        Setting::set('show_slip_tukin', $request->has('show_slip_tukin') ? '1' : '0');
+        // 5. Pengaturan Umum (Saklar Toggle)
+        $isReward = $request->input('is_reward_active');
+        Setting::set('is_reward_active', ($isReward === '1' || $isReward === 1 || $isReward === true || $isReward === 'on') ? '1' : '0');
+
+        $isTukin = $request->input('is_tukin_active');
+        Setting::set('is_tukin_active', ($isTukin === '1' || $isTukin === 1 || $isTukin === true || $isTukin === 'on') ? '1' : '0');
+
+        $showSlip = $request->input('show_slip_tukin');
+        Setting::set('show_slip_tukin', ($showSlip === '1' || $showSlip === 1 || $showSlip === true || $showSlip === 'on') ? '1' : '0');
+
         if ($request->has('institution_name')) {
             Setting::set('institution_name', trim($request->input('institution_name')));
         }
