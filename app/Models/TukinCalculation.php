@@ -88,9 +88,11 @@ class TukinCalculation extends Model
     {
         if (!$golongan) return 0.0;
 
+        $rules = \App\Services\TukinCalculatorService::getRules();
+
         $g = strtoupper(trim($golongan));
         if (str_starts_with($g, 'IV') || str_contains($g, 'IV/') || str_contains($g, 'GOLONGAN IV') || str_contains($g, 'GOL. IV')) {
-            return 15.0;
+            return (float)($rules['tax_gol_4'] ?? 15.0);
         }
 
         if (
@@ -98,9 +100,9 @@ class TukinCalculation extends Model
             str_contains($g, 'GOLONGAN IX') || str_contains($g, 'GOL. IX') || $g === 'IX' ||
             str_contains($g, 'GOLONGAN X') || str_contains($g, 'GOL. X') || $g === 'X'
         ) {
-            return 5.0;
+            return (float)($rules['tax_gol_3'] ?? 5.0);
         }
 
-        return 0.0;
+        return (float)($rules['tax_gol_1_2'] ?? 0.0);
     }
 }

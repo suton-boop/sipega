@@ -131,6 +131,10 @@
                             <x-dropdown-link :href="route('leader.agenda.index')" class="text-[11px] font-bold py-3">Monitoring & Penilaian</x-dropdown-link>
                             <x-dropdown-link :href="route('travel.recap')" class="text-[11px] font-bold py-3">Rekap Dinas Luar</x-dropdown-link>
                             <x-dropdown-link :href="route('admin.calendar.index')" class="text-[11px] font-bold py-3 border-t border-gray-50">Kalender Kerja</x-dropdown-link>
+                            <x-dropdown-link :href="route('settings.index')" class="text-[11px] font-bold py-3 text-sipega-navy bg-amber-50/70 hover:bg-amber-100 flex items-center justify-between border-t border-amber-200/60">
+                                <span>Pengaturan Aturan & Sistem</span>
+                                <span class="text-[8px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-black">⚙️ ATURAN</span>
+                            </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
                     @endif
@@ -156,6 +160,12 @@
                         <x-dropdown-link :href="route('profile.edit')">
                             {{ __('Profile') }}
                         </x-dropdown-link>
+
+                        @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator', 'Kepegawaian']))
+                        <x-dropdown-link :href="route('settings.index')">
+                            {{ __('Pengaturan Aturan & Sistem') }}
+                        </x-dropdown-link>
+                        @endif
 
                         <!-- Authentication -->
                         <form method="POST" action="{{ route('logout') }}">
@@ -273,6 +283,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('admin.calendar.index')" :active="request()->routeIs('admin.calendar.index')" class="text-xs font-medium py-3 ps-8">
                 {{ __('Kalender Kerja') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*')" class="text-xs font-bold py-3 ps-8 text-amber-700 bg-amber-50/50">
+                {{ __('⚙️ Pengaturan Aturan & Sistem') }}
             </x-responsive-nav-link>
             @endif
         </div>

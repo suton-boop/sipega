@@ -30,8 +30,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // DASHBOARD Core SIPEGA
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // MODULE GLOBAL SETTINGS
+    // MODULE GLOBAL SETTINGS & ATURAN REGULASI
+    Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/tukin', [SettingController::class, 'updateTukinRules'])->name('settings.tukin.update');
+    Route::post('/settings/tukin/reset', [SettingController::class, 'resetTukinRules'])->name('settings.tukin.reset');
 
     // MODULE USER MANAGEMENT (Admin-Only Dashboard Features)
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

@@ -137,6 +137,8 @@ class TukinController extends Controller
         $users = User::realPegawai()->with('jobClass')->orderBy('name', 'asc')->get();
         $jobClasses = JobClass::orderByRaw('CAST(class_name AS UNSIGNED) DESC')->get();
         $officialRates = TukinCalculatorService::OFFICIAL_RATES;
+        $tukinRules = TukinCalculatorService::getRules();
+        $rates = TukinCalculatorService::getRates();
 
         return view('tukin.index', compact(
             'period',
@@ -146,7 +148,9 @@ class TukinController extends Controller
             'summary',
             'users',
             'jobClasses',
-            'officialRates'
+            'officialRates',
+            'tukinRules',
+            'rates'
         ));
     }
 

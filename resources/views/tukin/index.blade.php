@@ -606,7 +606,7 @@
         </div>
     </div>
 
-    <!-- MODAL PEDOMAN PERMENDIKDASMEN NO. 14 TAHUN 2025 -->
+    <!-- MODAL PEDOMAN PERMENDIKDASMEN NO. 14 TAHUN 2025 (DINAMIS DARI PENGATURAN) -->
     <div id="regulasiModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-[2.5rem] shadow-2xl max-w-3xl w-full p-8 border border-gray-100 space-y-5 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-start">
@@ -615,9 +615,9 @@
                         Aturan & Pedoman Resmi
                     </span>
                     <h3 class="font-black text-xl text-sipega-navy mt-1">
-                        Permendikdasmen Nomor 14 Tahun 2025
+                        {{ $tukinRules['regulation_name'] ?? 'Permendikdasmen Nomor 14 Tahun 2025' }}
                     </h3>
-                    <p class="text-xs text-gray-400 font-medium">Tabel Acuan Pemotongan & Pengurangan Tunjangan Kinerja Pegawai</p>
+                    <p class="text-xs text-gray-400 font-medium">{{ $tukinRules['regulation_desc'] ?? 'Tabel Acuan Pemotongan & Pengurangan Tunjangan Kinerja Pegawai' }}</p>
                 </div>
                 <button type="button" onclick="document.getElementById('regulasiModal').classList.add('hidden')" class="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -643,31 +643,31 @@
                             <tr>
                                 <td class="p-2.5">1 s.d. 30 menit</td>
                                 <td class="p-2.5 font-bold">TL1 / PSW1 / TBTK1</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">0,25%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['tl1_pct'] ?? 0.25, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Per hari</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5">31 s.d. 60 menit</td>
                                 <td class="p-2.5 font-bold">TL2 / PSW2 / TBTK2</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">0,50%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['tl2_pct'] ?? 0.50, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Per hari</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5">61 s.d. 90 menit</td>
                                 <td class="p-2.5 font-bold">TL3 / PSW3 / TBTK3</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">0,75%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['tl3_pct'] ?? 0.75, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Per hari</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5">91 s.d. 120 menit</td>
                                 <td class="p-2.5 font-bold">TL4 / PSW4 / TBTK4</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">1,00%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['tl4_pct'] ?? 1.00, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Per hari</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5">Lebih dari 120 menit</td>
                                 <td class="p-2.5 font-bold">TL5 / PSW5 / TBTK5</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">1,25%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['tl5_pct'] ?? 1.25, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Per hari</td>
                             </tr>
                         </tbody>
@@ -694,31 +694,31 @@
                             <tr>
                                 <td class="p-2.5">Tidak Rekam Hadir Datang</td>
                                 <td class="p-2.5 font-bold">TKD</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">1,25%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['tkd_pct'] ?? 1.25, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Dihitung terlambat 121 menit</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5">Tidak Rekam Hadir Pulang</td>
                                 <td class="p-2.5 font-bold">TKP</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">1,25%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['tkp_pct'] ?? 1.25, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Dihitung pulang cepat 121 menit</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5">Tidak Masuk Kerja Tanpa Alasan Sah</td>
                                 <td class="p-2.5 font-bold">ALPA / TK</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">2,50%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">{{ number_format($tukinRules['alpa_pct'] ?? 2.50, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Per hari pada bulan berjalan</td>
                             </tr>
                             <tr>
-                                <td class="p-2.5">Alpa Terus Menerus &ge; 10 Hari</td>
+                                <td class="p-2.5">Alpa Terus Menerus &ge; {{ $tukinRules['alpa_max_days'] ?? 10 }} Hari</td>
                                 <td class="p-2.5 font-bold">-</td>
                                 <td class="p-2.5 text-center font-bold text-red-600">100%</td>
                                 <td class="p-2.5 text-gray-500">Tidak mendapat tunjangan kinerja</td>
                             </tr>
                             <tr>
-                                <td class="p-2.5">Akumulasi Keterlambatan &ge; 7,5 Jam (Pasal 17)</td>
+                                <td class="p-2.5">Akumulasi Keterlambatan &ge; {{ $tukinRules['accum_hours_threshold'] ?? 7.5 }} Jam (Pasal 17)</td>
                                 <td class="p-2.5 font-bold">-</td>
-                                <td class="p-2.5 text-center font-bold text-rose-600">+2,50%</td>
+                                <td class="p-2.5 text-center font-bold text-rose-600">+{{ number_format($tukinRules['accum_penalty_pct'] ?? 2.50, 2, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Dihitung 1 hari alpa tambahan</td>
                             </tr>
                         </tbody>
@@ -743,31 +743,40 @@
                         <tbody class="divide-y divide-gray-100">
                             <tr>
                                 <td class="p-2.5 font-bold text-emerald-700">Baik / Sangat Baik</td>
-                                <td class="p-2.5 text-center font-bold">0%</td>
+                                <td class="p-2.5 text-center font-bold text-emerald-700">{{ number_format($tukinRules['perf_baik_pct'] ?? 0, 0, ',', '.') }}%</td>
                                 <td class="p-2.5 text-gray-500">Tidak ada pemotongan (dibayarkan 100%)</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5 font-bold text-amber-700">Butuh Perbaikan</td>
-                                <td class="p-2.5 text-center font-bold text-amber-600">20%</td>
-                                <td class="p-2.5 text-gray-500">Dipotong pada triwulan berikutnya (dibayarkan 80%)</td>
+                                <td class="p-2.5 text-center font-bold text-amber-600">{{ number_format($tukinRules['perf_cukup_pct'] ?? 20, 0, ',', '.') }}%</td>
+                                <td class="p-2.5 text-gray-500">Dipotong pada triwulan berikutnya (dibayarkan {{ 100 - ($tukinRules['perf_cukup_pct'] ?? 20) }}%)</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5 font-bold text-orange-700">Kurang (Misconduct)</td>
-                                <td class="p-2.5 text-center font-bold text-orange-600">40%</td>
-                                <td class="p-2.5 text-gray-500">Dipotong pada triwulan berikutnya (dibayarkan 60%)</td>
+                                <td class="p-2.5 text-center font-bold text-orange-600">{{ number_format($tukinRules['perf_kurang_pct'] ?? 40, 0, ',', '.') }}%</td>
+                                <td class="p-2.5 text-gray-500">Dipotong pada triwulan berikutnya (dibayarkan {{ 100 - ($tukinRules['perf_kurang_pct'] ?? 40) }}%)</td>
                             </tr>
                             <tr>
                                 <td class="p-2.5 font-bold text-red-700">Sangat Kurang</td>
-                                <td class="p-2.5 text-center font-bold text-red-600">60%</td>
-                                <td class="p-2.5 text-gray-500">Dipotong pada triwulan berikutnya (dibayarkan 40%)</td>
+                                <td class="p-2.5 text-center font-bold text-red-600">{{ number_format($tukinRules['perf_sangat_kurang_pct'] ?? 60, 0, ',', '.') }}%</td>
+                                <td class="p-2.5 text-gray-500">Dipotong pada triwulan berikutnya (dibayarkan {{ 100 - ($tukinRules['perf_sangat_kurang_pct'] ?? 60) }}%)</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="flex justify-end pt-2">
-                <button type="button" onclick="document.getElementById('regulasiModal').classList.add('hidden')" class="px-5 py-2.5 bg-sipega-navy text-white text-xs font-black rounded-xl">
+            <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-gray-100">
+                @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Operator', 'Kepegawaian']))
+                    <a href="{{ route('settings.index') }}#tukin" class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 rounded-xl text-xs font-black transition">
+                        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <span>Sesuaikan Aturan di Menu Pengaturan</span>
+                    </a>
+                @else
+                    <div></div>
+                @endif
+
+                <button type="button" onclick="document.getElementById('regulasiModal').classList.add('hidden')" class="w-full sm:w-auto px-6 py-2.5 bg-sipega-navy text-white text-xs font-black rounded-xl hover:bg-black transition">
                     Tutup Pedoman
                 </button>
             </div>

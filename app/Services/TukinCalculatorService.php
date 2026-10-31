@@ -7,6 +7,7 @@ use App\Models\JobClass;
 use App\Models\AttendanceLog;
 use App\Models\CalendarEvent;
 use App\Models\TukinCalculation;
+use App\Models\Setting;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\UploadedFile;
@@ -45,13 +46,69 @@ class TukinCalculatorService
     ];
 
     /**
+     * Dapatkan aturan pemotongan tukin dinamis dari Pengaturan (Settings)
+     * Fallback ke standar resmi Permendikdasmen No. 14 Tahun 2025 jika belum dikonfigurasi.
+     */
+    public static function getRules(): array
+    {
+        return [
+            'regulation_name' => Setting::get('tukin_regulation_name', 'Permendikdasmen Nomor 14 Tahun 2025'),
+            'regulation_desc' => Setting::get('tukin_regulation_desc', 'Tabel Acuan Pemotongan & Pengurangan Tunjangan Kinerja Pegawai'),
+            'rate_regulation' => Setting::get('tukin_rate_regulation', 'Perpres Nomor 18 Tahun 2025'),
+
+            // 1. Pengurangan Jam Kerja (TL / PSW / TBTK)
+            'tl1_pct' => (float) Setting::get('tukin_tl1_pct', 0.25),
+            'tl2_pct' => (float) Setting::get('tukin_tl2_pct', 0.50),
+            'tl3_pct' => (float) Setting::get('tukin_tl3_pct', 0.75),
+            'tl4_pct' => (float) Setting::get('tukin_tl4_pct', 1.00),
+            'tl5_pct' => (float) Setting::get('tukin_tl5_pct', 1.25),
+
+            // 2. Ketidakhadiran & Rekam Absen Elektronik
+            'tkd_pct' => (float) Setting::get('tukin_tkd_pct', 1.25),
+            'tkp_pct' => (float) Setting::get('tukin_tkp_pct', 1.25),
+            'alpa_pct' => (float) Setting::get('tukin_alpa_pct', 2.50),
+            'alpa_max_days' => (int) Setting::get('tukin_alpa_max_days', 10),
+            'accum_hours_threshold' => (float) Setting::get('tukin_accum_hours_threshold', 7.5),
+            'accum_penalty_pct' => (float) Setting::get('tukin_accum_penalty_pct', 2.50),
+
+            // 3. Evaluasi Kinerja Triwulan
+            'perf_baik_pct' => (float) Setting::get('tukin_perf_baik_pct', 0.0),
+            'perf_cukup_pct' => (float) Setting::get('tukin_perf_cukup_pct', 20.0),
+            'perf_kurang_pct' => (float) Setting::get('tukin_perf_kurang_pct', 40.0),
+            'perf_sangat_kurang_pct' => (float) Setting::get('tukin_perf_sangat_kurang_pct', 60.0),
+
+            // 4. Pajak PPh 21
+            'tax_gol_4' => (float) Setting::get('tukin_tax_gol_4', 15.0),
+            'tax_gol_3' => (float) Setting::get('tukin_tax_gol_3', 5.0),
+            'tax_gol_1_2' => (float) Setting::get('tukin_tax_gol_1_2', 0.0),
+        ];
+    }
+
+    /**
+     * Dapatkan daftar tarif plafon nominal per Grade (KJ 1 s.d 17)
+     * Mengambil dari Setting jika ada perubahan/penyesuaian baru, fallback ke Perpres No. 18 Tahun 2025.
+     */
+    public static function getRates(): array
+    {
+        $rates = self::OFFICIAL_RATES;
+        foreach ($rates as $grade => $defaultVal) {
+            $saved = Setting::get('tukin_grade_' . $grade);
+            if ($saved !== null && is_numeric($saved) && (float)$saved > 0) {
+                $rates[(string)$grade] = (float)$saved;
+            }
+        }
+        return $rates;
+    }
+
+    /**
      * Dapatkan nominal dasar tukin berdasarkan grade
      */
     public static function getBaseTukinByGrade($grade): float
     {
         $gradeKey = (string)intval($grade);
-        if (isset(self::OFFICIAL_RATES[$gradeKey])) {
-            return (float)self::OFFICIAL_RATES[$gradeKey];
+        $rates = self::getRates();
+        if (isset($rates[$gradeKey])) {
+            return (float)$rates[$gradeKey];
         }
 
         $jc = JobClass::where('class_name', $gradeKey)->first();
@@ -169,6 +226,7 @@ class TukinCalculatorService
             'tbtk_count' => 0,
         ];
 
+        $rules = self::getRules();
         $totalPenaltyPercent = 0.0;
         $totalMinutesViolation = 0;
 
@@ -198,7 +256,7 @@ class TukinCalculatorService
                 }
                 if (str_contains($st, 'ALPA') || str_contains($st, 'TK')) {
                     $counts['alpa_count']++;
-                    $totalPenaltyPercent += 2.5;
+                    $totalPenaltyPercent += $rules['alpa_pct'];
                     continue;
                 }
 
@@ -209,23 +267,23 @@ class TukinCalculatorService
                     $totalMinutesViolation += $tlMin;
                     if ($tlMin <= 30) {
                         $counts['tl1_count']++;
-                        $totalPenaltyPercent += 0.25;
+                        $totalPenaltyPercent += $rules['tl1_pct'];
                     } elseif ($tlMin <= 60) {
                         $counts['tl2_count']++;
-                        $totalPenaltyPercent += 0.50;
+                        $totalPenaltyPercent += $rules['tl2_pct'];
                     } elseif ($tlMin <= 90) {
                         $counts['tl3_count']++;
-                        $totalPenaltyPercent += 0.75;
+                        $totalPenaltyPercent += $rules['tl3_pct'];
                     } elseif ($tlMin <= 120) {
                         $counts['tl4_count']++;
-                        $totalPenaltyPercent += 1.00;
+                        $totalPenaltyPercent += $rules['tl4_pct'];
                     } else {
                         $counts['tl5_count']++;
-                        $totalPenaltyPercent += 1.25;
+                        $totalPenaltyPercent += $rules['tl5_pct'];
                     }
                 } elseif (str_contains($log->notes ?? '', 'TL1')) {
                     $counts['tl1_count']++;
-                    $totalPenaltyPercent += 0.25;
+                    $totalPenaltyPercent += $rules['tl1_pct'];
                 }
 
                 $pswMin = $log->psw_minutes ?? 0;
@@ -233,48 +291,51 @@ class TukinCalculatorService
                     $totalMinutesViolation += $pswMin;
                     if ($pswMin <= 30) {
                         $counts['psw1_count']++;
-                        $totalPenaltyPercent += 0.25;
+                        $totalPenaltyPercent += $rules['tl1_pct'];
                     } elseif ($pswMin <= 60) {
                         $counts['psw2_count']++;
-                        $totalPenaltyPercent += 0.50;
+                        $totalPenaltyPercent += $rules['tl2_pct'];
                     } elseif ($pswMin <= 90) {
                         $counts['psw3_count']++;
-                        $totalPenaltyPercent += 0.75;
+                        $totalPenaltyPercent += $rules['tl3_pct'];
                     } elseif ($pswMin <= 120) {
                         $counts['psw4_count']++;
-                        $totalPenaltyPercent += 1.00;
+                        $totalPenaltyPercent += $rules['tl4_pct'];
                     } else {
                         $counts['psw5_count']++;
-                        $totalPenaltyPercent += 1.25;
+                        $totalPenaltyPercent += $rules['tl5_pct'];
                     }
                 }
 
                 if (empty($log->check_in) && !empty($log->check_out)) {
                     $counts['tkd_count']++;
-                    $totalPenaltyPercent += 1.25;
+                    $totalPenaltyPercent += $rules['tkd_pct'];
                 }
                 if (!empty($log->check_in) && empty($log->check_out)) {
                     $counts['tkp_count']++;
-                    $totalPenaltyPercent += 1.25;
+                    $totalPenaltyPercent += $rules['tkp_pct'];
                 }
             } else {
                 $counts['alpa_count']++;
-                $totalPenaltyPercent += 2.5;
+                $totalPenaltyPercent += $rules['alpa_pct'];
             }
         }
 
-        if ($totalMinutesViolation >= 450) {
-            $totalPenaltyPercent += 2.5;
+        $accumThresholdMin = ($rules['accum_hours_threshold'] ?? 7.5) * 60;
+        if ($totalMinutesViolation >= $accumThresholdMin) {
+            $totalPenaltyPercent += $rules['accum_penalty_pct'];
         }
 
         $perfPredicate = $user->performance_predicate ?? 'Baik';
         $perfPenaltyPercent = 0.0;
         if (in_array(strtolower($perfPredicate), ['butuh perbaikan', 'cukup'])) {
-            $perfPenaltyPercent = 20.0;
+            $perfPenaltyPercent = $rules['perf_cukup_pct'];
         } elseif (in_array(strtolower($perfPredicate), ['kurang', 'kurang (misconduct)'])) {
-            $perfPenaltyPercent = 40.0;
+            $perfPenaltyPercent = $rules['perf_kurang_pct'];
         } elseif (in_array(strtolower($perfPredicate), ['sangat kurang'])) {
-            $perfPenaltyPercent = 60.0;
+            $perfPenaltyPercent = $rules['perf_sangat_kurang_pct'];
+        } else {
+            $perfPenaltyPercent = $rules['perf_baik_pct'];
         }
 
         $attendanceDeduction = round(($totalPenaltyPercent / 100) * $baseAmount, 2);
@@ -470,6 +531,7 @@ class TukinCalculatorService
                 'tbtk_count' => 0,
             ];
 
+            $rules = self::getRules();
             $totalPenaltyPercent = 0.0;
 
             foreach ($data['logs'] as $log) {
@@ -498,7 +560,7 @@ class TukinCalculatorService
                 if ($isNoIn && $isNoOut) {
                     if (str_contains($ket, 'ALPA') || str_contains($ket, 'TK') || $ket === '-' || empty($ket)) {
                         $counts['alpa_count']++;
-                        $totalPenaltyPercent += 2.5;
+                        $totalPenaltyPercent += $rules['alpa_pct'];
                     }
                     continue;
                 }
@@ -507,28 +569,28 @@ class TukinCalculatorService
 
                 if (str_contains($ket, 'TL1')) {
                     $counts['tl1_count']++;
-                    $totalPenaltyPercent += 0.25;
+                    $totalPenaltyPercent += $rules['tl1_pct'];
                 } elseif (str_contains($ket, 'TL2')) {
                     $counts['tl2_count']++;
-                    $totalPenaltyPercent += 0.50;
+                    $totalPenaltyPercent += $rules['tl2_pct'];
                 } elseif (str_contains($ket, 'TL3')) {
                     $counts['tl3_count']++;
-                    $totalPenaltyPercent += 0.75;
+                    $totalPenaltyPercent += $rules['tl3_pct'];
                 } elseif (str_contains($ket, 'TL4')) {
                     $counts['tl4_count']++;
-                    $totalPenaltyPercent += 1.00;
+                    $totalPenaltyPercent += $rules['tl4_pct'];
                 } elseif (str_contains($ket, 'TL5')) {
                     $counts['tl5_count']++;
-                    $totalPenaltyPercent += 1.25;
+                    $totalPenaltyPercent += $rules['tl5_pct'];
                 }
 
                 if (str_contains($ket, 'TKD') || ($isNoIn && !$isNoOut)) {
                     $counts['tkd_count']++;
-                    $totalPenaltyPercent += 1.25;
+                    $totalPenaltyPercent += $rules['tkd_pct'];
                 }
                 if (str_contains($ket, 'TKP') || (!$isNoIn && $isNoOut)) {
                     $counts['tkp_count']++;
-                    $totalPenaltyPercent += 1.25;
+                    $totalPenaltyPercent += $rules['tkp_pct'];
                 }
             }
 
@@ -795,12 +857,13 @@ class TukinCalculatorService
                 }
             }
 
+            $rules = self::getRules();
             if ($explicitPenalty !== null) {
                 $totalPenaltyPercent = $explicitPenalty;
             } else {
-                $totalPenaltyPercent = ($tl1 * 0.25) + ($tl2 * 0.50) + ($tl3 * 0.75) + ($tl4 * 1.00) + ($tl5 * 1.25)
-                                     + ($psw1 * 0.25) + ($psw2 * 0.50) + ($psw3 * 0.75) + ($psw4 * 1.00) + ($psw5 * 1.25)
-                                     + ($tkd * 1.25) + ($tkp * 1.25) + ($alpa * 2.5);
+                $totalPenaltyPercent = ($tl1 * $rules['tl1_pct']) + ($tl2 * $rules['tl2_pct']) + ($tl3 * $rules['tl3_pct']) + ($tl4 * $rules['tl4_pct']) + ($tl5 * $rules['tl5_pct'])
+                                     + ($psw1 * $rules['tl1_pct']) + ($psw2 * $rules['tl2_pct']) + ($psw3 * $rules['tl3_pct']) + ($psw4 * $rules['tl4_pct']) + ($psw5 * $rules['tl5_pct'])
+                                     + ($tkd * $rules['tkd_pct']) + ($tkp * $rules['tkp_pct']) + ($alpa * $rules['alpa_pct']);
             }
 
             $deduction = round(($totalPenaltyPercent / 100) * $baseAmount, 2);
