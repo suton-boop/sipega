@@ -221,39 +221,39 @@
             @else
 
             <!-- PROFIL PEGAWAI TERPILIH & STATISTIK BULANAN -->
-            <div class="bg-gradient-to-br from-[#002244] via-[#0b284c] to-[#041527] rounded-[2.5rem] p-6 sm:p-8 text-white shadow-2xl relative overflow-hidden border border-white/10">
+            <div class="rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden border border-slate-700/50" style="background: linear-gradient(135deg, #002244 0%, #0d2e53 50%, #001a33 100%) !important; color: #ffffff !important;">
                 <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
                     <div class="flex items-center gap-4">
-                        <div class="w-16 h-16 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center text-sipega-orange font-black text-2xl shadow-lg flex-shrink-0">
+                        <div class="w-16 h-16 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center text-sipega-orange font-black text-2xl shadow-lg flex-shrink-0" style="color: #f97316 !important;">
                             {{ strtoupper(substr($selectedUser->name, 0, 2)) }}
                         </div>
                         <div>
                             <div class="flex items-center gap-2">
-                                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-sipega-orange text-white shadow-sm">
+                                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest text-white shadow-sm" style="background: #ea580c !important;">
                                     {{ $selectedUser->role }}
                                 </span>
-                                <span class="text-xs text-white/50 font-bold">•</span>
-                                <span class="text-xs text-white/90 font-bold">NIP. {{ $selectedUser->nip ?? '-' }}</span>
+                                <span class="text-xs font-bold" style="color: rgba(255,255,255,0.4) !important;">•</span>
+                                <span class="text-xs font-bold" style="color: #e2e8f0 !important;">NIP. {{ $selectedUser->nip ?? '-' }}</span>
                             </div>
-                            <h3 class="text-xl sm:text-2xl font-black text-white mt-1 drop-shadow-sm">
+                            <h3 class="text-xl sm:text-2xl font-black mt-1 drop-shadow-sm" style="color: #ffffff !important;">
                                 {{ $selectedUser->name }}
                             </h3>
-                            <p class="text-xs text-white/80 mt-0.5">
+                            <p class="text-xs mt-0.5" style="color: #cbd5e1 !important;">
                                 {{ $selectedUser->position ?? 'Pegawai' }} &mdash; {{ $selectedUser->gugus_mutu ?? 'BPMP Provinsi Kalimantan Timur' }}
                             </p>
                         </div>
                     </div>
 
                     <div class="flex flex-wrap items-center gap-3">
-                        <div class="text-left md:text-right bg-white/10 px-4 py-2 rounded-2xl border border-white/15">
-                            <span class="text-[9px] font-black uppercase tracking-widest text-white/70 block">Bulan Aktif</span>
-                            <span class="text-sm font-black text-amber-300">
+                        <div class="text-left md:text-right px-4 py-2 rounded-2xl border" style="background: rgba(255,255,255,0.1) !important; border-color: rgba(255,255,255,0.2) !important;">
+                            <span class="text-[9px] font-black uppercase tracking-widest block" style="color: rgba(255,255,255,0.7) !important;">Bulan Aktif</span>
+                            <span class="text-sm font-black" style="color: #fbbf24 !important;">
                                 {{ \Carbon\Carbon::parse($monthYear.'-01')->translatedFormat('F Y') }}
                             </span>
                         </div>
-                        <a href="{{ route('attendance.recap', $selectedUser->id) }}?month={{ $monthYear }}" target="_blank" class="px-4 py-2.5 bg-white/15 hover:bg-white/25 border border-white/25 rounded-2xl text-xs font-bold text-white transition-all flex items-center gap-2 shadow-sm">
+                        <a href="{{ route('attendance.recap', $selectedUser->id) }}?month={{ $monthYear }}" target="_blank" class="px-4 py-2.5 rounded-2xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm" style="background: rgba(255,255,255,0.15) !important; border: 1px solid rgba(255,255,255,0.3) !important; color: #ffffff !important;">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             Lihat Lembar Rekap
                         </a>
@@ -261,114 +261,114 @@
                 </div>
 
                 <!-- MINI STATS CARDS -->
-                @if(($stats['needs_verif'] ?? 0) > 0)
-                <div class="mt-5 p-3.5 bg-amber-500/25 border-2 border-amber-400/60 rounded-2xl flex items-center justify-between text-xs text-amber-100 shadow-md">
+                @if(((int)($stats['needs_verif'] ?? 0)) > 0)
+                <div class="mt-5 p-3.5 rounded-2xl flex items-center justify-between text-xs shadow-md" style="background: rgba(245, 158, 11, 0.25) !important; border: 2px solid #f59e0b !important; color: #fef3c7 !important;">
                     <div class="flex items-center gap-2.5">
                         <span class="text-xl">⚠️</span>
                         <div>
-                            <span class="font-black text-amber-300">Perhatian:</span>
-                            <span class="font-medium text-white">Terdapat <strong>{{ $stats['needs_verif'] }} hari</strong> kehadiran yang jam masuk atau jam pulangnya kosong dan memerlukan verifikasi (LD / LP / Surat).</span>
+                            <span class="font-black" style="color: #fde68a !important;">Perhatian:</span>
+                            <span class="font-medium" style="color: #ffffff !important;">Terdapat <strong>{{ (int)$stats['needs_verif'] }} hari</strong> kehadiran yang jam masuk atau jam pulangnya kosong dan memerlukan verifikasi (LD / LP / Surat).</span>
                         </div>
                     </div>
-                    <span class="px-3 py-1.5 rounded-full text-[10px] font-black bg-amber-400 text-slate-900 uppercase tracking-wider whitespace-nowrap shadow-md">
-                        {{ $stats['needs_verif'] }} Perlu Verifikasi
+                    <span class="px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider whitespace-nowrap shadow-md" style="background: #f59e0b !important; color: #0f172a !important;">
+                        {{ (int)$stats['needs_verif'] }} Perlu Verifikasi
                     </span>
                 </div>
                 @endif
 
                 <!-- KOTAK STATISTIK MENYAMPING & KONTRAS TINGGI -->
-                <div class="mt-6 pt-6 border-t border-white/15">
-                    <div class="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-13 gap-2.5" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 0.625rem;">
+                <div class="mt-6 pt-6" style="border-top: 1px solid rgba(255, 255, 255, 0.2) !important;">
+                    <div class="grid grid-cols-4 sm:grid-cols-7 lg:grid-cols-13 gap-2 sm:gap-2.5" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(76px, 1fr)); gap: 0.5rem;">
                         
                         <!-- 1. HADIR -->
-                        <div class="bg-slate-900/90 border-2 border-emerald-500/70 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-emerald-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">Hadir</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['hadir'] }}</span>
-                            <span class="text-[9px] font-extrabold text-emerald-300/80 uppercase tracking-tighter">Hari</span>
+                        <div style="background: #ffffff !important; border: 2px solid #10b981 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #059669 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Hadir</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['hadir'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Hari</span>
                         </div>
 
                         <!-- 2. DL (DINAS LUAR) -->
-                        <div class="bg-slate-900/90 border-2 border-blue-500/70 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-blue-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-blue-400 block">DL</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['dl'] }}</span>
-                            <span class="text-[9px] font-extrabold text-blue-300/80 uppercase tracking-tighter">Hari</span>
+                        <div style="background: #ffffff !important; border: 2px solid #3b82f6 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #2563eb !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">DL</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['dl'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Hari</span>
                         </div>
 
                         <!-- 3. CUTI -->
-                        <div class="bg-slate-900/90 border-2 border-purple-500/70 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-purple-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-purple-400 block">Cuti</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['cuti'] }}</span>
-                            <span class="text-[9px] font-extrabold text-purple-300/80 uppercase tracking-tighter">Hari</span>
+                        <div style="background: #ffffff !important; border: 2px solid #8b5cf6 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #7c3aed !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Cuti</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['cuti'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Hari</span>
                         </div>
 
                         <!-- 4. SAKIT -->
-                        <div class="bg-slate-900/90 border-2 border-amber-500/70 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-amber-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-amber-400 block">Sakit</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['sakit'] }}</span>
-                            <span class="text-[9px] font-extrabold text-amber-300/80 uppercase tracking-tighter">Hari</span>
+                        <div style="background: #ffffff !important; border: 2px solid #f59e0b !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #d97706 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Sakit</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['sakit'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Hari</span>
                         </div>
 
                         <!-- 5. IZIN -->
-                        <div class="bg-slate-900/90 border-2 border-teal-500/70 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-teal-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-teal-400 block">Izin</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['izin'] }}</span>
-                            <span class="text-[9px] font-extrabold text-teal-300/80 uppercase tracking-tighter">Hari</span>
+                        <div style="background: #ffffff !important; border: 2px solid #14b8a6 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #0d9488 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Izin</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['izin'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Hari</span>
                         </div>
 
                         <!-- 6. LD (LUPA DATANG) -->
-                        <div class="bg-slate-900/90 border-2 border-amber-400/40 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-amber-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-amber-300 block">LD</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['ld'] }}</span>
-                            <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-tighter">Lupa Dtg</span>
+                        <div style="background: #ffffff !important; border: 2px solid #cbd5e1 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #b45309 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">LD</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['ld'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Lupa Dtg</span>
                         </div>
 
                         <!-- 7. LP (LUPA PULANG) -->
-                        <div class="bg-slate-900/90 border-2 border-indigo-400/40 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-indigo-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-indigo-300 block">LP</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['lp'] }}</span>
-                            <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-tighter">Lupa Plg</span>
+                        <div style="background: #ffffff !important; border: 2px solid #cbd5e1 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #4f46e5 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">LP</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['lp'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Lupa Plg</span>
                         </div>
 
                         <!-- 8. LDS (LD SURAT) -->
-                        <div class="bg-slate-900/90 border-2 border-sky-400/40 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-sky-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-sky-300 block">LDS</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['lds'] }}</span>
-                            <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-tighter">LD Surat</span>
+                        <div style="background: #ffffff !important; border: 2px solid #cbd5e1 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #0284c7 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">LDS</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['lds'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">LD Surat</span>
                         </div>
 
                         <!-- 9. LPS (LP SURAT) -->
-                        <div class="bg-slate-900/90 border-2 border-violet-400/40 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-violet-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-violet-300 block">LPS</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['lps'] }}</span>
-                            <span class="text-[9px] font-extrabold text-slate-400 uppercase tracking-tighter">LP Surat</span>
+                        <div style="background: #ffffff !important; border: 2px solid #cbd5e1 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #6d28d9 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">LPS</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['lps'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">LP Surat</span>
                         </div>
 
                         <!-- 10. ALPA (HIGHLIGHT MERAH JIKA > 0) -->
-                        <div class="{{ $stats['alpa'] > 0 ? 'bg-rose-950/90 border-2 border-rose-500 shadow-xl shadow-rose-950/60' : 'bg-slate-900/90 border-2 border-slate-700/80' }} rounded-2xl p-2.5 sm:p-3 text-center hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider {{ $stats['alpa'] > 0 ? 'text-rose-400 font-extrabold' : 'text-slate-400' }} block">ALPA</span>
-                            <span class="text-xl sm:text-2xl font-black {{ $stats['alpa'] > 0 ? 'text-rose-300' : 'text-white' }} block my-1 drop-shadow">{{ $stats['alpa'] }}</span>
-                            <span class="text-[9px] font-extrabold {{ $stats['alpa'] > 0 ? 'text-rose-400' : 'text-slate-400' }} uppercase tracking-tighter">Hari</span>
+                        <div style="background: {{ ((int)($stats['alpa'] ?? 0)) > 0 ? '#fef2f2' : '#ffffff' }} !important; border: 2px solid {{ ((int)($stats['alpa'] ?? 0)) > 0 ? '#ef4444' : '#cbd5e1' }} !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #dc2626 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">ALPA</span>
+                            <span style="color: {{ ((int)($stats['alpa'] ?? 0)) > 0 ? '#b91c1c' : '#0f172a' }} !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['alpa'] ?? 0) }}</span>
+                            <span style="color: {{ ((int)($stats['alpa'] ?? 0)) > 0 ? '#dc2626' : '#64748b' }} !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Hari</span>
                         </div>
 
                         <!-- 11. VERIF (PERLU VERIFIKASI) -->
-                        <div class="{{ ($stats['needs_verif'] ?? 0) > 0 ? 'bg-amber-950/90 border-2 border-amber-400 shadow-xl shadow-amber-950/60' : 'bg-slate-900/90 border-2 border-slate-700/80' }} rounded-2xl p-2.5 sm:p-3 text-center hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider {{ ($stats['needs_verif'] ?? 0) > 0 ? 'text-amber-300 font-extrabold' : 'text-slate-400' }} block">Verif</span>
-                            <span class="text-xl sm:text-2xl font-black {{ ($stats['needs_verif'] ?? 0) > 0 ? 'text-amber-300' : 'text-white' }} block my-1 drop-shadow">{{ $stats['needs_verif'] ?? 0 }}</span>
-                            <span class="text-[9px] font-extrabold {{ ($stats['needs_verif'] ?? 0) > 0 ? 'text-amber-300' : 'text-slate-400' }} uppercase tracking-tighter">Hari</span>
+                        <div style="background: {{ ((int)($stats['needs_verif'] ?? 0)) > 0 ? '#fffbeb' : '#ffffff' }} !important; border: 2px solid {{ ((int)($stats['needs_verif'] ?? 0)) > 0 ? '#f59e0b' : '#cbd5e1' }} !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #d97706 !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">Verif</span>
+                            <span style="color: {{ ((int)($stats['needs_verif'] ?? 0)) > 0 ? '#b45309' : '#0f172a' }} !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['needs_verif'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Hari</span>
                         </div>
 
                         <!-- 12. TL (TERLAMBAT) -->
-                        <div class="bg-slate-900/90 border-2 border-orange-500/70 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-orange-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-orange-400 block">TL</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['total_tl'] }}</span>
-                            <span class="text-[9px] font-extrabold text-orange-300/80 uppercase tracking-tighter">Menit</span>
+                        <div style="background: #ffffff !important; border: 2px solid #f97316 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #ea580c !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">TL</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['total_tl'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Menit</span>
                         </div>
 
                         <!-- 13. PSW (PULANG CEPAT) -->
-                        <div class="bg-slate-900/90 border-2 border-orange-500/70 rounded-2xl p-2.5 sm:p-3 text-center shadow-lg hover:border-orange-400 hover:scale-105 transition-all duration-150">
-                            <span class="text-[10px] font-black uppercase tracking-wider text-orange-400 block">PSW</span>
-                            <span class="text-xl sm:text-2xl font-black text-white block my-1 drop-shadow">{{ $stats['total_psw'] }}</span>
-                            <span class="text-[9px] font-extrabold text-orange-300/80 uppercase tracking-tighter">Menit</span>
+                        <div style="background: #ffffff !important; border: 2px solid #f97316 !important; border-radius: 1rem; padding: 0.65rem 0.25rem; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.15);">
+                            <span style="color: #ea580c !important; font-weight: 900; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; display: block;">PSW</span>
+                            <span style="color: #0f172a !important; font-size: 1.5rem; font-weight: 900; line-height: 1.2; display: block; margin: 0.25rem 0;">{{ (int)($stats['total_psw'] ?? 0) }}</span>
+                            <span style="color: #64748b !important; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; display: block;">Menit</span>
                         </div>
                     </div>
                 </div>
