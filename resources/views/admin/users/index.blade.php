@@ -77,7 +77,7 @@
                                     </select>
                                 </div>
 
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Jabatan</label>
                                         <input type="text" name="position" class="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-sipega-navy" placeholder="Widyaprada Ahli Madya">
@@ -90,6 +90,19 @@
                                                 <option value="{{ $full }}">{{ $full }}</option>
                                             @endforeach
                                         </select>
+                                    </div>
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Kelas Jabatan / Grade (Tukin)</label>
+                                        <select name="grade" class="w-full bg-gray-50 border-none rounded-2xl p-4 text-xs font-bold focus:ring-2 focus:ring-sipega-navy">
+                                            <option value="">- Tanpa Grade -</option>
+                                            @foreach(\App\Models\User::GRADES as $g => $desc)
+                                                <option value="{{ $g }}">{{ $desc }}</option>
+                                            @endforeach
+                                        </select>
+                                        <p class="text-[9px] text-gray-400 mt-1 font-semibold">*Dasar perhitungan Tukin (Perpres 18/2025)</p>
                                     </div>
                                     <div>
                                         <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Gugus Mutu</label>
@@ -262,18 +275,18 @@
 
             <!-- 2. FILTER & PENCARIAN PEGAWAI -->
             <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-gray-100 mb-8">
-                <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
+                <form method="GET" action="{{ route('users.index') }}" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
                     <!-- Input Pencarian -->
-                    <div class="md:col-span-5 relative">
+                    <div class="md:col-span-4 relative">
                         <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </span>
-                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama, NIP, Email, atau Jabatan..." class="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari Nama, NIP, Email, Grade..." class="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy">
                     </div>
 
                     <!-- Filter Peran (Role) -->
                     <div class="md:col-span-2">
-                        <select name="role" onchange="this.form.submit()" class="w-full py-3 px-4 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy uppercase tracking-wider">
+                        <select name="role" onchange="this.form.submit()" class="w-full py-3 px-3 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy uppercase tracking-wider">
                             <option value="all">Semua Peran</option>
                             <option value="Pegawai" {{ request('role') == 'Pegawai' ? 'selected' : '' }}>Pegawai</option>
                             <option value="Operator" {{ request('role') == 'Operator' ? 'selected' : '' }}>Operator</option>
@@ -283,9 +296,19 @@
                         </select>
                     </div>
 
+                    <!-- Filter Grade Tukin -->
+                    <div class="md:col-span-2">
+                        <select name="grade" onchange="this.form.submit()" class="w-full py-3 px-3 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy">
+                            <option value="all">Semua Grade</option>
+                            @foreach(\App\Models\User::GRADES as $g => $desc)
+                                <option value="{{ $g }}" {{ request('grade') == $g ? 'selected' : '' }}>Grade {{ $g }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     <!-- Filter Status -->
                     <div class="md:col-span-2">
-                        <select name="status" onchange="this.form.submit()" class="w-full py-3 px-4 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy uppercase tracking-wider">
+                        <select name="status" onchange="this.form.submit()" class="w-full py-3 px-3 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy uppercase tracking-wider">
                             <option value="all">Semua Status</option>
                             <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>🟢 Aktif</option>
                             <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>⚪ Nonaktif</option>
@@ -293,11 +316,11 @@
                     </div>
 
                     <!-- Filter Device Binding -->
-                    <div class="md:col-span-2">
-                        <select name="device" onchange="this.form.submit()" class="w-full py-3 px-4 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy uppercase tracking-wider">
-                            <option value="all">Semua Perangkat</option>
-                            <option value="locked" {{ request('device') == 'locked' ? 'selected' : '' }}>🔒 Locked (HP)</option>
-                            <option value="unbound" {{ request('device') == 'unbound' ? 'selected' : '' }}>🔓 Unbound</option>
+                    <div class="md:col-span-1">
+                        <select name="device" onchange="this.form.submit()" class="w-full py-3 px-2 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy uppercase tracking-wider" title="Filter Device Binding">
+                            <option value="all">Semua HP</option>
+                            <option value="locked" {{ request('device') == 'locked' ? 'selected' : '' }}>🔒 Kunci</option>
+                            <option value="unbound" {{ request('device') == 'unbound' ? 'selected' : '' }}>🔓 Bebas</option>
                         </select>
                     </div>
 
@@ -306,7 +329,7 @@
                         <button type="submit" class="w-full bg-sipega-navy hover:bg-black text-white p-3 rounded-2xl text-xs font-black transition flex items-center justify-center shadow" title="Terapkan Filter">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                         </button>
-                        @if(request()->hasAny(['search', 'role', 'status', 'device']))
+                        @if(request()->hasAny(['search', 'role', 'grade', 'status', 'device']))
                         <a href="{{ route('users.index') }}" class="bg-red-50 hover:bg-red-100 text-red-600 p-3 rounded-2xl text-xs font-black transition flex items-center justify-center border border-red-100" title="Reset Filter">
                             ✕
                         </a>
@@ -318,7 +341,7 @@
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-4 pt-4 border-t border-gray-100 text-[11px] text-gray-500 font-bold">
                     <div>
                         Menampilkan <strong class="text-sipega-navy">{{ count($users) }}</strong> data pegawai
-                        @if(request()->hasAny(['search', 'role', 'status', 'device']))
+                        @if(request()->hasAny(['search', 'role', 'grade', 'status', 'device']))
                             <span class="text-sipega-orange font-black ml-1">(Hasil Filter Aktif)</span>
                         @endif
                     </div>
@@ -382,7 +405,13 @@
                                                 <span class="inline-flex px-2 py-0.5 bg-gray-100 rounded-md text-gray-600 text-[9px] font-black w-fit">{{ $u->pangkat_golongan ?? $u->golongan }}</span>
                                             @endif
                                             @if($u->grade)
-                                                <span class="inline-flex px-2 py-0.5 bg-gray-100 rounded-md text-gray-600 text-[9px] font-black w-fit">KJ: {{ $u->grade }}</span>
+                                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-50 text-amber-800 border border-amber-200 rounded-md text-[9px] font-black uppercase tracking-wide w-fit">
+                                                    ⭐ Grade {{ $u->grade }}
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2 py-0.5 bg-gray-50 text-gray-400 border border-gray-100 rounded-md text-[9px] font-bold w-fit italic">
+                                                    Grade: -
+                                                </span>
                                             @endif
                                         </div>
                                     </td>
@@ -496,17 +525,28 @@
                                                             </div>
                                                         </div>
 
-                                                        {{-- Gugus Mutu --}}
-                                                        <div>
-                                                            <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Gugus Mutu</label>
-                                                            <select name="gugus_mutu" class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
-                                                                <option value="">- Tanpa Gugus Mutu -</option>
-                                                                <option value="GM 1 - PAUD & Kesetaraan" {{ $u->gugus_mutu == 'GM 1 - PAUD & Kesetaraan' ? 'selected' : '' }}>GM 1 - PAUD &amp; Kesetaraan</option>
-                                                                <option value="GM 2 - Sekolah Dasar (SD)" {{ $u->gugus_mutu == 'GM 2 - Sekolah Dasar (SD)' ? 'selected' : '' }}>GM 2 - Sekolah Dasar (SD)</option>
-                                                                <option value="GM 3 - SMP" {{ $u->gugus_mutu == 'GM 3 - SMP' ? 'selected' : '' }}>GM 3 - SMP</option>
-                                                                <option value="GM 4 - SMA, SMK & SLB" {{ $u->gugus_mutu == 'GM 4 - SMA, SMK & SLB' ? 'selected' : '' }}>GM 4 - SMA, SMK &amp; SLB</option>
-                                                                <option value="GM 5 - Tata Usaha & Kemitraan" {{ $u->gugus_mutu == 'GM 5 - Tata Usaha & Kemitraan' ? 'selected' : '' }}>GM 5 - Tata Usaha &amp; Kemitraan</option>
-                                                            </select>
+                                                        {{-- Grade Tukin & Gugus Mutu --}}
+                                                        <div class="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Kelas Jabatan / Grade (Tukin)</label>
+                                                                <select name="grade" class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
+                                                                    <option value="">- Tanpa Grade -</option>
+                                                                    @foreach(\App\Models\User::GRADES as $g => $desc)
+                                                                        <option value="{{ $g }}" {{ (string)$u->grade === (string)$g ? 'selected' : '' }}>{{ $desc }}</option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label class="text-[9px] font-black text-gray-400 uppercase tracking-widest block mb-1 px-1">Gugus Mutu</label>
+                                                                <select name="gugus_mutu" class="w-full text-sm font-bold p-3 bg-gray-50 rounded-xl border border-gray-100 focus:ring-2 focus:ring-sipega-navy focus:bg-white outline-none transition">
+                                                                    <option value="">- Tanpa Gugus Mutu -</option>
+                                                                    <option value="GM 1 - PAUD & Kesetaraan" {{ $u->gugus_mutu == 'GM 1 - PAUD & Kesetaraan' ? 'selected' : '' }}>GM 1 - PAUD &amp; Kesetaraan</option>
+                                                                    <option value="GM 2 - Sekolah Dasar (SD)" {{ $u->gugus_mutu == 'GM 2 - Sekolah Dasar (SD)' ? 'selected' : '' }}>GM 2 - Sekolah Dasar (SD)</option>
+                                                                    <option value="GM 3 - SMP" {{ $u->gugus_mutu == 'GM 3 - SMP' ? 'selected' : '' }}>GM 3 - SMP</option>
+                                                                    <option value="GM 4 - SMA, SMK & SLB" {{ $u->gugus_mutu == 'GM 4 - SMA, SMK & SLB' ? 'selected' : '' }}>GM 4 - SMA, SMK &amp; SLB</option>
+                                                                    <option value="GM 5 - Tata Usaha & Kemitraan" {{ $u->gugus_mutu == 'GM 5 - Tata Usaha & Kemitraan' ? 'selected' : '' }}>GM 5 - Tata Usaha &amp; Kemitraan</option>
+                                                                </select>
+                                                            </div>
                                                         </div>
 
                                                         {{-- Link Drive Folder --}}

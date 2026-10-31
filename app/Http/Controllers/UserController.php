@@ -21,13 +21,14 @@ class UserController extends Controller
 
         $query = User::where('id', '!=', auth()->id());
 
-        // 1. Filter Pencarian: Nama, NIP, Email, atau Jabatan
+        // 1. Filter Pencarian: Nama, NIP, Email, Jabatan, atau Grade
         if ($request->filled('search')) {
             $search = trim($request->search);
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'LIKE', "%{$search}%")
                   ->orWhere('nip', 'LIKE', "%{$search}%")
                   ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('grade', 'LIKE', "%{$search}%")
                   ->orWhere('position', 'LIKE', "%{$search}%");
             });
         }
@@ -35,6 +36,11 @@ class UserController extends Controller
         // 2. Filter Peran (Role)
         if ($request->filled('role') && $request->role !== 'all') {
             $query->where('role', $request->role);
+        }
+
+        // 3. Filter Grade Tukin
+        if ($request->filled('grade') && $request->grade !== 'all') {
+            $query->where('grade', $request->grade);
         }
 
         // 3. Filter Status Aktif
@@ -75,6 +81,7 @@ class UserController extends Controller
             'position'          => 'nullable|string|max:255',
             'gugus_mutu'        => 'nullable|string|max:100',
             'golongan'          => 'nullable|string|max:100',
+            'grade'             => 'nullable|string|max:20',
             'drive_folder_link' => 'nullable|string|max:1000', // pakai string, bukan url, agar URL Google Drive tidak ditolak
             'photo'             => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
@@ -106,6 +113,19 @@ class UserController extends Controller
             $user->golongan = User::formatPangkatGolongan($golonganInput) ?: $golonganInput;
         } else {
             $user->golongan = null;
+        }
+
+        // Grade / Kelas Jabatan (KJ) & Sinkronisasi Tarif Tukin
+        $gradeInput = trim((string)$request->input('grade', ''));
+        if ($gradeInput !== '') {
+            $cleanGrade = preg_replace('/[^0-9]/', '', $gradeInput);
+            $user->grade = $cleanGrade !== '' ? $cleanGrade : $gradeInput;
+            $rate = \App\Services\TukinCalculatorService::OFFICIAL_RATES[$user->grade] ?? null;
+            if ($rate) {
+                $user->base_tukin = $rate;
+            }
+        } else {
+            $user->grade = null;
         }
 
         // Link folder Drive — simpan langsung tanpa strict URL validation
@@ -216,6 +236,7 @@ class UserController extends Controller
             'position' => 'nullable|string|max:255',
             'gugus_mutu' => 'nullable|string|max:100',
             'golongan' => 'nullable|string|max:100',
+            'grade' => 'nullable|string|max:20',
             'password' => 'required|string|min:8',
             'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
@@ -226,6 +247,12 @@ class UserController extends Controller
             $photoPath = $path;
         }
 
+        $gradeInput = trim((string)$request->input('grade', ''));
+        $cleanGrade = $gradeInput !== '' ? (preg_replace('/[^0-9]/', '', $gradeInput) ?: $gradeInput) : null;
+        $baseTukin = ($cleanGrade && isset(\App\Services\TukinCalculatorService::OFFICIAL_RATES[$cleanGrade])) 
+            ? \App\Services\TukinCalculatorService::OFFICIAL_RATES[$cleanGrade] 
+            : null;
+
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
@@ -234,6 +261,8 @@ class UserController extends Controller
             'position' => $request->position,
             'gugus_mutu' => $request->gugus_mutu,
             'golongan' => User::formatPangkatGolongan($request->golongan) ?: $request->golongan,
+            'grade' => $cleanGrade,
+            'base_tukin' => $baseTukin,
             'password' => Hash::make($request->password),
             'is_active' => true,
             'photo' => $photoPath,

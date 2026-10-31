@@ -67,6 +67,29 @@ class User extends Authenticatable
     ];
 
     /**
+     * Kelas Jabatan / Grade Tukin Resmi (Perpres No. 18 Tahun 2025 / Permendikdasmen No. 14 Tahun 2025)
+     */
+    public const GRADES = [
+        '17' => 'Grade 17 (Rp 33.240.000)',
+        '16' => 'Grade 16 (Rp 27.577.500)',
+        '15' => 'Grade 15 (Rp 19.280.000)',
+        '14' => 'Grade 14 (Rp 17.064.000)',
+        '13' => 'Grade 13 (Rp 10.936.000)',
+        '12' => 'Grade 12 (Rp 9.896.000)',
+        '11' => 'Grade 11 (Rp 8.757.600)',
+        '10' => 'Grade 10 (Rp 5.979.200)',
+        '9'  => 'Grade 9 (Rp 5.079.200)',
+        '8'  => 'Grade 8 (Rp 4.595.150)',
+        '7'  => 'Grade 7 (Rp 3.915.950)',
+        '6'  => 'Grade 6 (Rp 3.510.400)',
+        '5'  => 'Grade 5 (Rp 3.134.250)',
+        '4'  => 'Grade 4 (Rp 2.985.000)',
+        '3'  => 'Grade 3 (Rp 2.898.000)',
+        '2'  => 'Grade 2 (Rp 2.708.250)',
+        '1'  => 'Grade 1 (Rp 2.531.250)',
+    ];
+
+    /**
      * Konversi atau standarisasi teks golongan/ruang menjadi Pangkat, Golongan resmi (PNS & PPPK)
      */
     public static function formatPangkatGolongan(?string $value): ?string
