@@ -204,15 +204,35 @@ class UserController extends Controller
      */
     public function downloadTemplate(Request $request)
     {
+        $withData = $request->boolean('with_data') || $request->get('with_data') === '1';
+
         if ($request->get('format') === 'csv') {
             $headers = ['Nama', 'NIP', 'Jabatan', 'Golongan', 'KJ', 'Role', 'Email'];
-            $filename = "Template_Import_Pegawai_SIPEGA.csv";
+            $filename = $withData 
+                ? "Data_Pegawai_Update_Grade_SIPEGA_" . date('Ymd') . ".csv" 
+                : "Template_Import_Pegawai_SIPEGA.csv";
             
             $handle = fopen('php://output', 'w');
             fprintf($handle, chr(0xEF).chr(0xBB).chr(0xBF)); // UTF-8 BOM
             fputcsv($handle, $headers, ';');
-            fputcsv($handle, ['Ahmad Fauzi, S.Pd', "'198705122011011002", 'Widyaprada Ahli Muda', 'Penata, III/c', '9', 'Pegawai', 'ahmad.fauzi@bpmpkaltim.id'], ';');
-            fputcsv($handle, ['Siti Rahmah, M.Pd', "'199003152014022003", 'Pengembang Penilaian Pendidikan', 'Penata Muda Tingkat I, III/b', '8', 'Pegawai', 'siti.rahmah@bpmpkaltim.id'], ';');
+            
+            if ($withData) {
+                $users = User::where('is_active', true)->orderBy('name')->get();
+                foreach ($users as $u) {
+                    fputcsv($handle, [
+                        $u->name,
+                        "'" . ($u->nip ?? ''),
+                        $u->position ?? '',
+                        $u->pangkat_golongan ?? $u->golongan ?? '',
+                        $u->grade ?? '',
+                        $u->role ?? 'Pegawai',
+                        $u->email ?? '',
+                    ], ';');
+                }
+            } else {
+                fputcsv($handle, ['Ahmad Fauzi, S.Pd', "'198705122011011002", 'Widyaprada Ahli Muda', 'Penata, III/c', '9', 'Pegawai', 'ahmad.fauzi@bpmpkaltim.id'], ';');
+                fputcsv($handle, ['Siti Rahmah, M.Pd', "'199003152014022003", 'Pengembang Penilaian Pendidikan', 'Penata Muda Tingkat I, III/b', '8', 'Pegawai', 'siti.rahmah@bpmpkaltim.id'], ';');
+            }
 
             header('Content-Type: text/csv; charset=UTF-8');
             header('Content-Disposition: attachment; filename="'.$filename.'"');
@@ -220,7 +240,11 @@ class UserController extends Controller
             exit;
         }
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\EmployeeTemplateExport, 'Template_Import_Pegawai_SIPEGA.xlsx');
+        $filename = $withData 
+            ? "Data_Pegawai_Update_Grade_SIPEGA_" . date('Ymd') . ".xlsx" 
+            : "Template_Import_Pegawai_SIPEGA.xlsx";
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\EmployeeTemplateExport($withData), $filename);
     }
 
     /**

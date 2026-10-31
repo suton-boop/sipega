@@ -12,8 +12,32 @@ use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnFormatting, ShouldAutoSize, WithStyles
 {
+    protected bool $withData;
+
+    public function __construct(bool $withData = false)
+    {
+        $this->withData = $withData;
+    }
+
     public function array(): array
     {
+        if ($this->withData) {
+            $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
+            $data = [];
+            foreach ($users as $u) {
+                $data[] = [
+                    $u->name,
+                    $u->nip ?? '',
+                    $u->position ?? '',
+                    $u->pangkat_golongan ?? $u->golongan ?? '',
+                    $u->grade ?? '',
+                    $u->role ?? 'Pegawai',
+                    $u->email ?? '',
+                ];
+            }
+            return $data;
+        }
+
         return [
             [
                 'Ahmad Fauzi, S.Pd',

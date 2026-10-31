@@ -22,52 +22,85 @@ class UserImport implements ToModel, WithHeadingRow
             return null;
         }
 
+        // Cek apakah pegawai dengan NIP atau Email ini sudah terdaftar di database
+        $user = User::where('nip', $nip)->first();
+        $emailInput = trim((string)($row['email'] ?? ''));
+        if (!$user && !empty($emailInput)) {
+            $user = User::where('email', $emailInput)->first();
+        }
+
         // 2. Ambil Nama
-        $name = trim($row['nama'] ?? $row['name'] ?? '');
-        if (empty($name)) {
+        $nameInput = trim((string)($row['nama'] ?? $row['name'] ?? ''));
+        if (!$user && empty($nameInput)) {
+            // Pegawai baru wajib punya Nama
             return null;
         }
+        $name = !empty($nameInput) ? $nameInput : $user->name;
 
-        // 3. Email: jika kosong, auto-generate dari NIP agar tetap valid unique di database
-        $email = !empty($row['email']) ? trim($row['email']) : ($nip . '@sipega.local');
+        // 3. Email: jika kosong dan user baru, auto-generate dari NIP
+        $email = !empty($emailInput) ? $emailInput : ($user ? $user->email : ($nip . '@bpmpkaltim.id'));
 
-        // 4. Password: DEFAULT ADALAH NIP PEGAWAI ITU SENDIRI!
-        $passwordPlain = !empty($row['password']) ? trim((string)$row['password']) : $nip;
-        $passwordHashed = Hash::make($passwordPlain);
-
-        // 5. Jabatan, Golongan, KJ, Role
-        $role = !empty($row['role']) ? trim($row['role']) : 'Pegawai';
+        // 4. Role (Hak Akses): jika kosong pada pegawai lama, jangan ubah role yang sudah ada!
+        $roleInput = trim((string)($row['role'] ?? ''));
         $validRoles = ['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'];
-        if (!in_array($role, $validRoles)) {
-            $role = 'Pegawai';
+        if (!empty($roleInput) && in_array($roleInput, $validRoles)) {
+            $role = $roleInput;
+        } else {
+            $role = $user ? $user->role : 'Pegawai';
         }
 
-        $position = trim($row['jabatan'] ?? $row['position'] ?? '');
-        $gugusMutu = trim($row['gugus_mutu'] ?? $row['gugus'] ?? '');
-        $rawGolongan = trim($row['golongan'] ?? $row['pangkat'] ?? '');
-        $golongan = User::formatPangkatGolongan($rawGolongan) ?: $rawGolongan;
-        $grade = trim($row['kj'] ?? $row['grade'] ?? '');
+        // 5. Jabatan, Golongan, Gugus Mutu
+        $positionInput = trim((string)($row['jabatan'] ?? $row['position'] ?? ''));
+        $position = !empty($positionInput) ? $positionInput : ($user ? $user->position : null);
 
-        // 6. Cek apakah pegawai dengan NIP ini sudah ada (hindari duplicate key error)
-        $user = User::where('nip', $nip)->first();
-        if (!$user && !empty($email)) {
-            $user = User::where('email', $email)->first();
+        $gugusInput = trim((string)($row['gugus_mutu'] ?? $row['gugus'] ?? ''));
+        $gugusMutu = !empty($gugusInput) ? $gugusInput : ($user ? $user->gugus_mutu : null);
+
+        $rawGolongan = trim((string)($row['golongan'] ?? $row['pangkat'] ?? ''));
+        if (!empty($rawGolongan)) {
+            $golongan = User::formatPangkatGolongan($rawGolongan) ?: $rawGolongan;
+        } else {
+            $golongan = $user ? $user->golongan : null;
         }
 
+        // 6. Kelas Jabatan / Grade Tukin & Sinkronisasi Tarif Resmi
+        $gradeInput = trim((string)($row['kj'] ?? $row['grade'] ?? ''));
+        if ($gradeInput !== '') {
+            $cleanGrade = preg_replace('/[^0-9]/', '', $gradeInput) ?: $gradeInput;
+            $grade = $cleanGrade;
+            $baseTukin = \App\Services\TukinCalculatorService::OFFICIAL_RATES[$cleanGrade] 
+                ?? ($user ? $user->base_tukin : null);
+        } else {
+            $grade = $user ? $user->grade : null;
+            $baseTukin = $user ? $user->base_tukin : null;
+        }
+
+        // 7. Password: JANGAN PERNAH reset password user lama jika kolom password kosong di file!
+        $passwordInput = trim((string)($row['password'] ?? ''));
+        if (!empty($passwordInput)) {
+            $passwordHashed = Hash::make($passwordInput);
+        } elseif ($user) {
+            $passwordHashed = $user->password; // Pertahankan password yang sudah aktif
+        } else {
+            $passwordHashed = Hash::make($nip); // Default untuk pegawai baru adalah NIP
+        }
+
+        // Update Pegawai yang Sudah Ada (Partial Update)
         if ($user) {
             $user->update([
                 'name'        => $name,
                 'email'       => $email,
                 'password'    => $passwordHashed,
                 'role'        => $role,
-                'position'    => $position ?: $user->position,
-                'gugus_mutu'  => $gugusMutu ?: $user->gugus_mutu,
-                'golongan'    => $golongan ?: $user->golongan,
-                'grade'       => $grade ?: $user->grade,
+                'position'    => $position,
+                'gugus_mutu'  => $gugusMutu,
+                'golongan'    => $golongan,
+                'grade'       => $grade,
+                'base_tukin'  => $baseTukin,
                 'is_active'   => true,
             ]);
 
-            if (method_exists($user, 'syncRoles')) {
+            if (!empty($roleInput) && method_exists($user, 'syncRoles')) {
                 try {
                     $user->syncRoles([$role]);
                 } catch (\Throwable $e) {}
@@ -76,6 +109,7 @@ class UserImport implements ToModel, WithHeadingRow
             return null;
         }
 
+        // Daftarkan Pegawai Baru
         $newUser = new User([
             'name'        => $name,
             'nip'         => $nip,
@@ -86,6 +120,7 @@ class UserImport implements ToModel, WithHeadingRow
             'gugus_mutu'  => $gugusMutu,
             'golongan'    => $golongan,
             'grade'       => $grade,
+            'base_tukin'  => $baseTukin,
             'is_active'   => true,
         ]);
 

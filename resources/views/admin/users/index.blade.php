@@ -261,14 +261,21 @@
                         </div>
                     </div>
 
-                    <div class="flex gap-3">
-                        <a href="{{ route('users.template') }}" class="flex-1 text-center bg-sipega-orange text-white text-[10px] font-black py-4 px-4 rounded-2xl shadow-lg hover:bg-orange-600 transition-all hover:-translate-y-0.5 uppercase tracking-widest flex items-center justify-center gap-1.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            <span>Unduh Excel (.xlsx)</span>
+                    <div class="space-y-3">
+                        <a href="{{ route('users.template', ['with_data' => 1]) }}" class="w-full text-center bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white text-[10px] font-black py-3 px-4 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 uppercase tracking-widest flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            <span>Download Data Pegawai (Siap Isi Grade)</span>
                         </a>
-                        <a href="{{ route('users.template', ['format' => 'csv']) }}" class="text-center bg-white/10 hover:bg-white/20 text-white text-[10px] font-black py-4 px-4 rounded-2xl border border-white/20 transition-all uppercase tracking-widest">
-                            CSV
-                        </a>
+
+                        <div class="flex gap-2">
+                            <a href="{{ route('users.template') }}" class="flex-1 text-center bg-sipega-orange text-white text-[9px] font-black py-3 px-3 rounded-xl shadow hover:bg-orange-600 transition-all uppercase tracking-widest flex items-center justify-center gap-1.5" title="Template contoh kosong">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                <span>Template Kosong (.xlsx)</span>
+                            </a>
+                            <a href="{{ route('users.template', ['format' => 'csv']) }}" class="text-center bg-white/10 hover:bg-white/20 text-white text-[9px] font-black py-3 px-3 rounded-xl border border-white/20 transition-all uppercase tracking-widest">
+                                CSV
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
