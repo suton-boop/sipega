@@ -24,6 +24,7 @@ class SettingController extends Controller
         $generalSettings = [
             'is_reward_active' => Setting::get('is_reward_active', '1'),
             'is_tukin_active' => Setting::get('is_tukin_active', '1'),
+            'show_slip_tukin' => Setting::get('show_slip_tukin', '1'),
             'institution_name' => Setting::get('institution_name', 'Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Kalimantan Timur'),
         ];
 
@@ -99,6 +100,7 @@ class SettingController extends Controller
         if ($request->has('is_tukin_active')) {
             Setting::set('is_tukin_active', $request->input('is_tukin_active') ? '1' : '0');
         }
+        Setting::set('show_slip_tukin', $request->has('show_slip_tukin') ? '1' : '0');
         if ($request->has('institution_name')) {
             Setting::set('institution_name', trim($request->input('institution_name')));
         }
@@ -122,6 +124,7 @@ class SettingController extends Controller
             'tukin_accum_hours_threshold', 'tukin_accum_penalty_pct',
             'tukin_perf_baik_pct', 'tukin_perf_cukup_pct', 'tukin_perf_kurang_pct', 'tukin_perf_sangat_kurang_pct',
             'tukin_tax_gol_4', 'tukin_tax_gol_3', 'tukin_tax_gol_1_2',
+            'show_slip_tukin',
         ];
 
         for ($grade = 1; $grade <= 17; $grade++) {

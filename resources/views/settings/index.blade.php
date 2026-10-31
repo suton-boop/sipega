@@ -509,27 +509,73 @@
                                        class="w-full text-xs font-bold rounded-xl border-gray-300 focus:border-sipega-navy focus:ring-sipega-navy shadow-sm">
                             </div>
 
-                            <div class="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="p-4 rounded-2xl bg-slate-50 border border-gray-200 flex items-center justify-between">
-                                    <div>
-                                        <p class="text-xs font-black text-gray-800">Modul Perhitungan Tukin Pegawai</p>
-                                        <p class="text-[10px] text-gray-500">Buka akses menu slip tukin untuk pegawai umum</p>
+                            <div class="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- SWITCH 1: TOMBOL & KARTU SLIP TUKIN -->
+                                <div class="p-4 rounded-2xl bg-emerald-50/60 border-2 {{ $generalSettings['show_slip_tukin'] == '1' ? 'border-emerald-300' : 'border-gray-200' }} flex flex-col justify-between gap-3">
+                                    <div class="flex items-start justify-between gap-2">
+                                        <div>
+                                            <div class="flex items-center gap-1.5 mb-1">
+                                                <span class="text-base">🎫</span>
+                                                <p class="text-xs font-black text-sipega-navy">Menu & Tombol Slip Tukin</p>
+                                            </div>
+                                            <p class="text-[10px] text-gray-500 leading-relaxed">
+                                                Atur apakah kartu Slip Tukin di Pusat Dokumen, tombol "Unduh PDF", dan menu navbar dimunculkan atau disembunyikan (hidden).
+                                            </p>
+                                        </div>
                                     </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" name="is_tukin_active" value="1" {{ $generalSettings['is_tukin_active'] == '1' ? 'checked' : '' }} class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                                    </label>
+                                    <div class="flex items-center justify-between pt-2 border-t border-emerald-200/50">
+                                        <span class="text-[10px] font-black {{ $generalSettings['show_slip_tukin'] == '1' ? 'text-emerald-700 bg-emerald-100' : 'text-gray-500 bg-gray-100' }} px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                            {{ $generalSettings['show_slip_tukin'] == '1' ? 'Tampil (Muncul)' : 'Disembunyikan (Hidden)' }}
+                                        </span>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="show_slip_tukin" value="1" {{ $generalSettings['show_slip_tukin'] == '1' ? 'checked' : '' }} class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                        </label>
+                                    </div>
                                 </div>
 
-                                <div class="p-4 rounded-2xl bg-slate-50 border border-gray-200 flex items-center justify-between">
+                                <!-- SWITCH 2: MASTER MODUL TUKIN -->
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-gray-200 flex flex-col justify-between gap-3">
                                     <div>
-                                        <p class="text-xs font-black text-gray-800">Reward Center (Wall of Fame)</p>
-                                        <p class="text-[10px] text-gray-500">Tampilkan peringkat ASN BerAKHLAK di beranda</p>
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="text-base">📊</span>
+                                            <p class="text-xs font-black text-gray-800">Modul Perhitungan Tukin</p>
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 leading-relaxed">
+                                            Akses utama modul perhitungan dan slip tunjangan kinerja untuk pegawai umum.
+                                        </p>
                                     </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" name="is_reward_active" value="1" {{ $generalSettings['is_reward_active'] == '1' ? 'checked' : '' }} class="sr-only peer">
-                                        <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                                    </label>
+                                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                                        <span class="text-[10px] font-black {{ $generalSettings['is_tukin_active'] == '1' ? 'text-emerald-700 bg-emerald-100' : 'text-gray-500 bg-gray-100' }} px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                            {{ $generalSettings['is_tukin_active'] == '1' ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="is_tukin_active" value="1" {{ $generalSettings['is_tukin_active'] == '1' ? 'checked' : '' }} class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- SWITCH 3: REWARD CENTER -->
+                                <div class="p-4 rounded-2xl bg-slate-50 border border-gray-200 flex flex-col justify-between gap-3">
+                                    <div>
+                                        <div class="flex items-center gap-1.5 mb-1">
+                                            <span class="text-base">🏆</span>
+                                            <p class="text-xs font-black text-gray-800">Reward Center (Wall of Fame)</p>
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 leading-relaxed">
+                                            Tampilkan peringkat ASN BerAKHLAK dan rekap capaian kinerja di beranda.
+                                        </p>
+                                    </div>
+                                    <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+                                        <span class="text-[10px] font-black {{ $generalSettings['is_reward_active'] == '1' ? 'text-emerald-700 bg-emerald-100' : 'text-gray-500 bg-gray-100' }} px-2 py-0.5 rounded-full uppercase tracking-wider">
+                                            {{ $generalSettings['is_reward_active'] == '1' ? 'Aktif' : 'Nonaktif' }}
+                                        </span>
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" name="is_reward_active" value="1" {{ $generalSettings['is_reward_active'] == '1' ? 'checked' : '' }} class="sr-only peer">
+                                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

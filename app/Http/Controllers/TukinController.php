@@ -72,9 +72,9 @@ class TukinController extends Controller
         $user = auth()->user();
         $isPrivileged = self::isPrivilegedUser($user);
 
-        // Hanya pegawai biasa yang dibatasi oleh master switch is_tukin_active
-        if (!$isPrivileged && Setting::get('is_tukin_active') === '0') {
-            return redirect()->route('dashboard')->with('error', 'Modul Tukin sedang dinonaktifkan oleh Administrator.');
+        // Hanya pegawai biasa yang dibatasi oleh master switch is_tukin_active dan show_slip_tukin
+        if (!$isPrivileged && (Setting::get('is_tukin_active') === '0' || Setting::get('show_slip_tukin') === '0')) {
+            return redirect()->route('dashboard')->with('error', 'Akses Slip Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
         }
 
         // Jika Pegawai biasa, arahkan ke tampilan slip personal
@@ -399,6 +399,10 @@ class TukinController extends Controller
         $targetUser = $id ? User::findOrFail($id) : auth()->user();
         if (auth()->id() !== $targetUser->id && !$this->isPrivilegedUser()) {
             abort(403);
+        }
+
+        if (!$this->isPrivilegedUser() && Setting::get('show_slip_tukin') === '0') {
+            abort(403, 'Fitur pengunduhan Slip Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
         }
 
         $period = $request->get('period', Carbon::now('Asia/Makassar')->format('Y-m'));

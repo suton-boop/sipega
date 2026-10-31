@@ -25,11 +25,23 @@
                 </div>
             </div>
 
-            <!-- Three Columns Layout for Documents -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            @php
+                $isPrivileged = \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user());
+                $isSlipActive = (\App\Models\Setting::get('show_slip_tukin', '1') == '1') && (\App\Models\Setting::get('is_tukin_active', '1') == '1');
+                $showSlipCard = $isSlipActive || $isPrivileged;
+            @endphp
+
+            <!-- Layout Columns for Documents -->
+            <div class="grid grid-cols-1 {{ $showSlipCard ? 'lg:grid-cols-3' : 'lg:grid-cols-2' }} gap-8">
                 
+                @if($showSlipCard)
                 <!-- COLUMN 1: SLIP TUKIN -->
-                <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 flex flex-col h-full">
+                <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 flex flex-col h-full relative">
+                    @if(!$isSlipActive && $isPrivileged)
+                    <div class="bg-amber-500 text-white text-[9px] font-black uppercase tracking-widest text-center py-1">
+                        Disembunyikan dari Pegawai (Hanya Tampak oleh Admin)
+                    </div>
+                    @endif
                     <div class="p-8 border-b border-gray-50 bg-emerald-50/50 flex items-center gap-4">
                         <div class="w-12 h-12 bg-emerald-500 rounded-2xl flex items-center justify-center text-white text-xl">💰</div>
                         <div>
@@ -48,6 +60,7 @@
                         </a>
                     </div>
                 </div>
+                @endif
 
                 <!-- COLUMN 2: LAPORAN HARIAN (SKP) -->
                 <div class="bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-gray-100 flex flex-col h-full">
