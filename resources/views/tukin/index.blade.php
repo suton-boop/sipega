@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4" x-data>
             <div>
                 <div class="flex items-center gap-2">
                     <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-sipega-navy text-white">
@@ -25,16 +25,16 @@
                     Download Template
                 </a>
 
-                <!-- Tombol Buka Modal Import Excel -->
-                <button type="button" onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                <!-- Tombol Toggle Panel Import Excel -->
+                <button type="button" @click="$dispatch('toggle-tukin-import')" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5 cursor-pointer">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
-                    Import Format Excel
+                    <span>Import Format Excel</span>
                 </button>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-8" x-data="{ showImport: false }" @toggle-tukin-import.window="showImport = !showImport">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Alert Notifikasi Flash -->
@@ -114,59 +114,96 @@
                 </div>
             </div>
 
-            <!-- PANEL CEPAT: IMPORT FILE EXCEL & HITUNG TUKIN -->
-            <div class="bg-gradient-to-r from-emerald-50 via-teal-50/50 to-white p-6 rounded-[2rem] shadow-sm border border-emerald-200/80">
-                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+            <!-- PANEL IMPORT: BISA DI-HIDE & SHOW SECARA FLEKSIBEL -->
+            <div x-show="showImport" 
+                 x-cloak
+                 x-transition:enter="transition ease-out duration-250"
+                 x-transition:enter-start="opacity-0 -translate-y-2 scale-98"
+                 x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+                 x-transition:leave-end="opacity-0 -translate-y-2 scale-98"
+                 class="bg-gradient-to-r from-emerald-50 via-teal-50/60 to-white p-6 sm:p-7 rounded-[2rem] shadow-md border-2 border-emerald-300/80 relative">
+                
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-5 pb-4 border-b border-emerald-200/60">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-xl shadow-md">
+                        <div class="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-xl shadow-md shrink-0">
                             📊
                         </div>
                         <div>
-                            <h3 class="font-black text-sm text-sipega-navy uppercase tracking-wider">
-                                Import Format Excel & Kalkulasi Tukin Pegawai
-                            </h3>
-                            <p class="text-xs text-gray-500 font-medium">
-                                Unggah file Excel (.xlsx / .xls / .csv) daftar kehadiran atau daftar pembayaran tukin. Sistem akan menghitung potongan kehadiran dan netto otomatis.
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-black text-sm text-sipega-navy uppercase tracking-wider">
+                                    Import Format Excel & Kalkulasi Tukin Pegawai
+                                </h3>
+                                <span class="px-2 py-0.5 bg-emerald-600 text-white text-[9px] font-black rounded-full uppercase tracking-widest">Aktif</span>
+                            </div>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">
+                                Unggah file Excel (.xlsx / .xls / .csv) daftar kehadiran atau rekap pembayaran tukin. Sistem otomatis menghitung potongan dan netto.
                             </p>
                         </div>
                     </div>
-                    <div class="flex items-center gap-2">
+                    
+                    <div class="flex items-center gap-2 self-end sm:self-center">
                         <a href="{{ route('tukin.template') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white text-emerald-800 hover:bg-emerald-100 text-xs font-black rounded-xl border border-emerald-300 shadow-sm transition">
                             <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Unduh Template Excel
+                            <span>Unduh Template</span>
                         </a>
+
+                        <!-- TOMBOL HIDE PANEL IMPORT -->
+                        <button type="button" @click="showImport = false" class="inline-flex items-center gap-1.5 px-3 py-2 bg-white hover:bg-red-50 text-gray-500 hover:text-red-600 rounded-xl border border-gray-200 text-xs font-black transition shadow-sm cursor-pointer" title="Sembunyikan panel import ini">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            <span>Hide</span>
+                        </button>
                     </div>
                 </div>
 
-                <form action="{{ route('tukin.import_excel') }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                <!-- FORM IMPORT EXCEL DENGAN LAYOUT PROPORSI LUAS -->
+                <form action="{{ route('tukin.import_excel') }}" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row items-stretch md:items-end gap-3.5">
                     @csrf
-                    <div class="md:col-span-3">
-                        <label class="block text-[10px] font-black uppercase text-gray-500 tracking-wider mb-1">
+                    <!-- 1. Periode -->
+                    <div class="w-full md:w-56 shrink-0">
+                        <label class="block text-[10px] font-black uppercase text-gray-600 tracking-wider mb-1.5">
                             Bulan & Tahun Perhitungan:
                         </label>
-                        <input type="month" name="period" value="{{ $period }}" required class="w-full bg-white border border-gray-300 text-sipega-navy text-xs font-black rounded-xl px-3 py-2.5 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm">
+                        <input type="month" name="period" value="{{ $period }}" required class="w-full bg-white border border-gray-300 text-sipega-navy text-xs font-black rounded-xl px-3.5 py-3 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm cursor-pointer">
                     </div>
 
-                    <div class="md:col-span-6">
-                        <label class="block text-[10px] font-black uppercase text-gray-500 tracking-wider mb-1">
+                    <!-- 2. File Upload Box Luas -->
+                    <div class="flex-1 min-w-0">
+                        <label class="block text-[10px] font-black uppercase text-gray-600 tracking-wider mb-1.5">
                             Pilih File Excel / CSV (.xlsx, .xls, .csv):
                         </label>
-                        <input type="file" name="file" accept=".xlsx,.xls,.csv,.txt" required class="w-full bg-white border border-gray-300 text-xs text-gray-600 rounded-xl px-2 py-1.5 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer shadow-sm">
+                        <input type="file" name="file" accept=".xlsx,.xls,.csv,.txt" required class="w-full bg-white border border-gray-300 text-xs text-gray-700 rounded-xl p-2 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer shadow-sm">
                     </div>
 
-                    <div class="md:col-span-3">
-                        <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                            Upload & Hitung Tukin
+                    <!-- 3. Tombol Submit Luas & Rapi -->
+                    <div class="w-full md:w-64 shrink-0">
+                        <button type="submit" class="w-full py-3.5 px-6 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 uppercase tracking-wider cursor-pointer">
+                            <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <span class="whitespace-nowrap">Upload & Hitung Tukin</span>
                         </button>
                     </div>
                 </form>
             </div>
 
-            <!-- KARTU STATISTIK EKSEKUTIF -->
+            <!-- TOGGLE BAR RINGKAS SAAT PANEL IMPORT DALAM KONDISI HIDE -->
+            <div x-show="!showImport" class="flex items-center justify-between bg-white border border-emerald-200/80 px-6 py-3.5 rounded-2xl shadow-sm">
+                <div class="flex items-center gap-3">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-xs font-black text-sipega-navy uppercase tracking-wider">
+                        Fitur Import File Excel & Rekapitulasi Tukin
+                    </span>
+                </div>
+                <button type="button" @click="showImport = true" class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-sm transition-all cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <span>Buka Panel Import Excel</span>
+                </button>
+            </div>
+
+            <!-- KARTU STATISTIK EKSEKUTIF (5 KARTU SERASI & KONTRAS TINGGI) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <!-- Total Pegawai -->
-                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100">
+                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-200/80 hover:shadow-md transition">
                     <p class="text-[9px] font-black uppercase text-gray-400 tracking-widest">Total Pegawai</p>
                     <p class="text-2xl font-black text-sipega-navy mt-1">
                         {{ $summary['total_pegawai'] }} <span class="text-xs font-bold text-gray-400">Pegawai</span>
@@ -177,18 +214,18 @@
                 </div>
 
                 <!-- Total Plafon Bruto -->
-                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100">
+                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-200/80 hover:shadow-md transition">
                     <p class="text-[9px] font-black uppercase text-gray-400 tracking-widest">Plafon Tukin Bruto</p>
-                    <p class="text-xl font-black text-sipega-navy mt-1">
+                    <p class="text-xl sm:text-2xl font-black text-sipega-navy mt-1">
                         Rp {{ number_format($summary['total_base'], 0, ',', '.') }}
                     </p>
                     <p class="text-[10px] text-emerald-600 font-bold mt-1">Standar Perpres 18/2025</p>
                 </div>
 
                 <!-- Total Faktor Pengurang -->
-                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100">
+                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-200/80 hover:shadow-md transition">
                     <p class="text-[9px] font-black uppercase text-gray-400 tracking-widest">Total Faktor Pengurang</p>
-                    <p class="text-xl font-black text-rose-600 mt-1">
+                    <p class="text-xl sm:text-2xl font-black text-rose-600 mt-1">
                         - Rp {{ number_format($summary['total_deduction'], 0, ',', '.') }}
                     </p>
                     <p class="text-[10px] text-rose-500 font-bold mt-1">
@@ -197,21 +234,21 @@
                 </div>
 
                 <!-- Estimasi PPh 21 -->
-                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-100">
+                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-gray-200/80 hover:shadow-md transition">
                     <p class="text-[9px] font-black uppercase text-gray-400 tracking-widest">Estimasi PPh 21</p>
-                    <p class="text-xl font-black text-amber-600 mt-1">
+                    <p class="text-xl sm:text-2xl font-black text-amber-600 mt-1">
                         Rp {{ number_format($summary['total_tax'], 0, ',', '.') }}
                     </p>
-                    <p class="text-[10px] text-gray-400 font-medium mt-1">Gol IV (15%), III (5%), II (0%)</p>
+                    <p class="text-[10px] text-gray-500 font-medium mt-1">Gol IV (15%), III (5%), II (0%)</p>
                 </div>
 
-                <!-- Total Netto Dibayarkan -->
-                <div class="bg-gradient-to-br from-sipega-navy to-slate-900 text-white p-5 rounded-[2rem] shadow-md border border-slate-800">
-                    <p class="text-[9px] font-black uppercase text-amber-400 tracking-widest">Total Netto Dibayarkan</p>
-                    <p class="text-xl font-black text-white mt-1">
+                <!-- Total Netto Dibayarkan (Hero Card Solid Navy Mewah) -->
+                <div class="p-5 shadow-lg transition" style="background: #002244 !important; color: #ffffff !important; border: 2px solid #001a33 !important; border-radius: 2rem; box-shadow: 0 10px 15px -3px rgba(0, 34, 68, 0.3) !important;">
+                    <p style="color: #fbbf24 !important; font-size: 9px; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase;">Total Netto Dibayarkan</p>
+                    <p style="color: #ffffff !important; font-size: 1.5rem; font-weight: 900; margin-top: 0.25rem; line-height: 1.2;">
                         Rp {{ number_format($summary['total_netto'], 0, ',', '.') }}
                     </p>
-                    <p class="text-[10px] text-slate-300 font-medium mt-1">Siap Pengajuan SPM / SP2D</p>
+                    <p style="color: #cbd5e1 !important; font-size: 10px; font-weight: 600; margin-top: 0.25rem;">Siap Pengajuan SPM / SP2D</p>
                 </div>
             </div>
 
