@@ -51,6 +51,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/reward/vote', [RewardController::class, 'vote'])->name('reward.vote');
 
     // MODUL TUKIN: Berdasarkan Permendikdasmen 14/2025 & Perpres 18/2025
+    Route::get('/hitung-tukin', [TukinController::class, 'index'])->name('tukin.calculate');
+    Route::get('/tukin/hitung', [TukinController::class, 'index']);
     Route::prefix('tukin')->name('tukin.')->group(function () {
         Route::get('/', [TukinController::class, 'index'])->name('index');
         Route::post('/recalculate', [TukinController::class, 'recalculate'])->name('recalculate');
@@ -178,8 +180,10 @@ Route::get('/fix-app', function() {
             // Silently fail if link exists or restricted
         }
         \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
-        return "App Key Generated, Migrations & Seeding Done! <a href='/'>Go to Home</a>";
+        return "App Key, Migrations, Route & View Cache Cleared! <a href='/'>Go to Home</a>";
     } catch (\Exception $e) {
         return "Error: " . $e->getMessage();
     }

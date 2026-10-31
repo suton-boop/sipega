@@ -26,11 +26,41 @@ class TukinController extends Controller
     /**
      * Memeriksa apakah user memiliki hak akses Kepegawaian atau Pimpinan
      */
-    protected function isPrivilegedUser(): bool
+    public static function isPrivilegedUser(?User $user = null): bool
     {
-        $user = auth()->user();
+        $user = $user ?: auth()->user();
         if (!$user) return false;
-        return in_array($user->role, ['Admin', 'Kasubag', 'Pimpinan', 'Sekpri', 'Operator', 'Kepegawaian']);
+
+        $role = strtolower(trim($user->role ?? ''));
+        $privilegedRoles = [
+            'admin', 'administrator', 'kasubag', 'pimpinan', 
+            'sekpri', 'operator', 'kepegawaian', 'superadmin', 
+            'bendahara', 'ppk', 'kpa'
+        ];
+
+        if (in_array($role, $privilegedRoles)) {
+            return true;
+        }
+
+        // Cek Spatie Roles jika ada
+        if (method_exists($user, 'hasAnyRole')) {
+            try {
+                if ($user->hasAnyRole(['Admin', 'Pimpinan', 'Kasubag', 'Operator', 'Kepegawaian', 'admin', 'pimpinan', 'kasubag', 'operator'])) {
+                    return true;
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        // Cek jika Jabatan mengindikasikan Pimpinan / Pengelola Kepegawaian
+        $position = strtolower(trim($user->position ?? ''));
+        $privilegedPositions = ['kepala', 'pimpinan', 'kasubag', 'kepegawaian', 'admin', 'bendahara', 'ppk', 'kpa', 'subbagian umum'];
+        foreach ($privilegedPositions as $pos) {
+            if (str_contains($position, $pos)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -39,14 +69,16 @@ class TukinController extends Controller
      */
     public function index(Request $request)
     {
-        if (Setting::get('is_tukin_active') === '0') {
+        $user = auth()->user();
+        $isPrivileged = self::isPrivilegedUser($user);
+
+        // Hanya pegawai biasa yang dibatasi oleh master switch is_tukin_active
+        if (!$isPrivileged && Setting::get('is_tukin_active') === '0') {
             return redirect()->route('dashboard')->with('error', 'Modul Tukin sedang dinonaktifkan oleh Administrator.');
         }
 
-        $user = auth()->user();
-
-        // Jika Pegawai biasa, arahkan ke tampilan personal
-        if (!$this->isPrivilegedUser()) {
+        // Jika Pegawai biasa, arahkan ke tampilan slip personal
+        if (!$isPrivileged) {
             $month = $request->get('month', Carbon::now('Asia/Makassar')->format('Y-m'));
             $tukin = $user->calculateMonthlyTukin($month);
             return view('tukin.pegawai', compact('user', 'tukin', 'month'));
@@ -57,6 +89,16 @@ class TukinController extends Controller
         $latestPeriodInDb = TukinCalculation::max('period');
         $defaultPeriod = $latestPeriodInDb ?: Carbon::now('Asia/Makassar')->format('Y-m');
         $period = $request->get('period', $defaultPeriod);
+
+        // Jika periode belum memiliki data, lakukan auto-calculate otomatis awal agar tabel langsung berisi data lengkap
+        $existingCount = TukinCalculation::where('period', $period)->count();
+        if ($existingCount === 0) {
+            try {
+                $this->calculatorService->calculatePeriodFromDatabase($period, auth()->id());
+            } catch (\Throwable $e) {
+                // Jangan gagalkan load halaman jika ada error saat kalkulasi awal
+            }
+        }
 
         // Ambil daftar seluruh periode yang sudah tersimpan di database
         $savedPeriods = TukinCalculation::select('period')

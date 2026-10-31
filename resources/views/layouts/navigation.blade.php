@@ -73,12 +73,12 @@
                         </x-slot>
                     </x-dropdown>
 
-                    @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator', 'Kepegawaian', 'Sekpri']))
+                    @if(auth()->user() && \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
                     <x-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-[10px] font-black uppercase tracking-[0.2em] px-4 text-emerald-300 hover:text-white transition-all flex items-center gap-1.5">
                         <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
                         <span>{{ __('Hitung Tukin') }}</span>
                     </x-nav-link>
-                    @elseif(\App\Models\Setting::get('is_tukin_active') !== '0')
+                    @else
                     <x-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-[10px] font-black uppercase tracking-[0.2em] px-4 text-white/70 hover:text-white transition-all">
                         {{ __('Slip Tukin') }}
                     </x-nav-link>
@@ -234,12 +234,12 @@
                 {{ __('Pembuat QR Code') }}
             </x-responsive-nav-link>
 
-            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator', 'Kepegawaian', 'Sekpri']))
+            @if(auth()->user() && \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
             <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-bold py-3 ps-8 text-emerald-800 bg-emerald-50/70 flex items-center justify-between">
                 <span>{{ __('Hitung Tukin Pegawai (Permendikdasmen 14/2025)') }}</span>
                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">EXCEL</span>
             </x-responsive-nav-link>
-            @elseif(\App\Models\Setting::get('is_tukin_active') !== '0')
+            @else
             <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-medium py-3 ps-8">
                 {{ __('Slip Tukin Saya') }}
             </x-responsive-nav-link>

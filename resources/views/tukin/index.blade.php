@@ -114,6 +114,55 @@
                 </div>
             </div>
 
+            <!-- PANEL CEPAT: IMPORT FILE EXCEL & HITUNG TUKIN -->
+            <div class="bg-gradient-to-r from-emerald-50 via-teal-50/50 to-white p-6 rounded-[2rem] shadow-sm border border-emerald-200/80">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-xl shadow-md">
+                            📊
+                        </div>
+                        <div>
+                            <h3 class="font-black text-sm text-sipega-navy uppercase tracking-wider">
+                                Import Format Excel & Kalkulasi Tukin Pegawai
+                            </h3>
+                            <p class="text-xs text-gray-500 font-medium">
+                                Unggah file Excel (.xlsx / .xls / .csv) daftar kehadiran atau daftar pembayaran tukin. Sistem akan menghitung potongan kehadiran dan netto otomatis.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('tukin.template') }}" class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white text-emerald-800 hover:bg-emerald-100 text-xs font-black rounded-xl border border-emerald-300 shadow-sm transition">
+                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Unduh Template Excel
+                        </a>
+                    </div>
+                </div>
+
+                <form action="{{ route('tukin.import_excel') }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                    @csrf
+                    <div class="md:col-span-3">
+                        <label class="block text-[10px] font-black uppercase text-gray-500 tracking-wider mb-1">
+                            Bulan & Tahun Perhitungan:
+                        </label>
+                        <input type="month" name="period" value="{{ $period }}" required class="w-full bg-white border border-gray-300 text-sipega-navy text-xs font-black rounded-xl px-3 py-2.5 focus:ring-emerald-500 focus:border-emerald-500 shadow-sm">
+                    </div>
+
+                    <div class="md:col-span-6">
+                        <label class="block text-[10px] font-black uppercase text-gray-500 tracking-wider mb-1">
+                            Pilih File Excel / CSV (.xlsx, .xls, .csv):
+                        </label>
+                        <input type="file" name="file" accept=".xlsx,.xls,.csv,.txt" required class="w-full bg-white border border-gray-300 text-xs text-gray-600 rounded-xl px-2 py-1.5 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[11px] file:font-black file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer shadow-sm">
+                    </div>
+
+                    <div class="md:col-span-3">
+                        <button type="submit" class="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Upload & Hitung Tukin
+                        </button>
+                    </div>
+                </form>
+            </div>
+
             <!-- KARTU STATISTIK EKSEKUTIF -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                 <!-- Total Pegawai -->
