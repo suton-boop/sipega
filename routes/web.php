@@ -50,9 +50,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/reward', [RewardController::class, 'index'])->name('reward.index');
     Route::post('/reward/vote', [RewardController::class, 'vote'])->name('reward.vote');
 
-    // MODUL TUKIN: Berdasarkan Permendikbud 14/2022
+    // MODUL TUKIN: Berdasarkan Permendikdasmen 14/2025 & Perpres 18/2025
     Route::prefix('tukin')->name('tukin.')->group(function () {
         Route::get('/', [TukinController::class, 'index'])->name('index');
+        Route::post('/recalculate', [TukinController::class, 'recalculate'])->name('recalculate');
+        Route::post('/import-excel', [TukinController::class, 'importExcel'])->name('import_excel');
+        Route::get('/template', [TukinController::class, 'downloadTemplate'])->name('template');
+        Route::put('/items/{id}', [TukinController::class, 'updateItem'])->name('update_item');
+        Route::delete('/period/{period}', [TukinController::class, 'deletePeriod'])->name('delete_period');
         Route::get('/classes', [TukinController::class, 'classes'])->name('classes');
         Route::post('/classes', [TukinController::class, 'storeClass'])->name('classes.store');
         

@@ -73,9 +73,14 @@
                         </x-slot>
                     </x-dropdown>
 
-                    @if(\App\Models\Setting::get('is_tukin_active') !== '0')
+                    @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator', 'Kepegawaian', 'Sekpri']))
+                    <x-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-[10px] font-black uppercase tracking-[0.2em] px-4 text-emerald-300 hover:text-white transition-all flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                        <span>{{ __('Hitung Tukin') }}</span>
+                    </x-nav-link>
+                    @elseif(\App\Models\Setting::get('is_tukin_active') !== '0')
                     <x-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-[10px] font-black uppercase tracking-[0.2em] px-4 text-white/70 hover:text-white transition-all">
-                        {{ __('Tukin') }}
+                        {{ __('Slip Tukin') }}
                     </x-nav-link>
                     @endif
 
@@ -99,6 +104,10 @@
                         </x-slot>
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Peralatan Manajemen</div>
+                            <x-dropdown-link :href="route('tukin.index')" class="text-[11px] font-bold py-3 text-emerald-900 bg-emerald-50/80 hover:bg-emerald-100 flex items-center justify-between border-b border-gray-50">
+                                <span>Hitung Tukin (14/2025)</span>
+                                <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">EXCEL</span>
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('admin.attendance.manage')" class="text-[11px] font-bold py-3 text-sipega-navy bg-orange-50/70 hover:bg-orange-100/70 flex items-center justify-between border-b border-gray-50">
                                 <span>Kelola Kehadiran Pegawai</span>
                                 <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">KELOLA</span>
@@ -225,12 +234,14 @@
                 {{ __('Pembuat QR Code') }}
             </x-responsive-nav-link>
 
-            @if(\App\Models\Setting::get('is_tukin_active') !== '0')
-            <div class="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50 flex items-center gap-3 mt-2">
-                <span class="w-1.5 h-1.5 bg-sipega-navy rounded-full"></span> KEUANGAN
-            </div>
+            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator', 'Kepegawaian', 'Sekpri']))
+            <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-bold py-3 ps-8 text-emerald-800 bg-emerald-50/70 flex items-center justify-between">
+                <span>{{ __('Hitung Tukin Pegawai (Permendikdasmen 14/2025)') }}</span>
+                <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">EXCEL</span>
+            </x-responsive-nav-link>
+            @elseif(\App\Models\Setting::get('is_tukin_active') !== '0')
             <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-medium py-3 ps-8">
-                {{ __('Laporan Tukin') }}
+                {{ __('Slip Tukin Saya') }}
             </x-responsive-nav-link>
             @endif
 

@@ -60,7 +60,7 @@
         </table>
     </div>
 
-    <p class="text-bold">I. Rincian Pemotongan Kehadiran (Permendikbud 14/2022):</p>
+    <p class="text-bold">I. Rincian Pemotongan Kehadiran (Permendikdasmen 14/2025):</p>
     <table class="data-table">
         <thead>
             <tr>
@@ -121,17 +121,17 @@
 
     <div class="footer">
         <p style="font-size: 9px; color: #888; font-style: italic;">
-            * Dokumen ini dihasilkan secara otomatis oleh sistem SIPEGA BPMP Kaltim berdasarkan Permendikbud No. 14 Tahun 2022.<br>
+            * Dokumen ini dihasilkan secara otomatis oleh sistem SIPEGA BPMP Kaltim berdasarkan Permendikdasmen No. 14 Tahun 2025.<br>
             * Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }} WITA
         </p>
 
         <div class="signature">
             <p>Samarinda, {{ now()->translatedFormat('d F Y') }}</p>
-            <p>Bendahara/Pengelola Keuangan,</p>
+            <p>Bendahara Pengeluaran,</p>
             <div class="signature-name">
-                ( ......................................... )
+                Sulistyo Rahayu, S.Pd.
             </div>
-            <p>NIP. ..................................</p>
+            <p>NIP 19760929 200312 2 001</p>
         </div>
     </div>
 </body>
