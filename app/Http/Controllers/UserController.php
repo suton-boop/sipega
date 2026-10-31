@@ -219,9 +219,10 @@ class UserController extends Controller
             if ($withData) {
                 $users = User::where('is_active', true)->orderBy('name')->get();
                 foreach ($users as $u) {
+                    $cleanNip = !empty($u->nip) ? preg_replace('/[^0-9]/', '', (string)$u->nip) : '';
                     fputcsv($handle, [
                         $u->name,
-                        "'" . ($u->nip ?? ''),
+                        $cleanNip !== '' ? ('="' . $cleanNip . '"') : '',
                         $u->position ?? '',
                         $u->pangkat_golongan ?? $u->golongan ?? '',
                         $u->grade ?? '',
@@ -230,8 +231,8 @@ class UserController extends Controller
                     ], ';');
                 }
             } else {
-                fputcsv($handle, ['Ahmad Fauzi, S.Pd', "'198705122011011002", 'Widyaprada Ahli Muda', 'Penata, III/c', '9', 'Pegawai', 'ahmad.fauzi@bpmpkaltim.id'], ';');
-                fputcsv($handle, ['Siti Rahmah, M.Pd', "'199003152014022003", 'Pengembang Penilaian Pendidikan', 'Penata Muda Tingkat I, III/b', '8', 'Pegawai', 'siti.rahmah@bpmpkaltim.id'], ';');
+                fputcsv($handle, ['Ahmad Fauzi, S.Pd', '="198705122011011002"', 'Widyaprada Ahli Muda', 'Penata, III/c', '9', 'Pegawai', 'ahmad.fauzi@bpmpkaltim.id'], ';');
+                fputcsv($handle, ['Siti Rahmah, M.Pd', '="199003152014022003"', 'Pengembang Penilaian Pendidikan', 'Penata Muda Tingkat I, III/b', '8', 'Pegawai', 'siti.rahmah@bpmpkaltim.id'], ';');
             }
 
             header('Content-Type: text/csv; charset=UTF-8');

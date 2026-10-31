@@ -7,10 +7,20 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\WithCustomValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\DefaultValueBinder;
+use PhpOffice\PhpSpreadsheet\Cell\Cell;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
-class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnFormatting, ShouldAutoSize, WithStyles
+class EmployeeTemplateExport extends DefaultValueBinder implements 
+    FromArray, 
+    WithHeadings, 
+    WithColumnFormatting, 
+    ShouldAutoSize, 
+    WithStyles, 
+    WithCustomValueBinder
 {
     protected bool $withData;
 
@@ -19,15 +29,31 @@ class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnForma
         $this->withData = $withData;
     }
 
+    /**
+     * Memaksa kolom NIP (Kolom B) agar selalu terikat secara eksplisit sebagai STRING / TEKS.
+     * Mencegah Microsoft Excel mengubah NIP 18 digit menjadi notasi ilmiah / eksponensial (E+).
+     */
+    public function bindValue(Cell $cell, $value)
+    {
+        if ($cell->getColumn() === 'B' && $cell->getRow() > 1) {
+            $cleanNip = (string)($value ?? '');
+            $cell->setValueExplicit($cleanNip, DataType::TYPE_STRING);
+            return true;
+        }
+
+        return parent::bindValue($cell, $value);
+    }
+
     public function array(): array
     {
         if ($this->withData) {
             $users = \App\Models\User::where('is_active', true)->orderBy('name')->get();
             $data = [];
             foreach ($users as $u) {
+                $nipStr = !empty($u->nip) ? (string)$u->nip : '';
                 $data[] = [
                     $u->name,
-                    $u->nip ?? '',
+                    $nipStr,
                     $u->position ?? '',
                     $u->pangkat_golongan ?? $u->golongan ?? '',
                     $u->grade ?? '',
@@ -94,12 +120,15 @@ class EmployeeTemplateExport implements FromArray, WithHeadings, WithColumnForma
     public function columnFormats(): array
     {
         return [
-            'B' => NumberFormat::FORMAT_TEXT, // NIP format Text agar tidak berubah jadi eksponensial (E+)
+            'B' => NumberFormat::FORMAT_TEXT, // NIP format Text eksplisit (@)
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
+        // Paksa seluruh range kolom B agar berformat TEXT murni
+        $sheet->getStyle('B')->getNumberFormat()->setFormatCode(NumberFormat::FORMAT_TEXT);
+
         return [
             1 => [
                 'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
