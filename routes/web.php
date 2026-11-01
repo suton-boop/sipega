@@ -30,8 +30,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // DASHBOARD Core SIPEGA
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-    // MODULE GLOBAL SETTINGS & ATURAN REGULASI
+    // MODULE SMART PENGATURAN & ATURAN REGULASI
     Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+    Route::get('/smartpengaturan', [SettingController::class, 'index'])->name('smartpengaturan');
+    Route::get('/smart-pengaturan', [SettingController::class, 'index']);
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/tukin', [SettingController::class, 'updateTukinRules'])->name('settings.tukin.update');
     Route::post('/settings/tukin/reset', [SettingController::class, 'resetTukinRules'])->name('settings.tukin.reset');

@@ -25,6 +25,7 @@ class SettingController extends Controller
             'is_reward_active' => Setting::get('is_reward_active', '1'),
             'is_tukin_active' => Setting::get('is_tukin_active', '1'),
             'show_slip_tukin' => Setting::get('show_slip_tukin', '1'),
+            'is_realization_open_anytime' => Setting::get('is_realization_open_anytime', '0'),
             'institution_name' => Setting::get('institution_name', 'Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Kalimantan Timur'),
         ];
 
@@ -102,6 +103,9 @@ class SettingController extends Controller
 
         $showSlip = $request->input('show_slip_tukin');
         Setting::set('show_slip_tukin', ($showSlip === '1' || $showSlip === 1 || $showSlip === true || $showSlip === 'on') ? '1' : '0');
+
+        $isRealization = $request->input('is_realization_open_anytime');
+        Setting::set('is_realization_open_anytime', ($isRealization === '1' || $isRealization === 1 || $isRealization === true || $isRealization === 'on') ? '1' : '0');
 
         if ($request->has('institution_name')) {
             Setting::set('institution_name', trim($request->input('institution_name')));

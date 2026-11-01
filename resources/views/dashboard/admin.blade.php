@@ -8,39 +8,101 @@
                 <p class="text-[10px] font-bold text-sipega-orange uppercase tracking-[0.3em] mt-1">{{ auth()->user()->name }} &bull; SIPEGA ENGINE</p>
             </div>
             
-            <div class="flex items-center gap-4">
-                <!-- Master Switch Reward -->
-                <form action="{{ route('settings.update') }}" method="POST" class="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-200">
-                    @csrf
-                    <input type="hidden" name="key" value="is_reward_active">
-                    <label class="text-[10px] font-black mr-3 text-gray-400 uppercase tracking-widest">SIPEGA Reward:</label>
-                    <select name="value" onchange="this.form.submit()" class="text-[10px] font-extrabold py-1 px-4 rounded-xl border-none focus:ring-0 {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                        <option value="1" {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'selected' : '' }}>AKTIF</option>
-                        <option value="0" {{ \App\Models\Setting::get('is_reward_active') === '0' ? 'selected' : '' }}>OFF</option>
-                    </select>
-                </form>
+            <div class="flex items-center gap-3">
+                <!-- Smart Pengaturan Dropdown Menu -->
+                <div class="relative" x-data="{ open: false }" @click.outside="open = false">
+                    <button @click="open = !open" 
+                            type="button" 
+                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-black rounded-2xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 uppercase tracking-wider cursor-pointer border border-amber-400/40">
+                        <span class="text-sm">⚙️</span>
+                        <span>Smart Pengaturan</span>
+                        <span class="w-2 h-2 rounded-full {{ \App\Models\Setting::get('is_tukin_active') !== '0' && \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-emerald-300' : 'bg-red-300' }} animate-pulse"></span>
+                        <svg class="w-3.5 h-3.5 opacity-80 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
 
-                <!-- Master Switch Realisasi (Flexible for Testing) -->
-                <form action="{{ route('settings.update') }}" method="POST" class="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-200">
-                    @csrf
-                    <input type="hidden" name="key" value="is_realization_open_anytime">
-                    <label class="text-[10px] font-black mr-3 text-gray-400 uppercase tracking-widest leading-none">Uji Coba<br>Realisasi:</label>
-                    <select name="value" onchange="this.form.submit()" class="text-[10px] font-extrabold py-1 px-4 rounded-xl border-none focus:ring-0 {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                        <option value="1" {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'selected' : '' }}>OPEN (TEST)</option>
-                        <option value="0" {{ \App\Models\Setting::get('is_realization_open_anytime', '0') === '0' ? 'selected' : '' }}>NORMAL (JADWAL)</option>
-                    </select>
-                </form>
+                    <!-- Dropdown Content Panel -->
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 scale-95 -translate-y-2"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-100"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
+                         class="absolute right-0 mt-2 w-84 bg-white rounded-3xl shadow-2xl border border-gray-100 p-4 z-50 text-left whitespace-normal space-y-3"
+                         style="display: none; min-width: 21rem;">
+                        
+                        <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                            <div>
+                                <span class="text-[9px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">KONTROL SISTEM</span>
+                                <h4 class="text-xs font-black text-sipega-navy mt-1">Smart Pengaturan Cepat</h4>
+                            </div>
+                            <a href="{{ route('settings.index') }}" class="text-[10px] font-black text-amber-600 hover:text-amber-800 transition flex items-center gap-1">
+                                <span>Pusat Regulasi</span>
+                                <span>&rarr;</span>
+                            </a>
+                        </div>
 
-                <!-- Master Switch Tukin -->
-                <form action="{{ route('settings.update') }}" method="POST" class="flex items-center bg-gray-50 px-4 py-2 rounded-2xl border border-gray-200">
-                    @csrf
-                    <input type="hidden" name="key" value="is_tukin_active">
-                    <label class="text-[10px] font-black mr-3 text-gray-400 uppercase tracking-widest">SIPEGA Tukin:</label>
-                    <select name="value" onchange="this.form.submit()" class="text-[10px] font-extrabold py-1 px-4 rounded-xl border-none focus:ring-0 {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                        <option value="1" {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'selected' : '' }}>AKTIF</option>
-                        <option value="0" {{ \App\Models\Setting::get('is_tukin_active') === '0' ? 'selected' : '' }}>OFF</option>
-                    </select>
-                </form>
+                        <!-- 1. Master Switch Tukin -->
+                        <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
+                            @csrf
+                            <input type="hidden" name="key" value="is_tukin_active">
+                            <div class="pr-2">
+                                <label class="text-xs font-black text-sipega-navy block leading-tight">SIPEGA Tukin</label>
+                                <span class="text-[9px] text-gray-400 font-medium">Modul perhitungan tukin & slip</span>
+                            </div>
+                            <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
+                                <option value="1" {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'selected' : '' }}>AKTIF</option>
+                                <option value="0" {{ \App\Models\Setting::get('is_tukin_active') === '0' ? 'selected' : '' }}>OFF</option>
+                            </select>
+                        </form>
+
+                        <!-- 2. Master Switch Reward -->
+                        <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
+                            @csrf
+                            <input type="hidden" name="key" value="is_reward_active">
+                            <div class="pr-2">
+                                <label class="text-xs font-black text-sipega-navy block leading-tight">SIPEGA Reward</label>
+                                <span class="text-[9px] text-gray-400 font-medium">Wall of Fame & vote ASN</span>
+                            </div>
+                            <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
+                                <option value="1" {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'selected' : '' }}>AKTIF</option>
+                                <option value="0" {{ \App\Models\Setting::get('is_reward_active') === '0' ? 'selected' : '' }}>OFF</option>
+                            </select>
+                        </form>
+
+                        <!-- 3. Master Switch Uji Coba Realisasi -->
+                        <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
+                            @csrf
+                            <input type="hidden" name="key" value="is_realization_open_anytime">
+                            <div class="pr-2">
+                                <label class="text-xs font-black text-sipega-navy block leading-tight">Uji Coba Realisasi</label>
+                                <span class="text-[9px] text-gray-400 font-medium">Buka akses pengisian untuk simulasi</span>
+                            </div>
+                            <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
+                                <option value="1" {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'selected' : '' }}>OPEN (TEST)</option>
+                                <option value="0" {{ \App\Models\Setting::get('is_realization_open_anytime', '0') === '0' ? 'selected' : '' }}>NORMAL (JADWAL)</option>
+                            </select>
+                        </form>
+
+                        <!-- Menu Navigasi Lanjutan -->
+                        <div class="pt-2 border-t border-gray-100 flex flex-col gap-1.5">
+                            <a href="{{ route('settings.index') }}" class="w-full py-2.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-black rounded-xl transition flex items-center justify-between">
+                                <span class="flex items-center gap-2">
+                                    <span>⚙️</span>
+                                    <span>Pusat Smart Pengaturan Lengkap</span>
+                                </span>
+                                <span>&rarr;</span>
+                            </a>
+                            <a href="{{ route('rbac.index') }}" class="w-full py-2 px-3 bg-gray-50 hover:bg-gray-100 text-sipega-navy text-xs font-bold rounded-xl transition flex items-center justify-between">
+                                <span class="flex items-center gap-2">
+                                    <span>🛡️</span>
+                                    <span>Matriks Hak Akses (RBAC)</span>
+                                </span>
+                                <span class="text-[9px] bg-sipega-navy text-white px-2 py-0.5 rounded-full font-black">RBAC</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="flex gap-2">
                     @if(\App\Models\Setting::get('is_reward_active') === '1')

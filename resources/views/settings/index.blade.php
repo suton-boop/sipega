@@ -4,13 +4,13 @@
             <div>
                 <div class="flex items-center gap-2">
                     <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500 text-white shadow-sm">
-                        ⚙️ PUSAT PENGATURAN SISTEM
+                        ⚙️ SMART PENGATURAN SISTEM
                     </span>
                     <span class="text-xs text-gray-400 font-bold">•</span>
-                    <span class="text-xs font-bold text-gray-500">Konfigurasi Parameter & Regulasi</span>
+                    <span class="text-xs font-bold text-gray-500">Pusat Kendali Parameter & Regulasi</span>
                 </div>
                 <h2 class="font-black text-2xl text-sipega-navy mt-1 tracking-tight">
-                    Pengaturan Aturan & Regulasi Tukin
+                    Smart Pengaturan & Regulasi Tukin
                 </h2>
                 <p class="text-xs text-gray-400 font-medium mt-0.5">
                     Ubah parameter persentase pemotongan, batas waktu kehadiran, dan plafon tukin. Perubahan langsung berlaku ke seluruh kalkulasi sistem.
@@ -509,7 +509,7 @@
                                        class="w-full text-xs font-bold rounded-xl border-gray-300 focus:border-sipega-navy focus:ring-sipega-navy shadow-sm">
                             </div>
 
-                            <div class="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <!-- SWITCH 1: TOMBOL & KARTU SLIP TUKIN -->
                                 <div x-data="{ active: {{ $generalSettings['show_slip_tukin'] == '1' ? 'true' : 'false' }} }"
                                      :class="active ? 'bg-emerald-50/70 border-emerald-300' : 'bg-slate-50 border-gray-200'"
@@ -614,6 +614,56 @@
                                         </button>
                                     </div>
                                 </div>
+
+                                <!-- SWITCH 4: UJI COBA REALISASI KINERJA -->
+                                <div x-data="{ active: {{ ($generalSettings['is_realization_open_anytime'] ?? '0') == '1' ? 'true' : 'false' }} }"
+                                     :class="active ? 'bg-amber-50/70 border-amber-300' : 'bg-slate-50 border-gray-200'"
+                                     class="p-5 rounded-2xl border-2 flex flex-col justify-between gap-4 transition-all duration-200">
+                                    <div>
+                                        <div class="flex items-center gap-2 mb-1.5">
+                                            <span class="text-xl">⏱️</span>
+                                            <p class="text-xs font-black text-sipega-navy">Uji Coba Realisasi</p>
+                                        </div>
+                                        <p class="text-[10px] text-gray-500 leading-relaxed">
+                                            Buka akses pengisian realisasi kinerja kapan saja tanpa dibatasi jam 15:00 sore (berguna untuk simulasi & uji coba sistem).
+                                        </p>
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-3 border-t border-gray-200/60">
+                                        <span x-text="active ? 'OPEN (TEST BEBAS)' : 'NORMAL (JADWAL SORE)'"
+                                              :class="active ? 'text-amber-800 bg-amber-100 border-amber-300' : 'text-gray-600 bg-gray-100 border-gray-200'"
+                                              class="text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border transition-all">
+                                        </span>
+
+                                        <input type="hidden" name="is_realization_open_anytime" :value="active ? '1' : '0'">
+
+                                        <button type="button" 
+                                                @click="active = !active"
+                                                :class="active ? 'bg-amber-500' : 'bg-gray-300'"
+                                                class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-sm"
+                                                role="switch" 
+                                                :aria-checked="active">
+                                            <span :class="active ? 'translate-x-5' : 'translate-x-0'"
+                                                  class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- CARD LINK KE MATRIKS AKSES (RBAC) -->
+                            <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50 p-5 rounded-2xl border border-gray-200">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-sipega-navy text-white flex items-center justify-center text-lg font-black shrink-0 shadow-sm">
+                                        🛡️
+                                    </div>
+                                    <div>
+                                        <h5 class="text-xs font-black text-sipega-navy uppercase tracking-wider">Matriks Hak Akses Pengguna (RBAC)</h5>
+                                        <p class="text-[10px] text-gray-500 font-medium">Kelola hak akses menu, role (Admin, Pimpinan, Kasubag, dll), dan perizinan sistem SIPEGA.</p>
+                                    </div>
+                                </div>
+                                <a href="{{ route('rbac.index') }}" class="px-5 py-2.5 bg-sipega-navy hover:bg-[#002244] text-white text-xs font-black rounded-xl shadow-md transition whitespace-nowrap">
+                                    Buka Matriks Akses &rarr;
+                                </a>
                             </div>
                         </div>
                     </div>
