@@ -9,15 +9,16 @@
             </div>
             
             <div class="flex items-center gap-3">
-                <!-- Smart Pengaturan Dropdown Menu -->
+                <!-- Smart Pengaturan Dropdown Menu (Semua Menu Administrasi & Master Switch Disatukan di Sini) -->
                 <div class="relative" x-data="{ open: false }" @click.outside="open = false">
                     <button @click="open = !open" 
                             type="button" 
-                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white text-xs font-black rounded-2xl shadow-md hover:shadow-lg transition-all hover:-translate-y-0.5 uppercase tracking-wider cursor-pointer border border-amber-400/40">
+                            style="background-color: #003366; color: #ffffff;"
+                            class="inline-flex items-center gap-2.5 px-5 py-2.5 bg-sipega-navy hover:bg-[#002244] text-white text-xs font-black rounded-2xl shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 uppercase tracking-wider cursor-pointer border border-white/20">
                         <span class="text-sm">⚙️</span>
-                        <span>Smart Pengaturan</span>
-                        <span class="w-2 h-2 rounded-full {{ \App\Models\Setting::get('is_tukin_active') !== '0' && \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-emerald-300' : 'bg-red-300' }} animate-pulse"></span>
-                        <svg class="w-3.5 h-3.5 opacity-80 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
+                        <span class="font-black text-white tracking-wider">Smart Pengaturan</span>
+                        <span class="w-2.5 h-2.5 rounded-full {{ \App\Models\Setting::get('is_tukin_active') !== '0' && \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-emerald-400' : 'bg-amber-400' }} animate-pulse"></span>
+                        <svg class="w-3.5 h-3.5 text-white/80 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
                     </button>
 
                     <!-- Dropdown Content Panel -->
@@ -28,95 +29,118 @@
                          x-transition:leave="transition ease-in duration-100"
                          x-transition:leave-start="opacity-100 scale-100 translate-y-0"
                          x-transition:leave-end="opacity-0 scale-95 -translate-y-2"
-                         class="absolute right-0 mt-2 w-84 bg-white rounded-3xl shadow-2xl border border-gray-100 p-4 z-50 text-left whitespace-normal space-y-3"
-                         style="display: none; min-width: 21rem;">
+                         class="absolute right-0 mt-2 w-96 bg-white rounded-3xl shadow-2xl border border-gray-200 p-5 z-50 text-left whitespace-normal space-y-4"
+                         style="display: none; min-width: 22rem;">
                         
-                        <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+                        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                             <div>
-                                <span class="text-[9px] font-black uppercase tracking-wider text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full">KONTROL SISTEM</span>
-                                <h4 class="text-xs font-black text-sipega-navy mt-1">Smart Pengaturan Cepat</h4>
+                                <span class="text-[9px] font-black uppercase tracking-wider text-sipega-navy bg-slate-100 px-2.5 py-0.5 rounded-full">PUSAT KENDALI ADMINISTRATOR</span>
+                                <h4 class="text-xs font-black text-sipega-navy mt-1">Smart Pengaturan & Menu Sistem</h4>
                             </div>
-                            <a href="{{ route('settings.index') }}" class="text-[10px] font-black text-amber-600 hover:text-amber-800 transition flex items-center gap-1">
+                            <a href="{{ route('settings.index') }}" class="text-[10px] font-black text-sipega-orange hover:text-orange-600 transition flex items-center gap-1 uppercase tracking-wider">
                                 <span>Pusat Regulasi</span>
                                 <span>&rarr;</span>
                             </a>
                         </div>
 
-                        <!-- 1. Master Switch Tukin -->
-                        <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
-                            @csrf
-                            <input type="hidden" name="key" value="is_tukin_active">
-                            <div class="pr-2">
-                                <label class="text-xs font-black text-sipega-navy block leading-tight">SIPEGA Tukin</label>
-                                <span class="text-[9px] text-gray-400 font-medium">Modul perhitungan tukin & slip</span>
-                            </div>
-                            <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
-                                <option value="1" {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'selected' : '' }}>AKTIF</option>
-                                <option value="0" {{ \App\Models\Setting::get('is_tukin_active') === '0' ? 'selected' : '' }}>OFF</option>
-                            </select>
-                        </form>
+                        <!-- MENU-MENU UTAMA (PINDAHAN DARI HEADER) -->
+                        <div class="space-y-2">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Menu Peralatan Utama</span>
 
-                        <!-- 2. Master Switch Reward -->
-                        <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
-                            @csrf
-                            <input type="hidden" name="key" value="is_reward_active">
-                            <div class="pr-2">
-                                <label class="text-xs font-black text-sipega-navy block leading-tight">SIPEGA Reward</label>
-                                <span class="text-[9px] text-gray-400 font-medium">Wall of Fame & vote ASN</span>
-                            </div>
-                            <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
-                                <option value="1" {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'selected' : '' }}>AKTIF</option>
-                                <option value="0" {{ \App\Models\Setting::get('is_reward_active') === '0' ? 'selected' : '' }}>OFF</option>
-                            </select>
-                        </form>
+                            @if(\App\Models\Setting::get('is_reward_active') === '1')
+                            <a href="{{ route('reward.index') }}" class="flex items-center justify-between p-3 rounded-2xl bg-orange-50 hover:bg-orange-100 text-orange-950 transition border border-orange-200/80 group">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xl">🏆</span>
+                                    <div>
+                                        <span class="text-xs font-black text-sipega-navy block leading-tight group-hover:text-sipega-orange transition-colors">Reward Center</span>
+                                        <span class="text-[9px] text-gray-500 font-medium">Wall of Fame & ASN BerAKHLAK</span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-sipega-orange text-white px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow-sm">Buka</span>
+                            </a>
+                            @endif
 
-                        <!-- 3. Master Switch Uji Coba Realisasi -->
-                        <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
-                            @csrf
-                            <input type="hidden" name="key" value="is_realization_open_anytime">
-                            <div class="pr-2">
-                                <label class="text-xs font-black text-sipega-navy block leading-tight">Uji Coba Realisasi</label>
-                                <span class="text-[9px] text-gray-400 font-medium">Buka akses pengisian untuk simulasi</span>
-                            </div>
-                            <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
-                                <option value="1" {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'selected' : '' }}>OPEN (TEST)</option>
-                                <option value="0" {{ \App\Models\Setting::get('is_realization_open_anytime', '0') === '0' ? 'selected' : '' }}>NORMAL (JADWAL)</option>
-                            </select>
-                        </form>
+                            <a href="{{ route('rbac.index') }}" class="flex items-center justify-between p-3 rounded-2xl bg-blue-50/70 hover:bg-blue-100 text-sipega-navy transition border border-blue-200/70 group">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xl">🛡️</span>
+                                    <div>
+                                        <span class="text-xs font-black text-sipega-navy block leading-tight">Matriks Hak Akses (RBAC)</span>
+                                        <span class="text-[9px] text-gray-500 font-medium">Konfigurasi izin, role & modul pengguna</span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-sipega-navy text-white px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow-sm">Akses</span>
+                            </a>
 
-                        <!-- Menu Navigasi Lanjutan -->
-                        <div class="pt-2 border-t border-gray-100 flex flex-col gap-1.5">
-                            <a href="{{ route('settings.index') }}" class="w-full py-2.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-black rounded-xl transition flex items-center justify-between">
+                            <a href="{{ route('users.index') }}" class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 hover:bg-slate-100 text-gray-800 transition border border-gray-200 group">
+                                <div class="flex items-center gap-3">
+                                    <span class="text-xl">👥</span>
+                                    <div>
+                                        <span class="text-xs font-black text-sipega-navy block leading-tight">Kelola Data Pegawai</span>
+                                        <span class="text-[9px] text-gray-500 font-medium">Database ASN, Grade Tukin (KJ 1-17), NIP</span>
+                                    </div>
+                                </div>
+                                <span class="text-[9px] bg-gray-800 text-white px-2.5 py-1 rounded-full font-black uppercase tracking-wider shadow-sm">NIP</span>
+                            </a>
+                        </div>
+
+                        <!-- MASTER SAKLAR SISTEM (QUICK TOGGLES) -->
+                        <div class="space-y-2 pt-2 border-t border-gray-100">
+                            <span class="text-[9px] font-black text-gray-400 uppercase tracking-widest block">Master Switch Sistem</span>
+
+                            <!-- 1. Master Switch Tukin -->
+                            <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
+                                @csrf
+                                <input type="hidden" name="key" value="is_tukin_active">
+                                <div class="pr-2">
+                                    <label class="text-xs font-black text-sipega-navy block leading-tight">SIPEGA Tukin</label>
+                                    <span class="text-[9px] text-gray-400 font-medium">Modul perhitungan tunjangan kinerja</span>
+                                </div>
+                                <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
+                                    <option value="1" {{ \App\Models\Setting::get('is_tukin_active') !== '0' ? 'selected' : '' }}>AKTIF</option>
+                                    <option value="0" {{ \App\Models\Setting::get('is_tukin_active') === '0' ? 'selected' : '' }}>OFF</option>
+                                </select>
+                            </form>
+
+                            <!-- 2. Master Switch Reward -->
+                            <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
+                                @csrf
+                                <input type="hidden" name="key" value="is_reward_active">
+                                <div class="pr-2">
+                                    <label class="text-xs font-black text-sipega-navy block leading-tight">SIPEGA Reward</label>
+                                    <span class="text-[9px] text-gray-400 font-medium">Wall of Fame & penilaian ASN</span>
+                                </div>
+                                <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
+                                    <option value="1" {{ \App\Models\Setting::get('is_reward_active') === '1' ? 'selected' : '' }}>AKTIF</option>
+                                    <option value="0" {{ \App\Models\Setting::get('is_reward_active') === '0' ? 'selected' : '' }}>OFF</option>
+                                </select>
+                            </form>
+
+                            <!-- 3. Master Switch Uji Coba Realisasi -->
+                            <form action="{{ route('settings.update') }}" method="POST" class="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition border border-gray-100">
+                                @csrf
+                                <input type="hidden" name="key" value="is_realization_open_anytime">
+                                <div class="pr-2">
+                                    <label class="text-xs font-black text-sipega-navy block leading-tight">Uji Coba Realisasi</label>
+                                    <span class="text-[9px] text-gray-400 font-medium">Bypass jam 15:00 untuk simulasi</span>
+                                </div>
+                                <select name="value" onchange="this.form.submit()" class="text-[10px] font-black py-1 px-3 rounded-xl border-none focus:ring-0 cursor-pointer shadow-sm {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800' }}">
+                                    <option value="1" {{ \App\Models\Setting::get('is_realization_open_anytime') === '1' ? 'selected' : '' }}>OPEN (TEST)</option>
+                                    <option value="0" {{ \App\Models\Setting::get('is_realization_open_anytime', '0') === '0' ? 'selected' : '' }}>NORMAL (JADWAL)</option>
+                                </select>
+                            </form>
+                        </div>
+
+                        <!-- TAUTAN PUSAT REGULASI LENGKAP -->
+                        <div class="pt-2 border-t border-gray-100">
+                            <a href="{{ route('settings.index') }}" class="w-full py-3 px-4 bg-sipega-navy hover:bg-[#002244] text-white text-xs font-black rounded-2xl transition flex items-center justify-between shadow-md">
                                 <span class="flex items-center gap-2">
                                     <span>⚙️</span>
-                                    <span>Pusat Smart Pengaturan Lengkap</span>
+                                    <span>Buka Smart Pengaturan Regulasi Lengkap</span>
                                 </span>
                                 <span>&rarr;</span>
                             </a>
-                            <a href="{{ route('rbac.index') }}" class="w-full py-2 px-3 bg-gray-50 hover:bg-gray-100 text-sipega-navy text-xs font-bold rounded-xl transition flex items-center justify-between">
-                                <span class="flex items-center gap-2">
-                                    <span>🛡️</span>
-                                    <span>Matriks Hak Akses (RBAC)</span>
-                                </span>
-                                <span class="text-[9px] bg-sipega-navy text-white px-2 py-0.5 rounded-full font-black">RBAC</span>
-                            </a>
                         </div>
                     </div>
-                </div>
-
-                <div class="flex gap-2">
-                    @if(\App\Models\Setting::get('is_reward_active') === '1')
-                    <a href="{{ route('reward.index') }}" class="bg-sipega-orange hover:bg-orange-600 text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest">
-                        Reward Center
-                    </a>
-                    @endif
-                    <a href="{{ route('rbac.index') }}" class="bg-sipega-navy hover:bg-[#002244] text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest border border-white/10">
-                        Matriks Akses
-                    </a>
-                    <a href="{{ route('users.index') }}" class="bg-gray-800 hover:bg-black text-white font-bold py-2.5 px-6 rounded-2xl shadow-lg transition-all hover:-translate-y-0.5 whitespace-nowrap overflow-hidden text-xs uppercase tracking-widest flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5 text-sipega-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        <span>Data Pegawai</span>
-                    </a>
                 </div>
             </div>
         </div>
