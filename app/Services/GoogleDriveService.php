@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Setting;
+use App\Models\User;
 use Google\Client;
 use Google\Service\Drive;
 use Google\Service\Drive\DriveFile;
@@ -82,13 +84,135 @@ class GoogleDriveService
     }
 
     /**
-     * Upload berkas bukti ke Google Drive folder pegawai
+     * Buat folder baru di Google Drive (misalnya subfolder untuk pegawai)
      *
-     * @param string $localFilePath Path fisik berkas di server
-     * @param string $fileName Nama berkas yang diinginkan di Google Drive
-     * @param string|null $folderUrlOrId URL atau ID folder Google Drive tujuan
-     * @param bool $makePublic Apakah file langsung dibuat publik (bisa dibuka oleh penilai e-Kinerja)
-     * @return array|null Berisi file id, webViewLink, webContentLink, atau null jika gagal
+     * @param string $folderName Nama folder
+     * @param string|null $parentFolderUrlOrId ID atau URL folder induk (Master Folder)
+     * @param bool $makePublic Apakah folder dapat diakses siapa saja dengan link
+     * @return array|null Berisi ['id', 'name', 'web_view_link']
+     */
+    public function createFolder(string $folderName, ?string $parentFolderUrlOrId = null, bool $makePublic = true): ?array
+    {
+        if (!$this->isConfigured()) {
+            Log::warning('GoogleDriveService: Service account belum siap.');
+            return null;
+        }
+
+        try {
+            $parentId = self::extractFolderId($parentFolderUrlOrId);
+
+            $folderMetadata = new DriveFile([
+                'name' => $folderName,
+                'mimeType' => 'application/vnd.google-apps.folder',
+            ]);
+
+            if ($parentId) {
+                $folderMetadata->setParents([$parentId]);
+            }
+
+            $folder = $this->service->files->create($folderMetadata, [
+                'fields' => 'id, name, webViewLink',
+            ]);
+
+            // Set permission: Siapa saja yang punya link dapat membuka folder bukti (reader)
+            if ($makePublic && !empty($folder->id)) {
+                try {
+                    $permission = new Permission([
+                        'type' => 'anyone',
+                        'role' => 'reader',
+                    ]);
+                    $this->service->permissions->create($folder->id, $permission);
+                } catch (\Throwable $e) {
+                    Log::warning('GoogleDriveService: Gagal set permission folder: ' . $e->getMessage());
+                }
+            }
+
+            return [
+                'id' => $folder->id,
+                'name' => $folder->name,
+                'web_view_link' => $folder->webViewLink,
+            ];
+        } catch (\Throwable $e) {
+            Log::error('GoogleDriveService createFolder Error: ' . $e->getMessage(), [
+                'folderName' => $folderName,
+                'parent' => $parentFolderUrlOrId,
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Generate folder otomatis untuk satu pegawai
+     */
+    public function generateUserFolder(User $user, ?string $masterFolderId = null): ?array
+    {
+        $master = $masterFolderId ?: Setting::get('google_drive_master_folder');
+        if (empty($master)) {
+            Log::info('GoogleDriveService: Master folder belum diatur.');
+            return null;
+        }
+
+        $folderName = ($user->nip ? trim($user->nip) . ' - ' : '') . trim($user->name);
+        $folder = $this->createFolder($folderName, $master, true);
+
+        if ($folder && !empty($folder['web_view_link'])) {
+            $user->update(['drive_folder_link' => $folder['web_view_link']]);
+            return $folder;
+        }
+
+        return null;
+    }
+
+    /**
+     * Batch Generate Folder untuk semua pegawai yang belum memiliki folder
+     */
+    public function batchGenerateFolders(?string $masterFolderId = null): array
+    {
+        $master = $masterFolderId ?: Setting::get('google_drive_master_folder');
+        if (empty($master)) {
+            return [
+                'success' => false,
+                'message' => 'Folder Induk Google Drive (Master Folder) belum diatur di Pengaturan Sistem.'
+            ];
+        }
+
+        if (!$this->isConfigured()) {
+            return [
+                'success' => false,
+                'message' => 'Google Drive API belum terkonfigurasi (file service-account.json tidak ditemukan).'
+            ];
+        }
+
+        $employees = User::realPegawai()
+            ->where(function ($q) {
+                $q->whereNull('drive_folder_link')->orWhere('drive_folder_link', '');
+            })
+            ->get();
+
+        $createdCount = 0;
+        $failedNames = [];
+
+        foreach ($employees as $emp) {
+            $result = $this->generateUserFolder($emp, $master);
+            if ($result) {
+                $createdCount++;
+            } else {
+                $failedNames[] = $emp->name;
+            }
+        }
+
+        return [
+            'success' => true,
+            'total_candidates' => $employees->count(),
+            'created_count' => $createdCount,
+            'failed_count' => count($failedNames),
+            'failed_names' => $failedNames,
+            'message' => "Berhasil membuat {$createdCount} folder Google Drive baru untuk pegawai."
+        ];
+    }
+
+    /**
+     * Upload berkas bukti ke Google Drive folder pegawai
      */
     public function uploadEvidence(string $localFilePath, string $fileName, ?string $folderUrlOrId = null, bool $makePublic = true): ?array
     {

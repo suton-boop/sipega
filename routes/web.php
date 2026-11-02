@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/smartpengaturan', [SettingController::class, 'index'])->name('smartpengaturan');
     Route::get('/smart-pengaturan', [SettingController::class, 'index']);
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/drive/generate-all', [SettingController::class, 'generateAllEmployeeFolders'])->name('settings.drive.generate_all');
     Route::post('/settings/tukin', [SettingController::class, 'updateTukinRules'])->name('settings.tukin.update');
     Route::post('/settings/tukin/reset', [SettingController::class, 'resetTukinRules'])->name('settings.tukin.reset');
 
@@ -117,6 +118,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/agenda/rhk', [AgendaController::class, 'storeRhk'])->name('agenda.rhk.store');
     Route::delete('/agenda/rhk/{id}', [AgendaController::class, 'deleteRhk'])->name('agenda.rhk.destroy');
     Route::post('/agenda/drive-folder', [AgendaController::class, 'updateDriveFolder'])->name('agenda.drive_folder.update');
+    Route::post('/agenda/generate-my-folder', [AgendaController::class, 'generateMyFolder'])->name('agenda.generate_my_folder');
     
     // MODUL MONITORING (Fokus Pimpinan/Leader Penilaian)
     Route::get('/leader/agenda', [AgendaController::class, 'leaderIndex'])->name('leader.agenda.index');

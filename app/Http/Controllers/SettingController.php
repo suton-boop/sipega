@@ -27,9 +27,14 @@ class SettingController extends Controller
             'show_slip_tukin' => Setting::get('show_slip_tukin', '1'),
             'is_realization_open_anytime' => Setting::get('is_realization_open_anytime', '0'),
             'institution_name' => Setting::get('institution_name', 'Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Kalimantan Timur'),
+            'google_drive_master_folder' => Setting::get('google_drive_master_folder', ''),
         ];
 
-        return view('settings.index', compact('tukinRules', 'rates', 'officialRates', 'generalSettings'));
+        $driveService = new \App\Services\GoogleDriveService();
+        $driveConfigured = $driveService->isConfigured();
+        $driveServiceEmail = $driveService->getServiceAccountEmail();
+
+        return view('settings.index', compact('tukinRules', 'rates', 'officialRates', 'generalSettings', 'driveConfigured', 'driveServiceEmail'));
     }
 
     /**
@@ -111,7 +116,35 @@ class SettingController extends Controller
             Setting::set('institution_name', trim($request->input('institution_name')));
         }
 
-        return redirect()->route('settings.index')->with('success', 'Aturan regulasi dan tabel acuan tunjangan kinerja berhasil disimpan! Seluruh rumus kalkulasi sistem dan modal acuan otomatis tersinkronisasi.');
+        if ($request->has('google_drive_master_folder')) {
+            Setting::set('google_drive_master_folder', trim($request->input('google_drive_master_folder')));
+        }
+
+        return redirect()->route('settings.index')->with('success', 'Pengaturan sistem dan regulasi berhasil disimpan!');
+    }
+
+    /**
+     * Generate Folder Google Drive untuk Seluruh Pegawai yang Belum Memiliki Folder
+     */
+    public function generateAllEmployeeFolders(Request $request)
+    {
+        if (!TukinController::isPrivilegedUser(auth()->user())) {
+            abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
+        }
+
+        $masterFolder = $request->input('google_drive_master_folder');
+        if (!empty($masterFolder)) {
+            Setting::set('google_drive_master_folder', trim($masterFolder));
+        }
+
+        $driveService = new \App\Services\GoogleDriveService();
+        $result = $driveService->batchGenerateFolders();
+
+        if ($result['success']) {
+            return back()->with('success', $result['message']);
+        }
+
+        return back()->with('error', $result['message']);
     }
 
     /**

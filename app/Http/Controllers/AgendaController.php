@@ -49,6 +49,15 @@ class AgendaController extends Controller
         $driveService = new GoogleDriveService();
         $driveConfigured = $driveService->isConfigured();
         $serviceAccountEmail = $driveService->getServiceAccountEmail();
+        $masterFolder = Setting::get('google_drive_master_folder');
+
+        // Auto-generate folder untuk pegawai jika belum ada dan master folder telah disetel
+        if (empty($user->drive_folder_link) && $driveConfigured && !empty($masterFolder)) {
+            $createdFolder = $driveService->generateUserFolder($user, $masterFolder);
+            if ($createdFolder) {
+                $user->refresh();
+            }
+        }
 
         // Hitung Skor Kesiapan e-Kinerja (0 - 100%)
         $totalItems = $myAgendaToday ? $myAgendaToday->items->count() : 0;
@@ -465,6 +474,31 @@ class AgendaController extends Controller
         })->whereNull('drive_link')->update(['drive_link' => trim($request->drive_folder_link)]);
 
         return back()->with('success', 'Link folder Google Drive pegawai berhasil diperbarui!');
+    }
+
+    /**
+     * Buat Folder Google Drive Pribadi secara Otomatis
+     */
+    public function generateMyFolder(Request $request)
+    {
+        $user = auth()->user();
+        $driveService = new GoogleDriveService();
+
+        if (!$driveService->isConfigured()) {
+            return back()->with('error', 'Google Drive API belum terkonfigurasi di server.');
+        }
+
+        $master = Setting::get('google_drive_master_folder');
+        if (empty($master)) {
+            return back()->with('error', 'Folder Induk Google Drive (Master Folder) belum disetel oleh Administrator di Pengaturan Sistem.');
+        }
+
+        $folder = $driveService->generateUserFolder($user, $master);
+        if ($folder) {
+            return back()->with('success', 'Folder Google Drive Anda berhasil dibuat otomatis!');
+        }
+
+        return back()->with('error', 'Gagal membuat folder Google Drive otomatis. Pastikan Service Account memiliki izin Editor pada Folder Induk.');
     }
 
     /**

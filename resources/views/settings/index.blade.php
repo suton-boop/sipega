@@ -650,6 +650,71 @@
                                 </div>
                             </div>
 
+                            <!-- CARD PENGATURAN GOOGLE DRIVE & AUTO-GENERATE FOLDER PEGAWAI -->
+                            <div class="mt-6 pt-4 border-t border-gray-100 bg-gradient-to-br from-blue-50/60 to-slate-50 p-6 rounded-2xl border-2 border-blue-200/80 space-y-4">
+                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-black shrink-0 shadow-sm">
+                                            ☁️
+                                        </div>
+                                        <div>
+                                            <h5 class="text-xs font-black text-sipega-navy uppercase tracking-wider">
+                                                Master Google Drive & Auto-Generate Folder Pegawai
+                                            </h5>
+                                            <p class="text-[10px] text-gray-500 font-medium">
+                                                Penyimpanan terpusat bukti dukung e-Kinerja untuk seluruh ASN BPMP Kalimantan Timur.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2 h-2 rounded-full {{ $driveConfigured ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
+                                        <span class="text-[10px] font-black uppercase {{ $driveConfigured ? 'text-emerald-700' : 'text-rose-700' }}">
+                                            {{ $driveConfigured ? 'API Drive Aktif' : 'API Belum Dikonfigurasi' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Petunjuk Ringkas -->
+                                <div class="bg-white p-4 rounded-xl border border-blue-100 text-xs text-gray-700 space-y-2">
+                                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                                        <span class="font-bold text-[11px] text-blue-900">Email Robot Service Account:</span>
+                                        <div class="flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded-lg border border-gray-200">
+                                            <code class="text-[10px] font-mono font-bold text-gray-800">{{ $driveServiceEmail ?: 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com' }}</code>
+                                            <button type="button" onclick="navigator.clipboard.writeText('{{ $driveServiceEmail ?: 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com' }}'); alert('Email Service Account tersalin!');" class="text-[10px] text-blue-600 font-bold hover:underline">
+                                                Salin
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <p class="text-[10px] text-gray-500 leading-relaxed">
+                                        1. Buat 1 Folder Induk di Google Drive Anda (misal: <em>"e-Kinerja SIPEGA BPMP Kaltim"</em>).<br>
+                                        2. Bagikan (Share) folder induk tersebut ke email robot di atas sebagai <strong>Editor</strong>.<br>
+                                        3. Tempel URL Folder Induk di kolom bawah ini, lalu klik <strong>Simpan</strong> atau <strong>Generate Folder</strong>.
+                                    </p>
+                                </div>
+
+                                <!-- Input Master Folder -->
+                                <div>
+                                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1">
+                                        Tautan / ID Folder Induk (Master Folder Google Drive)
+                                    </label>
+                                    <input type="text" name="google_drive_master_folder" value="{{ $generalSettings['google_drive_master_folder'] }}"
+                                           placeholder="https://drive.google.com/drive/folders/1A2B3C... atau ID folder"
+                                           class="w-full text-xs font-bold rounded-xl border-gray-300 focus:border-blue-600 focus:ring-blue-600 shadow-sm">
+                                </div>
+
+                                <!-- Tombol Eksekusi Batch Generate -->
+                                <div class="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3">
+                                    <p class="text-[10px] text-gray-500 italic">
+                                        Pegawai yang belum memiliki folder akan otomatis dibuatkan subfolder format: <code>NIP - Nama Pegawai</code>.
+                                    </p>
+                                    <button type="submit" formaction="{{ route('settings.drive.generate_all') }}" formmethod="POST"
+                                            onclick="return confirm('Jalankan pembuatan folder Google Drive otomatis untuk seluruh pegawai yang belum memiliki folder?');"
+                                            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md transition flex items-center gap-2 whitespace-nowrap">
+                                        <span>⚡</span> Generate Folder Semua Pegawai
+                                    </button>
+                                </div>
+                            </div>
+
                             <!-- CARD LINK KE MATRIKS AKSES (RBAC) -->
                             <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50 p-5 rounded-2xl border border-gray-200">
                                 <div class="flex items-center gap-3">

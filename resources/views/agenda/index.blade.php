@@ -606,7 +606,30 @@
                 </ol>
             </div>
 
-            <!-- Form Simpan Link Folder -->
+            <!-- Opsi 1: Buat Folder Otomatis -->
+            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 text-xs space-y-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">⚡</span>
+                    <div>
+                        <p class="font-black text-sipega-navy uppercase text-[11px]">Buat Folder Otomatis (Praktis)</p>
+                        <p class="text-[10px] text-gray-500">Sistem otomatis membuat folder khusus Anda di Drive Induk BPMP Kaltim.</p>
+                    </div>
+                </div>
+                <form action="{{ route('agenda.generate_my_folder') }}" method="POST">
+                    @csrf
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase py-2.5 rounded-xl shadow transition flex items-center justify-center gap-1.5">
+                        <span>📁</span> Buat Folder Drive Saya Sekarang
+                    </button>
+                </form>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <div class="h-px flex-grow bg-gray-200"></div>
+                <span class="text-[10px] font-bold text-gray-400 uppercase">Atau Gunakan Link Manual</span>
+                <div class="h-px flex-grow bg-gray-200"></div>
+            </div>
+
+            <!-- Form Simpan Link Folder Manual -->
             <form action="{{ route('agenda.drive_folder.update') }}" method="POST" class="space-y-4">
                 @csrf
                 <div>
@@ -621,7 +644,7 @@
                     >
                 </div>
                 <button type="submit" class="w-full bg-sipega-navy hover:bg-slate-800 text-white font-black text-xs uppercase py-3 rounded-2xl shadow transition">
-                    Simpan Tautan Google Drive
+                    Simpan Tautan Google Drive Manual
                 </button>
             </form>
         </div>
