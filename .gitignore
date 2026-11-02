@@ -16,6 +16,9 @@
 /public/hot
 /public/storage
 /storage/*.key
+/storage/app/google/*.json
+/service-account.json
+service-account.json
 /storage/pail
 /storage/fonts/
 /vendor
