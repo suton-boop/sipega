@@ -229,4 +229,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\TravelReport::class);
     }
+
+    public function dailyAgendas()
+    {
+        return $this->hasMany(DailyAgenda::class);
+    }
+
+    public function rhks()
+    {
+        return $this->hasMany(UserRhk::class)->orderBy('id', 'desc');
+    }
 }

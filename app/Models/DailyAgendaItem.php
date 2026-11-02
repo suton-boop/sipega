@@ -16,7 +16,12 @@ class DailyAgendaItem extends Model
         'proof_text',
         'workflow_phase',
         'evaluation_notes',
-        'improvement_plan'
+        'improvement_plan',
+        'start_time',
+        'end_time',
+        'rhk_text',
+        'drive_link',
+        'drive_file_id',
     ];
 
     public function dailyAgenda(): BelongsTo

@@ -70,13 +70,33 @@
                                             <span class="font-bold text-gray-600">{{ \Carbon\Carbon::parse($agenda->date)->format('d/m/Y') }}</span>
                                         </td>
                                         <td class="p-4">
-                                            <ul class="list-disc pl-4 space-y-1">
+                                            <ul class="space-y-2">
                                                 @foreach($agenda->items as $item)
-                                                <li>
-                                                    <span class="text-xs font-medium">{{ $item->plan_description }}</span>
-                                                    <span class="ml-1 px-2 py-0.5 rounded-full text-[8px] font-black uppercase {{ $item->status == 'completed' ? 'bg-green-100 text-green-700' : ($item->status == 'changed' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700') }}">
-                                                        {{ $item->status }}
-                                                    </span>
+                                                <li class="bg-slate-50 p-2.5 rounded-xl border border-gray-100">
+                                                    <div class="flex items-center justify-between gap-2">
+                                                        <span class="text-xs font-bold text-gray-800">{{ $item->plan_description }}</span>
+                                                        <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase {{ $item->status == 'completed' ? 'bg-green-100 text-green-700' : ($item->status == 'changed' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700') }}">
+                                                            {{ $item->status }}
+                                                        </span>
+                                                    </div>
+                                                    @if($item->rhk_text || $item->start_time)
+                                                        <div class="text-[10px] text-gray-500 mt-1 flex items-center gap-2 flex-wrap">
+                                                            @if($item->start_time)
+                                                                <span class="font-bold">⏰ {{ $item->start_time }} - {{ $item->end_time }}</span>
+                                                            @endif
+                                                            @if($item->rhk_text)
+                                                                <span class="truncate max-w-[200px]" title="{{ $item->rhk_text }}">🎯 {{ $item->rhk_text }}</span>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                    @php $finalLink = $item->drive_link ?: $agenda->user->drive_folder_link; @endphp
+                                                    @if($finalLink)
+                                                        <div class="mt-1">
+                                                            <a href="{{ $finalLink }}" target="_blank" class="text-[10px] text-blue-600 hover:text-blue-800 font-bold underline flex items-center gap-1">
+                                                                <span>📁 Bukti Drive</span> ↗
+                                                            </a>
+                                                        </div>
+                                                    @endif
                                                 </li>
                                                 @endforeach
                                             </ul>

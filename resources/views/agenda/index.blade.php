@@ -1,35 +1,62 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center whitespace-nowrap">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h2 class="font-extrabold text-2xl text-sipega-navy leading-none tracking-tighter uppercase">
-                    Agenda & Realisasi
-                </h2>
-                <p class="text-[10px] font-bold text-sipega-orange uppercase tracking-[0.3em] mt-1 italic font-sans tracking-wide">Pelaporan Kinerja Harian Pegawai</p>
+                <div class="flex items-center gap-3">
+                    <h2 class="font-extrabold text-2xl text-sipega-navy leading-none tracking-tighter uppercase">
+                        Agenda & e-Kinerja Companion
+                    </h2>
+                    <span class="px-3 py-1 bg-gradient-to-r from-sipega-navy to-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-sm">
+                        7 Kolom BKN ⚡
+                    </span>
+                </div>
+                <p class="text-[11px] font-bold text-sipega-orange uppercase tracking-[0.25em] mt-1 italic font-sans">
+                    Pencatatan Harian • Input Suara • Auto Link Google Drive
+                </p>
+            </div>
+
+            <!-- Quick Action Buttons -->
+            <div class="flex items-center gap-2 flex-wrap">
+                <!-- Date Selector Form -->
+                <form method="GET" action="{{ route('agenda.index') }}" class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border border-gray-200 shadow-sm">
+                    <span class="text-xs">📅</span>
+                    <input type="date" name="date" value="{{ $selectedDate }}" onchange="this.form.submit()" class="border-0 p-0 text-xs font-bold text-sipega-navy focus:ring-0 cursor-pointer">
+                </form>
+
+                <!-- Tombol Kelola RHK -->
+                <button type="button" onclick="openModal('rhkModal')" class="bg-white hover:bg-slate-50 text-sipega-navy border border-gray-200 text-xs font-black px-4 py-2 rounded-2xl shadow-sm transition flex items-center gap-1.5">
+                    <span>🎯</span> Kelola RHK ({{ $userRhks->count() }})
+                </button>
+
+                <!-- Tombol Atur Drive -->
+                <button type="button" onclick="openModal('driveModal')" class="bg-white hover:bg-slate-50 {{ $user->drive_folder_link ? 'text-green-700 border-green-200' : 'text-orange-600 border-orange-200' }} border text-xs font-black px-4 py-2 rounded-2xl shadow-sm transition flex items-center gap-1.5">
+                    <span>{{ $user->drive_folder_link ? '📁' : '⚠️' }}</span> Google Drive
+                </button>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-12 bg-slate-50 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="py-8 bg-slate-50 min-h-screen">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
+            <!-- Alerts -->
             @if(session('success'))
-                <div class="bg-green-50 text-green-700 p-6 rounded-3xl mb-8 font-bold border border-green-100 flex items-center gap-3 shadow-sm">
-                    <span class="bg-green-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black italic">!</span> 
-                    {{ session('success') }}
+                <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl font-bold flex items-center gap-3 shadow-sm text-sm">
+                    <span class="bg-emerald-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-black">✓</span> 
+                    <span>{{ session('success') }}</span>
                 </div>
             @endif
 
             @if(session('error'))
-                <div class="bg-red-50 text-red-700 p-6 rounded-3xl mb-8 font-bold border border-red-100 flex items-center gap-3 shadow-sm">
-                    <span class="bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black italic">X</span> 
-                    {{ session('error') }}
+                <div class="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl font-bold flex items-center gap-3 shadow-sm text-sm">
+                    <span class="bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs font-black">✕</span> 
+                    <span>{{ session('error') }}</span>
                 </div>
             @endif
 
             @if($errors->any())
-                <div class="bg-red-50 text-red-700 p-6 rounded-3xl mb-8 font-bold border border-red-100 shadow-sm">
-                    <ul class="list-disc pl-5 text-sm">
+                <div class="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-2xl shadow-sm">
+                    <ul class="list-disc pl-5 text-xs font-bold space-y-1">
                         @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
@@ -37,240 +64,782 @@
                 </div>
             @endif
 
-            <!-- Agenda Card -->
-            <div class="bg-white overflow-hidden shadow-2xl rounded-[40px] border border-gray-100 flex flex-col">
-                <div class="p-10 lg:p-12">
-                    <div class="mb-10">
-                        <h3 class="text-3xl font-black text-sipega-navy tracking-tighter uppercase mb-2">Kegiatan Hari Ini</h3>
-                        <div class="h-1.5 w-16 bg-sipega-orange rounded-full"></div>
-                    </div>
-                    
-                    @if($myAgendaToday)
-                        <!-- STEP 1: RENCANA (LIST VIEW) -->
-                        <div class="bg-gray-50 p-8 rounded-[2.5rem] border border-gray-100 mb-10 relative overflow-hidden shadow-inner">
-                            <div class="flex items-center justify-between mb-8">
-                                <strong class="text-xl font-black text-sipega-navy uppercase tracking-tight">Rincian Rencana Pagi</strong>
-                                <span class="text-[10px] text-gray-400 font-bold tracking-widest uppercase">Submited At: {{ \Carbon\Carbon::parse($myAgendaToday->submitted_at)->format('H:i') }} WITA</span>
-                            </div>
-                            <ul class="space-y-4">
-                                @foreach($myAgendaToday->items as $item)
-                                    <li class="flex items-start gap-4 bg-white p-5 rounded-3xl shadow-sm border border-gray-100 transition-all hover:border-sipega-orange group">
-                                        <span class="bg-sipega-navy group-hover:bg-sipega-orange text-white text-[10px] font-black w-6 h-6 flex items-center justify-center rounded-lg mt-0.5 transition-colors">{{ $loop->iteration }}</span>
-                                        <span class="font-bold text-gray-700 leading-snug">{{ $item->plan_description }}</span>
-                                    </li>
-                                @endforeach
-                            </ul>
+            <!-- CARD 1: SKOR KESIAPAN e-KINERJA & SUMMARY BANNER -->
+            <div class="bg-gradient-to-br from-sipega-navy via-[#00264d] to-slate-900 rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-16 -top-16 w-64 h-64 bg-sipega-orange/15 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black uppercase tracking-widest text-sipega-orange">STATUS HARIAN e-KINERJA</span>
+                            <span class="text-white/40">•</span>
+                            <span class="text-xs text-white/80 font-bold">{{ \Carbon\Carbon::parse($selectedDate)->translatedFormat('l, d F Y') }}</span>
                         </div>
-
-                        <!-- STEP 2: REALISASI (PER ITEM) -->
-                        @if(!$myAgendaToday->realization_submitted_at)
-                            @php 
-                                $hour = (int) now('Asia/Makassar')->format('H'); 
-                                $isFlexible = \App\Models\Setting::get('is_realization_open_anytime') === '1';
-                            @endphp
-                            @if($isFlexible || ($hour >= 15 && $hour < 17))
-                                <div class="bg-sipega-navy rounded-[3rem] p-10 lg:p-12 shadow-2xl relative overflow-hidden">
-                                     <!-- Decoration -->
-                                    <div class="absolute -top-20 -right-20 w-64 h-64 bg-sipega-orange/10 blur-[80px] rounded-full"></div>
-
-                                    <div class="relative z-10">
-                                        <h4 class="text-3xl font-black text-white mb-2 uppercase tracking-tighter">Evaluasi Kinerja Sore</h4>
-                                        <p class="text-white/40 text-xs font-bold mb-10 uppercase tracking-widest">Tentukan status akhir untuk setiap kegiatan Anda</p>
-                                        
-                                        <form action="{{ route('agenda.realization', $myAgendaToday->id) }}" method="POST" enctype="multipart/form-data" class="space-y-10">
-                                            @csrf
-                                            <div class="space-y-6">
-                                                @foreach($myAgendaToday->items as $item)
-                                                    <div class="bg-white/5 p-8 rounded-[2rem] border border-white/10 shadow-sm backdrop-blur-sm">
-                                                        <p class="font-bold text-white text-lg mb-6 leading-tight">{{ $item->plan_description }}</p>
-                                                        <div class="grid grid-cols-3 gap-4 mb-6">
-                                                            <label class="cursor-pointer group/choice">
-                                                                <input type="radio" name="items[{{ $item->id }}][status]" value="completed" checked class="hidden peer">
-                                                                <div class="text-center p-4 rounded-2xl border-2 border-white/5 bg-white/5 peer-checked:border-sipega-orange peer-checked:bg-sipega-orange peer-checked:text-white transition-all text-white/40">
-                                                                    <span class="block text-[10px] font-black uppercase tracking-widest">Selesai</span>
-                                                                </div>
-                                                            </label>
-                                                            <label class="cursor-pointer group/choice">
-                                                                <input type="radio" name="items[{{ $item->id }}][status]" value="changed" class="hidden peer">
-                                                                <div class="text-center p-4 rounded-2xl border-2 border-white/5 bg-white/5 peer-checked:border-sipega-orange peer-checked:bg-sipega-orange peer-checked:text-white transition-all text-white/40">
-                                                                    <span class="block text-[10px] font-black uppercase tracking-widest">Berubah</span>
-                                                                </div>
-                                                            </label>
-                                                            <label class="cursor-pointer group/choice">
-                                                                <input type="radio" name="items[{{ $item->id }}][status]" value="progress" class="hidden peer">
-                                                                <div class="text-center p-4 rounded-2xl border-2 border-white/5 bg-white/5 peer-checked:border-sipega-orange peer-checked:bg-sipega-orange peer-checked:text-white transition-all text-white/40">
-                                                                    <span class="block text-[10px] font-black uppercase tracking-widest">Progres</span>
-                                                                </div>
-                                                            </label>
-                                                        </div>
-                                                        <input type="text" name="items[{{ $item->id }}][notes]" class="w-full bg-white/5 border-white/10 focus:border-sipega-orange focus:ring-0 rounded-2xl text-xs text-white placeholder-white/20 p-4 font-medium" placeholder="Catatan tambahan (opsional)...">
-                                                    </div>
-                                                @endforeach
-                                            </div>
-
-                                            <div class="bg-white/5 p-8 rounded-3xl border border-white/10 shadow-sm backdrop-blur-sm">
-                                                <label class="font-black text-white/40 text-[10px] uppercase tracking-[0.2em] block mb-4">Lampiran Bukti Realisasi (JPG/PNG)</label>
-                                                <input type="file" name="proof_file" accept=".jpg,.png,.jpeg" class="block w-full text-xs text-white/40 file:mr-6 file:py-3 file:px-8 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-sipega-orange file:text-white hover:file:bg-orange-600 transition-all cursor-pointer"/>
-                                            </div>
-
-                                            <button type="submit" class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-6 rounded-[2rem] w-full shadow-2xl transition-all uppercase tracking-[0.2em] hover:-translate-y-1">
-                                                Simpan Evaluasi Harian
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
+                        <h3 class="text-2xl md:text-3xl font-black tracking-tight leading-tight">
+                            @if($readinessScore >= 80)
+                                Siap Disalin ke e-Kinerja BKN! ✨
+                            @elseif($readinessScore >= 50)
+                                Sedang Disusun — Masih Ada Kolom Belum Lengkap 📝
                             @else
-                                <div class="bg-gray-50 border-2 border-dashed border-gray-100 rounded-[3rem] p-12 text-center">
-                                    <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                    </div>
-                                    <h4 class="text-xl font-black text-gray-400 uppercase tracking-tight mb-2">Evaluasi Belum Terbuka</h4>
-                                    <p class="text-sm text-gray-400 font-medium italic">Fitur evaluasi sore terbuka otomatis pukul 15:00 - 17:00 WITA.</p>
-                                    @if($isFlexible)
-                                        <p class="text-[10px] text-green-600 font-black uppercase mt-2">Mode Uji Coba: AKTIF (Akses Terbuka)</p>
-                                    @endif
-                                </div>
+                                Belum Ada Catatan Kegiatan Hari Ini 🎯
                             @endif
+                        </h3>
+                        <p class="text-xs text-white/60 max-w-2xl font-medium">
+                            Sistem otomatis menyusun 7 format kolom e-Kinerja, mengunggah bukti ke Google Drive, dan menyediakan tombol salin 1-klik untuk pengisian logbook e-Kinerja ASN.
+                        </p>
+                    </div>
+
+                    <!-- Readiness Score Gauge Widget -->
+                    <div class="flex items-center gap-4 bg-white/10 backdrop-blur-md px-6 py-4 rounded-3xl border border-white/10">
+                        <div class="text-center">
+                            <div class="text-3xl font-black {{ $readinessColor === 'Hijau' ? 'text-emerald-400' : ($readinessColor === 'Kuning' ? 'text-amber-400' : 'text-rose-400') }}">
+                                {{ $readinessScore }}%
+                            </div>
+                            <span class="text-[9px] font-black uppercase tracking-wider text-white/60">Skor Kesiapan</span>
+                        </div>
+                        <div class="h-10 w-px bg-white/15"></div>
+                        <div class="text-xs space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full {{ $readinessColor === 'Hijau' ? 'bg-emerald-400' : ($readinessColor === 'Kuning' ? 'bg-amber-400' : 'bg-rose-400') }}"></span>
+                                <span class="font-bold">{{ $readinessColor === 'Hijau' ? 'Lengkap & Siap' : ($readinessColor === 'Kuning' ? 'Cek Bukti/Jam' : 'Kosong') }}</span>
+                            </div>
+                            <div class="text-[10px] text-white/60 font-semibold">
+                                {{ $myAgendaToday ? $myAgendaToday->items->count() : 0 }} Kegiatan Tercatat
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Google Drive Connection Status Strip -->
+                <div class="mt-6 pt-5 border-t border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full {{ $user->drive_folder_link ? 'bg-emerald-400' : 'bg-amber-400' }}"></span>
+                        <span class="text-white/70">Folder Drive:</span>
+                        @if($user->drive_folder_link)
+                            <a href="{{ $user->drive_folder_link }}" target="_blank" class="text-emerald-300 hover:text-emerald-200 underline font-semibold flex items-center gap-1">
+                                <span>Terhubung</span> ↗
+                            </a>
                         @else
-                            <!-- STEP 3: SUMMARY SELESAI -->
-                            <div class="bg-gradient-to-br from-sipega-navy to-black text-white p-10 lg:p-12 rounded-[3.5rem] shadow-2xl relative overflow-hidden">
-                                <div class="absolute -top-10 -right-10 w-40 h-40 bg-green-500/10 blur-[60px] rounded-full"></div>
-                                
-                                <div class="flex items-center justify-between mb-10">
-                                    <h4 class="text-3xl font-black uppercase tracking-tighter">Laporan Harian Tuntas</h4>
-                                    <span class="px-6 py-2 bg-green-500 rounded-full text-[10px] font-black uppercase tracking-widest text-white animate-pulse">VERIFIED</span>
-                                </div>
-
-                                <div class="space-y-5">
-                                    @foreach($myAgendaToday->items as $item)
-                                    <div class="bg-white/5 p-6 rounded-[2rem] border border-white/10 flex justify-between items-center group hover:bg-white/10 transition-all">
-                                        <div class="flex items-center gap-5">
-                                            <div class="w-2 h-2 rounded-full {{ $item->status == 'completed' ? 'bg-green-500' : 'bg-orange-400' }}"></div>
-                                            <div>
-                                                <p class="font-bold text-white text-lg tracking-tight leading-none mb-1">{{ $item->plan_description }}</p>
-                                                @if($item->realization_notes) <p class="text-[10px] text-white/40 font-medium italic tracking-wide">{{ $item->realization_notes }}</p> @endif
-                                            </div>
-                                        </div>
-                                        <span class="text-[9px] font-black uppercase tracking-[0.2em] {{ $item->status == 'completed' ? 'text-green-400' : 'text-orange-400' }}">
-                                            {{ $item->status }}
-                                        </div>
-                                    @endforeach
-                                </div>
-                                <div class="mt-8 pt-8 border-t border-white/5 flex justify-between">
-                                    <p class="text-[10px] font-black text-white/20 uppercase tracking-widest">Time: {{ \Carbon\Carbon::parse($myAgendaToday->realization_submitted_at)->format('H:i') }} WITA</p>
-                                    <p class="text-[10px] font-black text-white/20 uppercase tracking-widest">SIPEGA ENGINE v2.0</p>
-                                </div>
-                            </div>
+                            <button type="button" onclick="openModal('driveModal')" class="text-amber-300 hover:text-amber-200 underline font-semibold">
+                                Belum Disetel (Klik untuk Pasang Link)
+                            </button>
                         @endif
-
-                    @else
-                        <!-- FORM RENCANA PAGI (MULTI-INPUT) -->
-                        @php 
-                            $hour = (int) now('Asia/Makassar')->format('H'); 
-                            $isFlexible = \App\Models\Setting::get('is_realization_open_anytime') === '1';
-                        @endphp
-
-                        @if($isFlexible || ($hour >= 7 && $hour < 17))
-                            <div class="bg-sipega-navy p-10 lg:p-12 rounded-[3.5rem] text-white shadow-2xl relative overflow-hidden">
-                                <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-sipega-orange/10 blur-[80px] rounded-full"></div>
-                                
-                                <div class="relative z-10">
-                                    <h4 class="text-3xl font-black uppercase tracking-tighter mb-2 italic">Selamat Pagi!</h4>
-                                    <p class="text-white/40 text-xs font-bold mb-4 uppercase tracking-widest">Entri rencana kerja Anda hari ini ({{ $hour < 9 ? 'Tepat Waktu' : 'Terlambat' }})</p>
-                                    
-                                    @if((isset($upcomingMeetings) && $upcomingMeetings->count() > 0) || (isset($mySchedules) && $mySchedules->count() > 0))
-                                        <div class="mb-8 p-6 bg-white/5 border border-white/10 rounded-[2rem] backdrop-blur-sm">
-                                            <p class="text-[10px] font-black text-sipega-orange uppercase tracking-[0.2em] mb-4">💡 Kegiatan Terjadwal Hari Ini (Klik untuk tambah ke rencana):</p>
-                                            <div class="flex flex-wrap gap-3">
-                                                @foreach($upcomingMeetings as $meeting)
-                                                    <button type="button" 
-                                                            onclick="addMeetingToPlan('{{ $meeting->title }}')"
-                                                            class="text-left p-3 rounded-2xl bg-white/10 hover:bg-sipega-orange hover:text-white transition group border border-transparent hover:border-white/20">
-                                                        <p class="text-[11px] font-bold leading-tight">{{ $meeting->title }}</p>
-                                                        <p class="text-[9px] opacity-60 font-black mt-1 uppercase tracking-tighter">🏢 Rapat: {{ $meeting->location_name }}</p>
-                                                    </button>
-                                                @endforeach
-
-                                                @foreach($mySchedules as $schedule)
-                                                    <button type="button" 
-                                                            onclick="addMeetingToPlan('{{ $schedule->title }}')"
-                                                            class="text-left p-3 rounded-2xl bg-blue-500/10 hover:bg-sipega-orange hover:text-white transition group border border-transparent hover:border-white/20">
-                                                        <p class="text-[11px] font-bold leading-tight">{{ $schedule->title }}</p>
-                                                        <p class="text-[9px] opacity-60 font-black mt-1 uppercase tracking-tighter">👤 Pribadi{{ $schedule->location ? ': ' . $schedule->location : '' }}</p>
-                                                    </button>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
-
-                                    <form action="{{ route('agenda.store') }}" method="POST" enctype="multipart/form-data" class="space-y-8">
-                                        @csrf
-                                        <div id="plan-container" class="space-y-4">
-                                            <div class="relative group">
-                                                <input type="text" name="plans[]" required minlength="5" class="w-full bg-white/5 border-2 border-white/10 focus:border-sipega-orange focus:ring-0 rounded-3xl p-6 text-white font-bold placeholder-white/20 transition-all" placeholder="Ketik kegiatan utama Anda...">
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="flex items-center gap-6">
-                                            <button type="button" onclick="addPlanField()" class="bg-white/5 hover:bg-white/10 text-white font-black text-[10px] uppercase tracking-widest flex items-center gap-3 px-6 py-4 rounded-2xl transition">
-                                                <span class="bg-sipega-orange text-white w-5 h-5 rounded-lg flex items-center justify-center">+</span> Tambah Kegiatan
-                                            </button>
-                                            <div class="h-px flex-grow bg-white/5"></div>
-                                        </div>
-
-                                        <button type="submit" class="bg-white text-sipega-navy hover:bg-sipega-orange hover:text-white font-black py-6 rounded-[2rem] w-full shadow-2xl transition-all uppercase tracking-[0.2em] hover:-translate-y-1">
-                                            Kirim Seluruh Rencana
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        @else
-                            <div class="bg-gray-50 border-2 border-dashed border-gray-100 rounded-[3rem] p-12 text-center">
-                                <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                    </svg>
-                                </div>
-                                <h4 class="text-xl font-black text-gray-400 uppercase tracking-tight mb-2">Input Rencana Belum Terbuka</h4>
-                                <p class="text-sm text-gray-400 font-medium italic">Pengisian rencana agenda harian tersedia pukul 07:00 - 17:00 WITA.</p>
-                                @if($isFlexible)
-                                    <p class="text-[10px] text-green-600 font-black uppercase mt-2">Mode Uji Coba: AKTIF (Akses Terbuka)</p>
-                                @endif
-                            </div>
-                        @endif
-
-                        <script>
-                            function addPlanField() {
-                                const container = document.getElementById('plan-container');
-                                const count = container.children.length + 1;
-                                const div = document.createElement('div');
-                                div.className = 'relative animate-fade-in-down';
-                                div.innerHTML = `<input type="text" name="plans[]" required minlength="5" class="w-full bg-white/5 border-2 border-white/10 focus:border-sipega-orange focus:ring-0 rounded-3xl p-6 text-white font-bold placeholder-white/20 transition-all border-dashed" placeholder="Kegiatan ke-${count}...">`;
-                                container.appendChild(div);
-                            }
-
-                            function addMeetingToPlan(title) {
-                                const container = document.getElementById('plan-container');
-                                const firstInput = container.querySelector('input[name="plans[]"]');
-                                
-                                if (firstInput && (firstInput.value === '' || firstInput.value === null)) {
-                                    firstInput.value = title;
-                                    firstInput.classList.remove('border-white/10');
-                                    firstInput.classList.add('border-sipega-orange');
-                                } else {
-                                    const div = document.createElement('div');
-                                    div.className = 'relative animate-fade-in-down';
-                                    div.innerHTML = `<input type="text" name="plans[]" value="${title}" required minlength="5" class="w-full bg-white/5 border-2 border-sipega-orange focus:border-sipega-orange focus:ring-0 rounded-3xl p-6 text-white font-bold placeholder-white/20 transition-all border-dashed">`;
-                                    container.appendChild(div);
-                                }
-                            }
-                        </script>
-                    @endif
+                    </div>
+                    <div class="text-[11px] text-white/50">
+                        API Drive: <span class="text-emerald-300 font-bold">{{ $driveConfigured ? 'Aktif' : 'Nonaktif' }}</span>
+                    </div>
                 </div>
             </div>
 
+            <!-- CARD 2: CATAT KEGIATAN CEPAT (TEKS, SUARA 🎙️, & UPLOAD FOTO) -->
+            <div class="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-xl border border-gray-100">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <div>
+                        <h4 class="text-xl font-black text-sipega-navy uppercase tracking-tight flex items-center gap-2">
+                            <span>🎙️</span> Catat Kegiatan & Logbook Harian
+                        </h4>
+                        <p class="text-xs text-gray-400 font-medium mt-0.5">
+                            Gunakan tombol mikrofon untuk bicara atau ketik uraian. Sistem akan otomatis mengisi jam dan mengunggah bukti ke Google Drive.
+                        </p>
+                    </div>
+
+                    <!-- Voice Record Status Indicator -->
+                    <div id="voiceStatusBadge" class="hidden items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse">
+                        <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
+                        <span>Mendengarkan suara Anda...</span>
+                    </div>
+                </div>
+
+                <form action="{{ route('agenda.quick_add') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+                    @csrf
+                    <input type="hidden" name="date" value="{{ $selectedDate }}">
+
+                    <!-- Voice Input Box & Uraian Kegiatan -->
+                    <div class="relative">
+                        <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-2">
+                            Uraian Kegiatan (Kolom 5 e-Kinerja)
+                        </label>
+                        <div class="relative">
+                            <textarea 
+                                id="voiceInputTextarea"
+                                name="plan_description" 
+                                required 
+                                rows="3" 
+                                class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-4 pr-16 text-sm font-semibold text-gray-800 placeholder-gray-400 transition"
+                                placeholder="Contoh: Mengikuti rapat koordinasi persiapan pendampingan sekolah dan menyusun notulen rapat..."
+                            ></textarea>
+
+                            <!-- Microphone Button -->
+                            <button 
+                                type="button" 
+                                id="micButton"
+                                onclick="toggleVoiceRecognition()" 
+                                title="Klik untuk bicara (Input Suara)"
+                                class="absolute right-3 top-3 bg-sipega-orange hover:bg-orange-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition transform active:scale-95"
+                            >
+                                <svg id="micIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <p class="text-[10px] text-gray-400 mt-1.5 italic">
+                            💡 Tips Suara: Ucapkan kegiatan Anda, contoh: <span class="text-sipega-orange font-bold">"Dari jam 9 sampai 11 saya melakukan telaah berkas SKP pegawai"</span>. Jam akan terisi otomatis!
+                        </p>
+                    </div>
+
+                    <!-- Grid: RHK, Jam Mulai, Jam Selesai -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <!-- Dropdown RHK -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-xs font-black text-sipega-navy uppercase tracking-wider">
+                                    RHK Terkait (Kolom 1)
+                                </label>
+                                <button type="button" onclick="openModal('rhkModal')" class="text-[10px] text-sipega-orange font-bold hover:underline">
+                                    + Tambah RHK
+                                </button>
+                            </div>
+                            @if($userRhks->count() > 0)
+                                <select name="rhk_text" class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800">
+                                    <option value="">-- Pilih Rencana Hasil Kerja --</option>
+                                    @foreach($userRhks as $rhk)
+                                        <option value="{{ $rhk->rhk_desc }}">
+                                            [{{ $rhk->classification }}] {{ \Illuminate\Support\Str::limit($rhk->rhk_desc, 65) }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <input type="text" name="rhk_text" placeholder="Ketik atau kelola daftar RHK..." class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800">
+                            @endif
+                        </div>
+
+                        <!-- Jam Mulai -->
+                        <div>
+                            <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-1.5">
+                                Jam Mulai (Kolom 3)
+                            </label>
+                            <input type="time" id="startTimeInput" name="start_time" value="08:00" class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-bold text-gray-800">
+                        </div>
+
+                        <!-- Jam Selesai -->
+                        <div>
+                            <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-1.5">
+                                Jam Selesai (Kolom 4)
+                            </label>
+                            <input type="time" id="endTimeInput" name="end_time" value="10:00" class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-bold text-gray-800">
+                        </div>
+                    </div>
+
+                    <!-- Grid: Realisasi / Output & Upload Foto Bukti -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Realisasi Kegiatan -->
+                        <div>
+                            <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-1.5">
+                                Realisasi / Output Kegiatan (Kolom 6)
+                            </label>
+                            <input 
+                                type="text" 
+                                name="realization_notes" 
+                                placeholder="Contoh: Tersusunnya 1 draf notulen dan daftar hadir kegiatan..." 
+                                class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800"
+                            >
+                        </div>
+
+                        <!-- Upload Foto Bukti Dukung (Direct Google Drive Upload) -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1.5">
+                                <label class="text-xs font-black text-sipega-navy uppercase tracking-wider">
+                                    Upload Foto Bukti (Kolom 7 ☁️)
+                                </label>
+                                <span class="text-[10px] text-emerald-600 font-bold">Auto Watermark & Auto Drive</span>
+                            </div>
+                            <input 
+                                type="file" 
+                                name="proof_file" 
+                                accept="image/*,.pdf" 
+                                class="block w-full text-xs text-gray-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-slate-100 file:text-sipega-navy hover:file:bg-slate-200 cursor-pointer"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="flex justify-end pt-2">
+                        <button type="submit" class="bg-sipega-navy hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2">
+                            <span>⚡</span> Simpan Kegiatan & Siapkan Link Drive
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- CARD 3: TABEL 7 KOLOM e-KINERJA BKN (DILENGKAPI TOMBOL 1-KLIK COPY) -->
+            <div class="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-xl border border-gray-100">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h4 class="text-xl font-black text-sipega-navy uppercase tracking-tight">
+                                📋 Format 7 Kolom e-Kinerja BKN
+                            </h4>
+                            <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-[10px] font-black uppercase">
+                                Standar Resmi BKN
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-400 font-medium mt-0.5">
+                            Salin satu per satu atau salin seluruh tabel sekaligus untuk ditempel ke aplikasi e-Kinerja.
+                        </p>
+                    </div>
+
+                    <!-- 1-Click Multi Copy Actions -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <button 
+                            type="button" 
+                            onclick="copyAllTabular()" 
+                            class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black px-4 py-2.5 rounded-2xl shadow-sm transition flex items-center gap-1.5"
+                        >
+                            <span>📑</span> Salin Tabel (Tab-Separated)
+                        </button>
+
+                        <button 
+                            type="button" 
+                            onclick="copyAllFormattedText()" 
+                            class="bg-sipega-navy hover:bg-slate-800 text-white text-xs font-black px-4 py-2.5 rounded-2xl shadow-sm transition flex items-center gap-1.5"
+                        >
+                            <span>📋</span> Salin Teks Format Lengkap
+                        </button>
+                    </div>
+                </div>
+
+                @if($myAgendaToday && $myAgendaToday->items->count() > 0)
+                    <div class="overflow-x-auto rounded-2xl border border-gray-100">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-100 text-sipega-navy uppercase text-[10px] font-black tracking-wider border-b border-gray-200">
+                                    <th class="p-3 w-8 text-center">No</th>
+                                    <th class="p-3 min-w-[180px]">1. RHK</th>
+                                    <th class="p-3 min-w-[95px]">2. Tanggal</th>
+                                    <th class="p-3 min-w-[75px]">3. Jam Mulai</th>
+                                    <th class="p-3 min-w-[75px]">4. Jam Selesai</th>
+                                    <th class="p-3 min-w-[200px]">5. Uraian Kegiatan</th>
+                                    <th class="p-3 min-w-[180px]">6. Realisasi Kegiatan</th>
+                                    <th class="p-3 min-w-[150px]">7. Link Bukti Dukung</th>
+                                    <th class="p-3 w-16 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 font-medium">
+                                @foreach($myAgendaToday->items as $item)
+                                    @php 
+                                        $driveFinalLink = $item->drive_link ?: $user->drive_folder_link;
+                                        $itemScore = $itemsReadiness[$item->id] ?? 0;
+                                    @endphp
+                                    <tr class="hover:bg-slate-50 transition group" data-item-id="{{ $item->id }}">
+                                        <!-- No -->
+                                        <td class="p-3 text-center font-bold text-gray-400">
+                                            {{ $loop->iteration }}
+                                        </td>
+
+                                        <!-- Kolom 1: RHK -->
+                                        <td class="p-3">
+                                            <div class="flex items-start justify-between gap-1">
+                                                <span class="text-gray-800 font-semibold leading-snug">
+                                                    {{ $item->rhk_text ?: '— (Belum dipilih)' }}
+                                                </span>
+                                                @if($item->rhk_text)
+                                                    <button type="button" onclick="copyToClipboard('{{ addslashes($item->rhk_text) }}', 'RHK')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin RHK">
+                                                        📋
+                                                    </button>
+                                                @endif
+                                            </div>
+                                        </td>
+
+                                        <!-- Kolom 2: Tanggal -->
+                                        <td class="p-3 font-semibold text-gray-700 whitespace-nowrap">
+                                            <div class="flex items-center justify-between gap-1">
+                                                <span>{{ \Carbon\Carbon::parse($selectedDate)->format('Y-m-d') }}</span>
+                                                <button type="button" onclick="copyToClipboard('{{ \Carbon\Carbon::parse($selectedDate)->format('Y-m-d') }}', 'Tanggal')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Tanggal">
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <!-- Kolom 3: Jam Mulai -->
+                                        <td class="p-3 font-semibold text-gray-700 whitespace-nowrap">
+                                            <div class="flex items-center justify-between gap-1">
+                                                <span>{{ $item->start_time ?: '08:00' }}</span>
+                                                <button type="button" onclick="copyToClipboard('{{ $item->start_time ?: '08:00' }}', 'Jam Mulai')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Jam Mulai">
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <!-- Kolom 4: Jam Selesai -->
+                                        <td class="p-3 font-semibold text-gray-700 whitespace-nowrap">
+                                            <div class="flex items-center justify-between gap-1">
+                                                <span>{{ $item->end_time ?: '10:00' }}</span>
+                                                <button type="button" onclick="copyToClipboard('{{ $item->end_time ?: '10:00' }}', 'Jam Selesai')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Jam Selesai">
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <!-- Kolom 5: Uraian Kegiatan -->
+                                        <td class="p-3">
+                                            <div class="flex items-start justify-between gap-1">
+                                                <span class="text-gray-800 font-bold leading-snug">
+                                                    {{ $item->plan_description }}
+                                                </span>
+                                                <button type="button" onclick="copyToClipboard('{{ addslashes($item->plan_description) }}', 'Uraian Kegiatan')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Uraian">
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <!-- Kolom 6: Realisasi Kegiatan -->
+                                        <td class="p-3">
+                                            <div class="flex items-start justify-between gap-1">
+                                                <span class="text-gray-700 leading-snug">
+                                                    {{ $item->realization_notes ?: ($item->status == 'completed' ? 'Tuntas dilaksanakan' : 'Dalam progres') }}
+                                                </span>
+                                                <button type="button" onclick="copyToClipboard('{{ addslashes($item->realization_notes ?: ($item->status == 'completed' ? 'Tuntas dilaksanakan' : 'Dalam progres')) }}', 'Realisasi')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Realisasi">
+                                                    📋
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <!-- Kolom 7: Link Bukti Dukung (Google Drive) -->
+                                        <td class="p-3">
+                                            @if($driveFinalLink)
+                                                <div class="flex items-center justify-between gap-1">
+                                                    <a href="{{ $driveFinalLink }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline truncate max-w-[130px] inline-block font-semibold" title="{{ $driveFinalLink }}">
+                                                        {{ $item->proof_file_path ? '📄 Berkas Bukti' : '📁 Folder Drive' }} ↗
+                                                    </a>
+                                                    <button type="button" onclick="copyToClipboard('{{ addslashes($driveFinalLink) }}', 'Link Bukti Drive')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Link Drive">
+                                                        📋
+                                                    </button>
+                                                </div>
+                                            @else
+                                                <button type="button" onclick="openModal('driveModal')" class="text-amber-600 hover:underline text-[10px] font-bold">
+                                                    + Pasang Link Drive
+                                                </button>
+                                            @endif
+                                        </td>
+
+                                        <!-- Aksi Hapus -->
+                                        <td class="p-3 text-center">
+                                            <form action="{{ route('agenda.item.destroy', $item->id) }}" method="POST" onsubmit="return confirm('Hapus item kegiatan ini?');">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="text-rose-400 hover:text-rose-600 p-1 font-bold text-xs" title="Hapus Item">
+                                                    🗑️
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="bg-slate-50 border-2 border-dashed border-gray-200 rounded-3xl p-10 text-center">
+                        <div class="text-3xl mb-2">📝</div>
+                        <h5 class="text-sm font-bold text-gray-600">Belum ada kegiatan yang tercatat untuk tanggal ini</h5>
+                        <p class="text-xs text-gray-400 mt-1 max-w-md mx-auto">
+                            Gunakan kolom <strong>Catat Kegiatan</strong> di atas (bisa via teks atau suara 🎙️) untuk mulai menyusun entri 7 kolom e-Kinerja Anda.
+                        </p>
+                    </div>
+                @endif
+            </div>
+
+            <!-- CARD 4: WORKFLOW SIKLUS SORE SIPEGA (EVALUASI & WATERMARK RESMI SIPEGA) -->
+            @if($myAgendaToday && !$myAgendaToday->realization_submitted_at)
+                @php 
+                    $hour = (int) now('Asia/Makassar')->format('H'); 
+                    $isFlexible = \App\Models\Setting::get('is_realization_open_anytime') === '1';
+                @endphp
+                <div class="bg-sipega-navy rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h4 class="text-xl font-black uppercase tracking-tight">Evaluasi Sore & Validasi SIPEGA</h4>
+                            <p class="text-xs text-white/50 font-medium">Tetapkan status penyelesaian akhir seluruh kegiatan hari ini.</p>
+                        </div>
+                        @if($isFlexible)
+                            <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full text-[10px] font-black uppercase">
+                                Mode Terbuka Bebas
+                            </span>
+                        @endif
+                    </div>
+
+                    @if($isFlexible || ($hour >= 15 && $hour < 17))
+                        <form action="{{ route('agenda.realization', $myAgendaToday->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                            @csrf
+                            <div class="space-y-4">
+                                @foreach($myAgendaToday->items as $item)
+                                    <div class="bg-white/5 p-5 rounded-2xl border border-white/10 space-y-3">
+                                        <div class="flex justify-between items-start gap-4">
+                                            <p class="font-bold text-sm text-white">{{ $item->plan_description }}</p>
+                                            <div class="flex gap-2">
+                                                <label class="cursor-pointer">
+                                                    <input type="radio" name="items[{{ $item->id }}][status]" value="completed" {{ $item->status === 'completed' ? 'checked' : '' }} class="hidden peer">
+                                                    <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 block transition">Selesai</span>
+                                                </label>
+                                                <label class="cursor-pointer">
+                                                    <input type="radio" name="items[{{ $item->id }}][status]" value="progress" {{ $item->status === 'progress' ? 'checked' : '' }} class="hidden peer">
+                                                    <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 block transition">Progres</span>
+                                                </label>
+                                                <label class="cursor-pointer">
+                                                    <input type="radio" name="items[{{ $item->id }}][status]" value="changed" {{ $item->status === 'changed' ? 'checked' : '' }} class="hidden peer">
+                                                    <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:border-amber-500 block transition">Berubah</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <input type="text" name="items[{{ $item->id }}][notes]" value="{{ $item->realization_notes }}" class="w-full bg-white/10 border-0 rounded-xl text-xs text-white placeholder-white/30 p-2.5 font-medium" placeholder="Catatan capaian / kendala...">
+                                    </div>
+                                @endforeach
+                            </div>
+
+                            <div class="bg-white/5 p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                                <div>
+                                    <label class="block text-xs font-black uppercase tracking-wider text-white/80">Lampiran Bukti Sore (Opsional)</label>
+                                    <span class="text-[10px] text-white/40">Otomatis diunggah ke Google Drive & diberi stempel watermark SIPEGA</span>
+                                </div>
+                                <input type="file" name="proof_file" accept="image/*,.pdf" class="text-xs text-white/60 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-sipega-orange file:text-white hover:file:bg-orange-600 cursor-pointer">
+                            </div>
+
+                            <button type="submit" class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-4 rounded-2xl w-full shadow-lg transition uppercase tracking-wider text-xs">
+                                Kirim Evaluasi Kinerja Sore
+                            </button>
+                        </form>
+                    @else
+                        <div class="bg-white/5 border border-dashed border-white/10 rounded-2xl p-6 text-center text-xs text-white/50">
+                            Evaluasi sore terbuka otomatis pukul 15:00 - 17:00 WITA. Anda tetap bisa mencatat kegiatan melalui tombol di atas.
+                        </div>
+                    @endif
+                </div>
+            @endif
+
         </div>
     </div>
+
+    <!-- MODAL 1: KELOLA RHK PEGAWAI -->
+    <div id="rhkModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-scale-up">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-4">
+                <div>
+                    <h5 class="font-black text-lg text-sipega-navy uppercase tracking-tight">Kelola RHK (SKP Anda)</h5>
+                    <p class="text-xs text-gray-400">Daftar Rencana Hasil Kerja untuk Kolom 1 e-Kinerja</p>
+                </div>
+                <button type="button" onclick="closeModal('rhkModal')" class="text-gray-400 hover:text-gray-600 text-lg font-black">✕</button>
+            </div>
+
+            <!-- Form Tambah RHK -->
+            <form action="{{ route('agenda.rhk.store') }}" method="POST" class="space-y-3">
+                @csrf
+                <div>
+                    <label class="block text-xs font-black text-sipega-navy uppercase mb-1">Rencana Hasil Kerja (RHK)</label>
+                    <textarea name="rhk_desc" required rows="2" placeholder="Tempel uraian RHK dari SKP e-Kinerja Anda..." class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-black text-gray-500 uppercase mb-1">Klasifikasi</label>
+                        <select name="classification" class="w-full bg-slate-50 border border-gray-200 rounded-xl p-2 text-xs font-semibold">
+                            <option value="Utama">Utama</option>
+                            <option value="Tambahan">Tambahan</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full bg-sipega-navy hover:bg-slate-800 text-white font-black text-xs uppercase py-2.5 rounded-xl shadow transition">
+                            + Tambah RHK
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- List Existing RHKs -->
+            <div class="border-t border-gray-100 pt-4">
+                <label class="block text-xs font-black text-sipega-navy uppercase mb-2">Daftar RHK Terdaftar ({{ $userRhks->count() }})</label>
+                <div class="max-h-56 overflow-y-auto space-y-2 pr-1">
+                    @forelse($userRhks as $rhk)
+                        <div class="p-3 bg-slate-50 rounded-xl border border-gray-100 flex justify-between items-start gap-2">
+                            <div>
+                                <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-[9px] font-black uppercase">{{ $rhk->classification }}</span>
+                                <p class="text-xs font-bold text-gray-800 mt-1 leading-snug">{{ $rhk->rhk_desc }}</p>
+                            </div>
+                            <form action="{{ route('agenda.rhk.destroy', $rhk->id) }}" method="POST" onsubmit="return confirm('Hapus RHK ini?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-rose-400 hover:text-rose-600 font-bold text-xs p-1" title="Hapus">✕</button>
+                            </form>
+                        </div>
+                    @empty
+                        <p class="text-xs text-gray-400 italic text-center py-4">Belum ada RHK tersimpan. Tambahkan dari SKP e-Kinerja Anda di atas.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: PANDUAN & ATUR LINK GOOGLE DRIVE -->
+    <div id="driveModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-sm p-4 flex items-center justify-center">
+        <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 animate-scale-up">
+            <div class="flex justify-between items-center border-b border-gray-100 pb-4">
+                <div>
+                    <h5 class="font-black text-lg text-sipega-navy uppercase tracking-tight">Pengaturan Google Drive</h5>
+                    <p class="text-xs text-gray-400">Sinkronisasi Bukti Dukung ke Google Drive Pegawai</p>
+                </div>
+                <button type="button" onclick="closeModal('driveModal')" class="text-gray-400 hover:text-gray-600 text-lg font-black">✕</button>
+            </div>
+
+            <!-- Step by step box -->
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 text-xs text-blue-900 space-y-2">
+                <p class="font-black uppercase tracking-wider text-[10px] text-blue-700">Cara Menghubungkan Folder Google Drive Anda:</p>
+                <ol class="list-decimal pl-4 space-y-1 text-xs">
+                    <li>Buka Google Drive Anda, buat atau buka folder khusus (misal: <em>"Bukti e-Kinerja 2026"</em>).</li>
+                    <li>Klik kanan folder > pilih <strong>Bagikan (Share)</strong>.</li>
+                    <li>
+                        Masukkan email robot SIPEGA berikut sebagai <strong>Editor</strong>:
+                        <div class="flex items-center gap-1.5 mt-1 bg-white p-2 rounded-xl border border-blue-200">
+                            <code class="text-[10px] font-mono font-bold text-gray-800 break-all select-all">sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com</code>
+                            <button type="button" onclick="copyToClipboard('sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com', 'Email Service Account')" class="bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                                Salin
+                            </button>
+                        </div>
+                    </li>
+                    <li>Salin link folder Google Drive Anda dan tempel di formulir bawah ini.</li>
+                </ol>
+            </div>
+
+            <!-- Form Simpan Link Folder -->
+            <form action="{{ route('agenda.drive_folder.update') }}" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label class="block text-xs font-black text-sipega-navy uppercase mb-1">Tautan / URL Folder Google Drive Pegawai</label>
+                    <input 
+                        type="url" 
+                        name="drive_folder_link" 
+                        value="{{ $user->drive_folder_link }}" 
+                        required 
+                        placeholder="https://drive.google.com/drive/folders/..." 
+                        class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800"
+                    >
+                </div>
+                <button type="submit" class="w-full bg-sipega-navy hover:bg-slate-800 text-white font-black text-xs uppercase py-3 rounded-2xl shadow transition">
+                    Simpan Tautan Google Drive
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toastNotification" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none">
+        <div class="bg-gray-900 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-gray-700">
+            <span class="text-emerald-400 font-bold text-base">✓</span>
+            <span id="toastMessage" class="text-xs font-bold">Tersalin ke Clipboard!</span>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT: WEB SPEECH API, COPY UTILITIES, & MODAL TOGGLER -->
+    <script>
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            toastMsg.textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 2500);
+        }
+
+        // Copy single text to clipboard
+        function copyToClipboard(text, label) {
+            if (!text) return;
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(`${label || 'Teks'} berhasil disalin!`);
+            }).catch(err => {
+                console.error('Clipboard copy error: ', err);
+            });
+        }
+
+        // Copy All Items in Tabular Format (Ready for direct paste into Excel / e-Kinerja Table)
+        function copyAllTabular() {
+            const rows = document.querySelectorAll('tbody tr[data-item-id]');
+            if (!rows || rows.length === 0) {
+                showToast('Tidak ada data kegiatan untuk disalin.');
+                return;
+            }
+
+            let tsvText = "RHK\tTanggal\tJam Mulai\tJam Selesai\tUraian Kegiatan\tRealisasi Kegiatan\tLink Bukti Dukung\n";
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 8) {
+                    const rhk = cells[1].innerText.replace(/\s+/g, ' ').replace('— (Belum dipilih)', '').trim();
+                    const tanggal = cells[2].innerText.replace(/\s+/g, ' ').trim();
+                    const jamMulai = cells[3].innerText.replace(/\s+/g, ' ').trim();
+                    const jamSelesai = cells[4].innerText.replace(/\s+/g, ' ').trim();
+                    const uraian = cells[5].innerText.replace(/\s+/g, ' ').trim();
+                    const realisasi = cells[6].innerText.replace(/\s+/g, ' ').trim();
+                    
+                    const linkElem = cells[7].querySelector('a');
+                    const link = linkElem ? linkElem.href : '';
+
+                    tsvText += `${rhk}\t${tanggal}\t${jamMulai}\t${jamSelesai}\t${uraian}\t${realisasi}\t${link}\n`;
+                }
+            });
+
+            navigator.clipboard.writeText(tsvText).then(() => {
+                showToast('Seluruh tabel (Format Tab) berhasil disalin! Siap ditempel ke e-Kinerja.');
+            });
+        }
+
+        // Copy All Items in Formatted Multiline Text
+        function copyAllFormattedText() {
+            const rows = document.querySelectorAll('tbody tr[data-item-id]');
+            if (!rows || rows.length === 0) {
+                showToast('Tidak ada data kegiatan untuk disalin.');
+                return;
+            }
+
+            let fullText = `LAPORAN e-KINERJA HARIAN (${document.querySelector('input[type="date"]').value})\n=========================================\n\n`;
+            let count = 1;
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 8) {
+                    const rhk = cells[1].innerText.replace(/\s+/g, ' ').replace('— (Belum dipilih)', '').trim();
+                    const tanggal = cells[2].innerText.replace(/\s+/g, ' ').trim();
+                    const jamMulai = cells[3].innerText.replace(/\s+/g, ' ').trim();
+                    const jamSelesai = cells[4].innerText.replace(/\s+/g, ' ').trim();
+                    const uraian = cells[5].innerText.replace(/\s+/g, ' ').trim();
+                    const realisasi = cells[6].innerText.replace(/\s+/g, ' ').trim();
+                    const linkElem = cells[7].querySelector('a');
+                    const link = linkElem ? linkElem.href : '-';
+
+                    fullText += `${count}. ${uraian}\n`;
+                    if (rhk) fullText += `   • RHK: ${rhk}\n`;
+                    fullText += `   • Waktu: ${jamMulai} - ${jamSelesai} WITA\n`;
+                    fullText += `   • Realisasi: ${realisasi}\n`;
+                    fullText += `   • Link Bukti: ${link}\n\n`;
+                    count++;
+                }
+            });
+
+            navigator.clipboard.writeText(fullText).then(() => {
+                showToast('Format teks lengkap berhasil disalin!');
+            });
+        }
+
+        // --- WEB SPEECH API (INPUT SUARA) ---
+        let recognition = null;
+        let isRecording = false;
+
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert('Browser Anda belum mendukung Web Speech API. Silakan gunakan Google Chrome, Microsoft Edge, atau browser modern lainnya.');
+                return null;
+            }
+
+            const rec = new SpeechRecognition();
+            rec.lang = 'id-ID'; // Bahasa Indonesia
+            rec.continuous = false;
+            rec.interimResults = true;
+
+            rec.onstart = function() {
+                isRecording = true;
+                document.getElementById('voiceStatusBadge').classList.remove('hidden');
+                document.getElementById('voiceStatusBadge').classList.add('flex');
+                document.getElementById('micButton').classList.add('bg-rose-600', 'animate-pulse');
+                document.getElementById('micButton').classList.remove('bg-sipega-orange');
+            };
+
+            rec.onresult = function(event) {
+                let transcript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    transcript += event.results[i][0].transcript;
+                }
+                
+                const textarea = document.getElementById('voiceInputTextarea');
+                textarea.value = transcript;
+
+                // Smart AI/Regex parser untuk mendeteksi jam otomatis
+                parseSpokenTime(transcript);
+            };
+
+            rec.onerror = function(event) {
+                console.error('Speech recognition error: ', event.error);
+                stopVoiceRecognition();
+                showToast('Pengenalan suara dihentikan: ' + event.error);
+            };
+
+            rec.onend = function() {
+                stopVoiceRecognition();
+            };
+
+            return rec;
+        }
+
+        function toggleVoiceRecognition() {
+            if (isRecording) {
+                stopVoiceRecognition();
+            } else {
+                if (!recognition) {
+                    recognition = initSpeechRecognition();
+                }
+                if (recognition) {
+                    try {
+                        recognition.start();
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                }
+            }
+        }
+
+        function stopVoiceRecognition() {
+            isRecording = false;
+            if (recognition) {
+                try { recognition.stop(); } catch(e) {}
+            }
+            document.getElementById('voiceStatusBadge').classList.add('hidden');
+            document.getElementById('voiceStatusBadge').classList.remove('flex');
+            document.getElementById('micButton').classList.remove('bg-rose-600', 'animate-pulse');
+            document.getElementById('micButton').classList.add('bg-sipega-orange');
+        }
+
+        // Smart parser untuk mendeteksi "jam 8 sampai jam 10", "pukul 09.00 hingga 11.30", dll.
+        function parseSpokenTime(text) {
+            const lower = text.toLowerCase();
+            // Regex mencari pola waktu: misal "jam 8 sampai jam 10", "pukul 09:30 sampai 11:00"
+            const pattern = /(?:dari\s+)?(?:jam|pukul)\s*(\d{1,2}(?:[\.:]\d{2})?)\s*(?:sampai|hingga|-)\s*(?:jam|pukul)?\s*(\d{1,2}(?:[\.:]\d{2})?)/i;
+            const match = lower.match(pattern);
+            if (match) {
+                const formatTime = (t) => {
+                    t = t.replace('.', ':');
+                    if (!t.includes(':')) {
+                        let num = parseInt(t);
+                        return (num < 10 ? '0' + num : num) + ':00';
+                    }
+                    const parts = t.split(':');
+                    let h = parseInt(parts[0]);
+                    return (h < 10 ? '0' + h : h) + ':' + parts[1];
+                };
+
+                const start = formatTime(match[1]);
+                const end = formatTime(match[2]);
+
+                if (start && document.getElementById('startTimeInput')) {
+                    document.getElementById('startTimeInput').value = start;
+                }
+                if (end && document.getElementById('endTimeInput')) {
+                    document.getElementById('endTimeInput').value = end;
+                }
+                showToast(`Waktu otomatis terdeteksi: ${start} - ${end}`);
+            }
+        }
+    </script>
 </x-app-layout>
