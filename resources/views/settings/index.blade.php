@@ -86,7 +86,7 @@
             </div>
 
             <!-- FORM UTAMA PENGATURAN -->
-            <form action="{{ route('settings.tukin.update') }}" method="POST" id="settingsForm" enctype="multipart/form-data">
+            <form action="{{ route('settings.tukin.update') }}" method="POST" id="settingsForm" novalidate>
                 @csrf
 
                 <!-- ========================================== -->
@@ -649,142 +649,134 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </form>
 
-                            <!-- CARD PENGATURAN GOOGLE DRIVE & AUTO-GENERATE FOLDER PEGAWAI -->
-                            <div class="mt-6 pt-4 border-t border-gray-100 bg-gradient-to-br from-blue-50/60 to-slate-50 p-6 rounded-2xl border-2 border-blue-200/80 space-y-4">
-                                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-                                    <div class="flex items-center gap-3">
-                                        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-black shrink-0 shadow-sm">
-                                            ☁️
-                                        </div>
-                                        <div>
-                                            <h5 class="text-xs font-black text-sipega-navy uppercase tracking-wider">
-                                                Master Google Drive & Auto-Generate Folder Pegawai
-                                            </h5>
-                                            <p class="text-[10px] text-gray-500 font-medium">
-                                                Penyimpanan terpusat bukti dukung e-Kinerja untuk seluruh ASN BPMP Kalimantan Timur.
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="w-2 h-2 rounded-full {{ $driveConfigured ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
-                                        <span class="text-[10px] font-black uppercase {{ $driveConfigured ? 'text-emerald-700' : 'text-rose-700' }}">
-                                            {{ $driveConfigured ? 'API Drive Aktif' : 'API Belum Dikonfigurasi' }}
-                                        </span>
-                                    </div>
+                <!-- CARD PENGATURAN GOOGLE DRIVE & AUTO-GENERATE FOLDER PEGAWAI (FORM INDEPENDEN) -->
+                    <div class="bg-gradient-to-br from-blue-50/70 to-slate-50 p-6 rounded-[2rem] border-2 border-blue-200/80 shadow-sm space-y-5">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center text-lg font-black shrink-0 shadow-sm">
+                                    ☁️
                                 </div>
-
-                                <!-- STATUS & FORM UPLOAD KREDENSIAL SERVICE ACCOUNT -->
-                                @if(!$driveConfigured)
-                                    <div class="bg-rose-50 border-2 border-rose-200 rounded-xl p-4 text-xs space-y-3">
-                                        <div class="flex items-center gap-2 text-rose-800 font-black">
-                                            <span>⚠️</span>
-                                            <span>Kredensial Service Account Belum Terpasang di Server Ini</span>
-                                        </div>
-                                        <p class="text-[11px] text-rose-700">
-                                            Silakan unggah berkas <code>service-account.json</code> atau tempel teks JSON dari Google Cloud Console di bawah ini untuk mengaktifkan integrasi Google Drive.
-                                        </p>
-                                        <div class="space-y-3 pt-2">
-                                            <div>
-                                                <label class="block text-[10px] font-black uppercase text-gray-700 mb-1">Opsi 1: Unggah Berkas JSON</label>
-                                                <input type="file" name="credentials_file" accept=".json" class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer">
-                                            </div>
-                                            <div>
-                                                <label class="block text-[10px] font-black uppercase text-gray-700 mb-1">Opsi 2: Atau Tempel Isi Teks JSON</label>
-                                                <textarea name="credentials_json" rows="3" placeholder='{"type": "service_account", "project_id": "sipega-bpmp-kaltim", ...}' class="w-full text-[10px] font-mono rounded-lg border-gray-300 focus:border-rose-500 focus:ring-rose-500"></textarea>
-                                            </div>
-                                            <button type="button" onclick="submitDriveCreds()" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2">
-                                                <span>💾</span> Simpan & Aktifkan Kredensial API Drive
-                                            </button>
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center text-xs">
-                                        <div class="flex items-center gap-2 text-emerald-800 font-bold">
-                                            <span>✅</span>
-                                            <span>Kredensial Aktif: <code>{{ $driveServiceEmail }}</code></span>
-                                        </div>
-                                        <button type="button" onclick="document.getElementById('reuploadCredentialsBox').classList.toggle('hidden')" class="text-[10px] text-blue-600 hover:underline font-bold">
-                                            Ganti Kunci JSON ⚙️
-                                        </button>
-                                    </div>
-
-                                    <div id="reuploadCredentialsBox" class="hidden bg-slate-50 border border-gray-200 rounded-xl p-4 text-xs space-y-3">
-                                        <p class="font-bold text-gray-700">Perbarui File Kredensial Service Account:</p>
-                                        <div>
-                                            <input type="file" name="credentials_file" accept=".json" class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-blue-600 file:text-white cursor-pointer">
-                                        </div>
-                                        <div>
-                                            <textarea name="credentials_json" rows="2" placeholder="Atau tempel teks JSON di sini..." class="w-full text-[10px] font-mono rounded-lg border-gray-300"></textarea>
-                                        </div>
-                                        <button type="button" onclick="submitDriveCreds()" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase px-4 py-2 rounded-xl shadow transition">
-                                            Perbarui Kredensial
-                                        </button>
-                                    </div>
-                                @endif
-
-                                <!-- Petunjuk Ringkas -->
-                                <div class="bg-white p-4 rounded-xl border border-blue-100 text-xs text-gray-700 space-y-2">
-                                    <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                                        <span class="font-bold text-[11px] text-blue-900">Email Robot Service Account:</span>
-                                        <div class="flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded-lg border border-gray-200">
-                                            <code class="text-[10px] font-mono font-bold text-gray-800">{{ $driveServiceEmail ?: 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com' }}</code>
-                                            <button type="button" onclick="navigator.clipboard.writeText('{{ $driveServiceEmail ?: 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com' }}'); alert('Email Service Account tersalin!');" class="text-[10px] text-blue-600 font-bold hover:underline">
-                                                Salin
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <p class="text-[10px] text-gray-500 leading-relaxed">
-                                        1. Buat 1 Folder Induk di Google Drive Anda (misal: <em>"e-Kinerja SIPEGA BPMP Kaltim"</em>).<br>
-                                        2. Bagikan (Share) folder induk tersebut ke email robot di atas sebagai <strong>Editor</strong>.<br>
-                                        3. Tempel URL Folder Induk di kolom bawah ini, lalu klik <strong>Simpan</strong> atau <strong>Generate Folder</strong>.
-                                    </p>
-                                </div>
-
-                                <!-- Input Master Folder -->
                                 <div>
-                                    <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1">
-                                        Tautan / ID Folder Induk (Master Folder Google Drive)
-                                    </label>
-                                    <input type="text" name="google_drive_master_folder" value="{{ $generalSettings['google_drive_master_folder'] }}"
-                                           placeholder="https://drive.google.com/drive/folders/1A2B3C... atau ID folder"
-                                           class="w-full text-xs font-bold rounded-xl border-gray-300 focus:border-blue-600 focus:ring-blue-600 shadow-sm">
-                                </div>
-
-                                <!-- Tombol Eksekusi Batch Generate -->
-                                <div class="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3">
-                                    <p class="text-[10px] text-gray-500 italic">
-                                        Pegawai yang belum memiliki folder akan otomatis dibuatkan subfolder format: <code>NIP - Nama Pegawai</code>.
+                                    <h5 class="text-xs font-black text-sipega-navy uppercase tracking-wider">
+                                        Master Google Drive & Auto-Generate Folder Pegawai
+                                    </h5>
+                                    <p class="text-[10px] text-gray-500 font-medium">
+                                        Penyimpanan terpusat bukti dukung e-Kinerja untuk seluruh ASN BPMP Kalimantan Timur.
                                     </p>
-                                    <button type="button" onclick="submitGenerateAllFolders()"
-                                            class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md transition flex items-center gap-2 whitespace-nowrap">
-                                        <span>⚡</span> Generate Folder Semua Pegawai
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full {{ $driveConfigured ? 'bg-emerald-500' : 'bg-rose-500' }}"></span>
+                                <span class="text-[10px] font-black uppercase {{ $driveConfigured ? 'text-emerald-700' : 'text-rose-700' }}">
+                                    {{ $driveConfigured ? 'API Drive Aktif' : 'API Belum Dikonfigurasi' }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- PERINGATAN JIKA PACKAGE GOOGLE API BELUM TERINSTALL DI SERVER -->
+                        @if(!$libraryInstalled)
+                            <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 text-xs text-amber-900 space-y-2">
+                                <div class="flex items-center gap-2 font-black text-amber-800">
+                                    <span class="text-base">⚠️</span>
+                                    <span>PENTING: Library Google API Client Belum Terpasang di Server Produksi</span>
+                                </div>
+                                <p class="text-[11px] leading-relaxed text-amber-800">
+                                    Karena direktori <code>vendor/</code> tidak dimasukkan ke Git, Anda perlu menjalankan perintah berikut satu kali melalui terminal PuTTY di server produksi:
+                                </p>
+                                <div class="flex items-center justify-between bg-slate-900 text-emerald-400 p-3 rounded-xl font-mono text-xs select-all">
+                                    <code>composer install --no-dev --optimize-autoloader</code>
+                                    <button type="button" onclick="navigator.clipboard.writeText('composer install --no-dev --optimize-autoloader'); alert('Perintah composer tersalin!');" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-[10px] font-bold">
+                                        Salin Perintah
                                     </button>
                                 </div>
+                            </div>
+                        @endif
 
-                                <script>
-                                    function submitDriveCreds() {
-                                        const form = document.getElementById('settingsForm');
-                                        form.noValidate = true;
-                                        form.action = "{{ route('settings.drive.credentials') }}";
-                                        form.submit();
-                                    }
-                                    function submitGenerateAllFolders() {
-                                        const inputMaster = document.querySelector('input[name="google_drive_master_folder"]');
-                                        if (!inputMaster || !inputMaster.value.trim()) {
-                                            alert('Harap isi Tautan / ID Folder Induk terlebih dahulu.');
-                                            return;
-                                        }
-                                        if (!confirm('Jalankan pembuatan folder Google Drive otomatis untuk seluruh pegawai yang belum memiliki folder?')) return;
-                                        const form = document.getElementById('settingsForm');
-                                        form.noValidate = true;
-                                        form.action = "{{ route('settings.drive.generate_all') }}";
-                                        form.submit();
-                                    }
-                                </script>
+                        <!-- FORM STANDALONE 1: UPLOAD / SIMPAN KREDENSIAL SERVICE ACCOUNT -->
+                        <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm space-y-4">
+                            @if(!$driveConfigured)
+                                <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-xs text-rose-800 flex items-center gap-2 font-bold">
+                                    <span>⚠️</span>
+                                    <span>Kredensial Service Account belum aktif di server ini. Unggah file JSON atau tempel teks di bawah:</span>
+                                </div>
+                            @else
+                                <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center text-xs">
+                                    <div class="flex items-center gap-2 text-emerald-800 font-bold">
+                                        <span>✅</span>
+                                        <span>Kredensial Aktif: <code>{{ $driveServiceEmail }}</code></span>
+                                    </div>
+                                    <button type="button" onclick="document.getElementById('reuploadBox').classList.toggle('hidden')" class="text-[10px] text-blue-600 hover:underline font-bold">
+                                        Ganti Kunci JSON ⚙️
+                                    </button>
+                                </div>
+                            @endif
+
+                            <div id="reuploadBox" class="{{ $driveConfigured ? 'hidden' : '' }} space-y-3">
+                                <form action="{{ route('settings.drive.credentials') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
+                                    @csrf
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase text-gray-700 mb-1">Opsi 1: Unggah Berkas service-account.json</label>
+                                        <input type="file" name="credentials_file" accept=".json" class="block w-full text-xs text-gray-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase text-gray-700 mb-1">Opsi 2: Atau Tempel Isi Teks JSON</label>
+                                        <textarea name="credentials_json" rows="3" placeholder='{"type": "service_account", "project_id": "sipega-bpmp-kaltim", ...}' class="w-full text-[10px] font-mono rounded-xl border-gray-300 focus:border-rose-500 focus:ring-rose-500"></textarea>
+                                    </div>
+                                    <button type="submit" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-5 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                                        <span>💾</span> Simpan & Aktifkan Kredensial API Drive
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- PETUNJUK SHARING GOOGLE DRIVE -->
+                        <div class="bg-white p-4 rounded-xl border border-blue-100 text-xs text-gray-700 space-y-2">
+                            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                                <span class="font-bold text-[11px] text-blue-900">Email Robot Service Account:</span>
+                                <div class="flex items-center gap-2 bg-slate-50 px-2.5 py-1 rounded-lg border border-gray-200">
+                                    <code class="text-[10px] font-mono font-bold text-gray-800">{{ $driveServiceEmail ?: 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com' }}</code>
+                                    <button type="button" onclick="navigator.clipboard.writeText('{{ $driveServiceEmail ?: 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com' }}'); alert('Email Service Account tersalin!');" class="text-[10px] text-blue-600 font-bold hover:underline">
+                                        Salin
+                                    </button>
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-gray-500 leading-relaxed">
+                                1. Buat 1 Folder Induk di Google Drive Anda (misal: <em>"e-Kinerja SIPEGA BPMP Kaltim"</em>).<br>
+                                2. Bagikan (Share) folder induk tersebut ke email robot di atas sebagai <strong>Editor</strong>.<br>
+                                3. Tempel URL Folder Induk di kolom bawah ini, lalu klik <strong>Generate Folder</strong>.
+                            </p>
+                        </div>
+
+                        <!-- FORM STANDALONE 2: MASTER FOLDER & GENERATE FOLDER PEGAWAI -->
+                        <form action="{{ route('settings.drive.generate_all') }}" method="POST" class="space-y-4">
+                            @csrf
+                            <div>
+                                <label class="block text-xs font-black text-gray-700 uppercase tracking-wider mb-1">
+                                    Tautan / ID Folder Induk (Master Folder Google Drive)
+                                </label>
+                                <input type="text" name="google_drive_master_folder" value="{{ $generalSettings['google_drive_master_folder'] }}"
+                                       placeholder="https://drive.google.com/drive/folders/1A2B3C... atau ID folder"
+                                       class="w-full text-xs font-bold rounded-xl border-gray-300 focus:border-blue-600 focus:ring-blue-600 shadow-sm" required>
                             </div>
 
-                            <!-- CARD LINK KE MATRIKS AKSES (RBAC) -->
+                            <div class="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3">
+                                <p class="text-[10px] text-gray-500 italic">
+                                    Pegawai yang belum memiliki folder akan otomatis dibuatkan subfolder format: <code>NIP - Nama Pegawai</code>.
+                                </p>
+                                <button type="submit"
+                                        onclick="return confirm('Jalankan pembuatan folder Google Drive otomatis untuk seluruh pegawai yang belum memiliki folder?');"
+                                        class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md transition flex items-center gap-2 whitespace-nowrap">
+                                    <span>⚡</span> Generate Folder Semua Pegawai
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- CARD LINK KE MATRIKS AKSES (RBAC) -->
                             <div class="mt-6 pt-4 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4 bg-slate-50 p-5 rounded-2xl border border-gray-200">
                                 <div class="flex items-center gap-3">
                                     <div class="w-10 h-10 rounded-xl bg-sipega-navy text-white flex items-center justify-center text-lg font-black shrink-0 shadow-sm">
@@ -816,14 +808,12 @@
                         <a href="{{ route('tukin.index') }}" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-black rounded-xl transition">
                             Batal
                         </a>
-                        <button type="submit" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                        <button type="submit" form="settingsForm" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                             <span>Simpan Seluruh Perubahan Aturan</span>
                         </button>
                     </div>
                 </div>
-
-            </form>
 
         </div>
     </div>

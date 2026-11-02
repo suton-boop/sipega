@@ -31,10 +31,11 @@ class SettingController extends Controller
         ];
 
         $driveService = new \App\Services\GoogleDriveService();
+        $libraryInstalled = \App\Services\GoogleDriveService::isLibraryInstalled();
         $driveConfigured = $driveService->isConfigured();
         $driveServiceEmail = $driveService->getServiceAccountEmail();
 
-        return view('settings.index', compact('tukinRules', 'rates', 'officialRates', 'generalSettings', 'driveConfigured', 'driveServiceEmail'));
+        return view('settings.index', compact('tukinRules', 'rates', 'officialRates', 'generalSettings', 'driveConfigured', 'driveServiceEmail', 'libraryInstalled'));
     }
 
     /**

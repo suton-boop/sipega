@@ -20,6 +20,11 @@ class GoogleDriveService
     {
         $this->credentialsPath = $customCredentialsPath ?: storage_path('app/google/service-account.json');
 
+        if (!self::isLibraryInstalled()) {
+            Log::warning('GoogleDriveService: Library google/apiclient belum terpasang di vendor.');
+            return;
+        }
+
         if (file_exists($this->credentialsPath)) {
             try {
                 $this->client = new Client();
@@ -55,11 +60,19 @@ class GoogleDriveService
     }
 
     /**
+     * Cek apakah library google/apiclient terinstall
+     */
+    public static function isLibraryInstalled(): bool
+    {
+        return class_exists('Google\Client');
+    }
+
+    /**
      * Cek apakah Google Drive Service Account siap digunakan
      */
     public function isConfigured(): bool
     {
-        return $this->client !== null && $this->service !== null;
+        return self::isLibraryInstalled() && $this->client !== null && $this->service !== null;
     }
 
     /**
