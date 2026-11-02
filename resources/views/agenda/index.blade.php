@@ -143,10 +143,42 @@
                         </p>
                     </div>
 
-                    <!-- Voice Record Status Indicator -->
-                    <div id="voiceStatusBadge" class="hidden items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-1.5 rounded-full text-xs font-bold animate-pulse">
-                        <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping"></span>
-                        <span id="voiceStatusText">Mendengarkan... (Bicara bebas, klik tombol mic lagi untuk berhenti)</span>
+                    <!-- Audio Control Buttons (Play, Pause, Stop, Clear) -->
+                    <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-gray-200 shadow-sm flex-wrap">
+                        <!-- Play / Mulai / Lanjutkan -->
+                        <button type="button" id="btnVoicePlay" onclick="voiceStart()" class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer">
+                            <span>▶</span>
+                            <span id="txtVoicePlay">Mulai Rekam</span>
+                        </button>
+
+                        <!-- Pause / Jeda -->
+                        <button type="button" id="btnVoicePause" onclick="voicePause()" disabled class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition shadow-sm">
+                            <span>⏸</span>
+                            <span>Jeda</span>
+                        </button>
+
+                        <!-- Stop / Selesai -->
+                        <button type="button" id="btnVoiceStop" onclick="voiceStop()" disabled class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition shadow-sm">
+                            <span>⏹</span>
+                            <span>Selesai</span>
+                        </button>
+
+                        <!-- Clear / Hapus -->
+                        <button type="button" onclick="voiceClear()" title="Bersihkan Teks" class="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-white text-xs transition cursor-pointer">
+                            🧹
+                        </button>
+                    </div>
+                </div>
+
+                <!-- LIVE VOICE STATUS & TIMER BAR -->
+                <div id="voiceLiveBar" class="hidden items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-5 py-3 rounded-2xl text-xs mb-4 shadow-md transition-all">
+                    <div class="flex items-center gap-3">
+                        <span id="voiceLivePulse" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span id="voiceLiveState" class="font-bold text-emerald-300">Merekam suara Anda... Bicara dengan santai.</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-white/50 text-[10px] font-mono uppercase tracking-wider">Durasi:</span>
+                        <span id="voiceTimer" class="font-mono font-black text-white text-xs bg-white/10 px-2 py-0.5 rounded-md">00:00</span>
                     </div>
                 </div>
 
@@ -165,25 +197,12 @@
                                 name="plan_description" 
                                 required 
                                 rows="3" 
-                                class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-4 pr-16 text-sm font-semibold text-gray-800 placeholder-gray-400 transition"
+                                class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-4 text-sm font-semibold text-gray-800 placeholder-gray-400 transition"
                                 placeholder="Contoh: Mengikuti rapat koordinasi persiapan pendampingan sekolah dan menyusun notulen rapat..."
                             ></textarea>
-
-                            <!-- Microphone Button -->
-                            <button 
-                                type="button" 
-                                id="micButton"
-                                onclick="toggleVoiceRecognition()" 
-                                title="Klik untuk bicara (Input Suara)"
-                                class="absolute right-3 top-3 bg-sipega-orange hover:bg-orange-600 text-white w-10 h-10 rounded-xl flex items-center justify-center shadow-md transition transform active:scale-95"
-                            >
-                                <svg id="micIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
-                                </svg>
-                            </button>
                         </div>
                         <p class="text-[10px] text-gray-400 mt-1.5 italic">
-                            💡 Tips Suara: Ucapkan kegiatan Anda, contoh: <span class="text-sipega-orange font-bold">"Dari jam 9 sampai 11 saya melakukan telaah berkas SKP pegawai"</span>. Jam akan terisi otomatis!
+                            💡 Tips Suara: Ucapkan kegiatan Anda, contoh: <span class="text-sipega-orange font-bold">"Dari jam 9 sampai 11 saya melakukan telaah berkas SKP pegawai"</span>. Jam otomatis terisi!
                         </p>
                     </div>
 
@@ -756,120 +775,184 @@
             });
         }
 
-        // --- WEB SPEECH API (INPUT SUARA BERKELANJUTAN / CONTINUOUS DURATION) ---
+        // --- SISTEM PEREKAMAN SUARA PROFESIONAL (PLAY, PAUSE, STOP & RESTART OTOMATIS) ---
         let recognition = null;
-        let isRecording = false;
-        let finalTranscript = '';
+        let voiceState = 'idle'; // 'idle' | 'recording' | 'paused'
+        let finalAccumulatedText = '';
+        let timerInterval = null;
+        let timerSeconds = 0;
+        let isManualStopping = false;
 
-        function initSpeechRecognition() {
+        function getSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert('Browser Anda belum mendukung Web Speech API. Silakan gunakan Google Chrome, Microsoft Edge, atau browser modern lainnya.');
+                alert('Browser Anda belum mendukung Web Speech API. Silakan gunakan Google Chrome atau Microsoft Edge terbaru.');
                 return null;
             }
 
-            const rec = new SpeechRecognition();
-            rec.lang = 'id-ID'; // Bahasa Indonesia
-            rec.continuous = true; // KUNCI: Terus merekam tanpa terputus otomatis!
-            rec.interimResults = true; // Menampilkan kata demi kata secara real-time
+            if (recognition) return recognition;
 
-            rec.onstart = function() {
-                isRecording = true;
-                const textarea = document.getElementById('voiceInputTextarea');
-                finalTranscript = textarea.value ? textarea.value.trim() + ' ' : '';
-                
-                document.getElementById('voiceStatusBadge').classList.remove('hidden');
-                document.getElementById('voiceStatusBadge').classList.add('flex');
-                
-                const micBtn = document.getElementById('micButton');
-                micBtn.classList.add('bg-rose-600', 'animate-pulse');
-                micBtn.classList.remove('bg-sipega-orange');
-                micBtn.title = 'Klik untuk BERHENTI merekam';
-                
-                // Ubah icon tombol menjadi icon Stop (persegi)
-                document.getElementById('micIcon').innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"></rect>';
+            recognition = new SpeechRecognition();
+            recognition.lang = 'id-ID'; // Bahasa Indonesia
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onstart = function() {
+                console.log('Voice engine: ACTIVE');
             };
 
-            rec.onresult = function(event) {
+            recognition.onresult = function(event) {
                 let interimTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript + ' ';
+                        finalAccumulatedText += event.results[i][0].transcript + ' ';
                     } else {
                         interimTranscript += event.results[i][0].transcript;
                     }
                 }
-                
+
                 const textarea = document.getElementById('voiceInputTextarea');
-                const fullText = (finalTranscript + interimTranscript).trim();
-                textarea.value = fullText;
+                const combinedText = (finalAccumulatedText + interimTranscript).trim();
+                textarea.value = combinedText;
 
-                // Smart AI/Regex parser untuk mendeteksi jam otomatis
-                parseSpokenTime(fullText);
+                // Smart AI/Regex parser mendeteksi jam
+                parseSpokenTime(combinedText);
             };
 
-            rec.onerror = function(event) {
-                console.warn('Speech recognition status/notice: ', event.error);
-                if (event.error === 'no-speech') {
-                    // Jangan matikan perekaman hanya karena hening sesaat
-                    return;
-                }
+            recognition.onerror = function(event) {
+                console.warn('Voice event notice: ', event.error);
                 if (event.error === 'not-allowed') {
-                    showToast('Izin mikrofon belum diberikan pada browser Anda.');
-                    stopVoiceRecognition();
+                    showToast('Izin mikrofon belum diberikan pada browser.');
+                    voiceStop();
                 }
             };
 
-            rec.onend = function() {
-                // Jika browser memutus koneksi karena jeda bicara tapi user belum klik Stop, hidupkan lagi otomatis!
-                if (isRecording) {
-                    try {
-                        rec.start();
-                    } catch (e) {
-                        // ignore if already starting
-                    }
-                } else {
-                    stopVoiceRecognition();
+            recognition.onend = function() {
+                console.log('Voice engine: onend (voiceState=' + voiceState + ')');
+                // KUNCI UTAMA: Jika browser berhenti karena jeda bicara/diam, tapi status masih 'recording':
+                // Restart otomatis setelah jeda 200ms agar browser audio pipeline reset sempurna!
+                if (voiceState === 'recording' && !isManualStopping) {
+                    setTimeout(() => {
+                        if (voiceState === 'recording') {
+                            try {
+                                recognition.start();
+                                console.log('Voice auto-restarted cleanly after pause.');
+                            } catch (e) {
+                                console.warn('Voice restart exception: ', e);
+                            }
+                        }
+                    }, 200);
                 }
             };
 
-            return rec;
+            return recognition;
         }
 
-        function toggleVoiceRecognition() {
-            if (isRecording) {
-                stopVoiceRecognition();
-                showToast('Perekaman suara selesai.');
-            } else {
-                if (!recognition) {
-                    recognition = initSpeechRecognition();
-                }
-                if (recognition) {
-                    try {
-                        isRecording = true;
-                        recognition.start();
-                    } catch (e) {
-                        console.warn(e);
-                    }
-                }
+        // 1. PLAY / MULAI / LANJUTKAN
+        function voiceStart() {
+            const rec = getSpeechRecognition();
+            if (!rec) return;
+
+            isManualStopping = false;
+            const textarea = document.getElementById('voiceInputTextarea');
+
+            if (voiceState === 'idle') {
+                // Ambil teks lama jika sudah ada isian manual
+                finalAccumulatedText = textarea.value.trim() ? textarea.value.trim() + ' ' : '';
+                timerSeconds = 0;
             }
+
+            voiceState = 'recording';
+
+            try {
+                rec.start();
+            } catch (e) {
+                console.log('Voice already running: ', e);
+            }
+
+            // Jalankan Timer
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSeconds++;
+                const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
+                const secs = String(timerSeconds % 60).padStart(2, '0');
+                document.getElementById('voiceTimer').textContent = `${mins}:${secs}`;
+            }, 1000);
+
+            // Update Tampilan UI
+            document.getElementById('voiceLiveBar').classList.remove('hidden');
+            document.getElementById('voiceLiveBar').classList.add('flex');
+            document.getElementById('voiceLivePulse').className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping';
+            document.getElementById('voiceLiveState').className = 'font-bold text-emerald-300';
+            document.getElementById('voiceLiveState').textContent = '🔴 Merekam suara... Silakan bicara bebas (jeda tidak akan mematikan mic)';
+
+            document.getElementById('btnVoicePlay').disabled = true;
+            document.getElementById('btnVoicePlay').classList.add('opacity-40', 'cursor-not-allowed');
+            document.getElementById('btnVoicePause').disabled = false;
+            document.getElementById('btnVoicePause').classList.remove('opacity-30', 'cursor-not-allowed');
+            document.getElementById('btnVoiceStop').disabled = false;
+            document.getElementById('btnVoiceStop').classList.remove('opacity-30', 'cursor-not-allowed');
         }
 
-        function stopVoiceRecognition() {
-            isRecording = false;
+        // 2. PAUSE / JEDA
+        function voicePause() {
+            if (voiceState !== 'recording') return;
+
+            isManualStopping = true;
+            voiceState = 'paused';
+            clearInterval(timerInterval);
+
             if (recognition) {
                 try { recognition.stop(); } catch(e) {}
             }
-            document.getElementById('voiceStatusBadge').classList.add('hidden');
-            document.getElementById('voiceStatusBadge').classList.remove('flex');
-            
-            const micBtn = document.getElementById('micButton');
-            micBtn.classList.remove('bg-rose-600', 'animate-pulse');
-            micBtn.classList.add('bg-sipega-orange');
-            micBtn.title = 'Klik untuk bicara (Input Suara)';
-            
-            // Kembalikan ke icon Mikrofon biasa
-            document.getElementById('micIcon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>';
+
+            // Update UI
+            document.getElementById('voiceLivePulse').className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
+            document.getElementById('voiceLiveState').className = 'font-bold text-amber-300';
+            document.getElementById('voiceLiveState').textContent = '⏸️ Perekaman Dijeda — Ambil napas atau cek catatan. Klik [Lanjutkan] jika ingin bicara lagi.';
+
+            document.getElementById('btnVoicePlay').disabled = false;
+            document.getElementById('btnVoicePlay').classList.remove('opacity-40', 'cursor-not-allowed');
+            document.getElementById('txtVoicePlay').textContent = 'Lanjutkan ▶';
+
+            document.getElementById('btnVoicePause').disabled = true;
+            document.getElementById('btnVoicePause').classList.add('opacity-30', 'cursor-not-allowed');
+        }
+
+        // 3. STOP / SELESAI
+        function voiceStop() {
+            isManualStopping = true;
+            voiceState = 'idle';
+            clearInterval(timerInterval);
+
+            if (recognition) {
+                try { recognition.stop(); } catch(e) {}
+            }
+
+            // Reset UI
+            document.getElementById('voiceLiveBar').classList.add('hidden');
+            document.getElementById('voiceLiveBar').classList.remove('flex');
+
+            document.getElementById('btnVoicePlay').disabled = false;
+            document.getElementById('btnVoicePlay').classList.remove('opacity-40', 'cursor-not-allowed');
+            document.getElementById('txtVoicePlay').textContent = 'Mulai Rekam';
+
+            document.getElementById('btnVoicePause').disabled = true;
+            document.getElementById('btnVoicePause').classList.add('opacity-30', 'cursor-not-allowed');
+            document.getElementById('btnVoiceStop').disabled = true;
+            document.getElementById('btnVoiceStop').classList.add('opacity-30', 'cursor-not-allowed');
+
+            showToast('Perekaman suara selesai! Teks berhasil dicatat.');
+        }
+
+        // 4. CLEAR / BERSIHKAN
+        function voiceClear() {
+            if (confirm('Kosongkan teks uraian kegiatan?')) {
+                voiceStop();
+                document.getElementById('voiceInputTextarea').value = '';
+                finalAccumulatedText = '';
+                showToast('Teks berhasil dibersihkan.');
+            }
         }
 
         // Smart parser untuk mendeteksi "jam 8 sampai jam 10", "pukul 09.00 hingga 11.30", dll.
