@@ -141,10 +141,10 @@ class SettingController extends Controller
         $result = $driveService->batchGenerateFolders();
 
         if ($result['success']) {
-            return back()->with('success', $result['message']);
+            return redirect(route('settings.index') . '#general')->with('success', $result['message']);
         }
 
-        return back()->with('error', $result['message']);
+        return redirect(route('settings.index') . '#general')->with('error', $result['message']);
     }
 
     /**
@@ -165,12 +165,12 @@ class SettingController extends Controller
         }
 
         if (empty($jsonContent)) {
-            return back()->with('error', 'Silakan pilih file service-account.json atau tempel teks JSON-nya.');
+            return redirect(route('settings.index') . '#general')->with('error', 'Silakan pilih file service-account.json atau tempel teks JSON-nya.');
         }
 
         $decoded = json_decode($jsonContent, true);
         if (!is_array($decoded) || empty($decoded['client_email']) || empty($decoded['private_key'])) {
-            return back()->with('error', 'Format file tidak valid. Pastikan itu adalah kunci JSON Service Account dari Google Cloud Console.');
+            return redirect(route('settings.index') . '#general')->with('error', 'Format file tidak valid. Pastikan itu adalah kunci JSON Service Account dari Google Cloud Console.');
         }
 
         $dir = storage_path('app/google');
@@ -180,7 +180,7 @@ class SettingController extends Controller
         file_put_contents($dir . DIRECTORY_SEPARATOR . 'service-account.json', $jsonContent);
         Setting::set('google_service_account_json', $jsonContent);
 
-        return back()->with('success', 'Kredensial Service Account Google Drive berhasil disimpan! Email robot: ' . $decoded['client_email']);
+        return redirect(route('settings.index') . '#general')->with('success', 'Kredensial Service Account Google Drive berhasil disimpan! Email robot: ' . $decoded['client_email']);
     }
 
     /**

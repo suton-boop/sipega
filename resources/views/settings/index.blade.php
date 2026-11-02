@@ -693,8 +693,8 @@
                                                 <label class="block text-[10px] font-black uppercase text-gray-700 mb-1">Opsi 2: Atau Tempel Isi Teks JSON</label>
                                                 <textarea name="credentials_json" rows="3" placeholder='{"type": "service_account", "project_id": "sipega-bpmp-kaltim", ...}' class="w-full text-[10px] font-mono rounded-lg border-gray-300 focus:border-rose-500 focus:ring-rose-500"></textarea>
                                             </div>
-                                            <button type="submit" formaction="{{ route('settings.drive.credentials') }}" formmethod="POST" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-4 py-2 rounded-xl shadow transition">
-                                                💾 Simpan & Aktifkan Kredensial API Drive
+                                            <button type="button" onclick="submitDriveCreds()" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-4 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                                                <span>💾</span> Simpan & Aktifkan Kredensial API Drive
                                             </button>
                                         </div>
                                     </div>
@@ -717,7 +717,7 @@
                                         <div>
                                             <textarea name="credentials_json" rows="2" placeholder="Atau tempel teks JSON di sini..." class="w-full text-[10px] font-mono rounded-lg border-gray-300"></textarea>
                                         </div>
-                                        <button type="submit" formaction="{{ route('settings.drive.credentials') }}" formmethod="POST" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase px-4 py-2 rounded-xl shadow transition">
+                                        <button type="button" onclick="submitDriveCreds()" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase px-4 py-2 rounded-xl shadow transition">
                                             Perbarui Kredensial
                                         </button>
                                     </div>
@@ -756,12 +756,32 @@
                                     <p class="text-[10px] text-gray-500 italic">
                                         Pegawai yang belum memiliki folder akan otomatis dibuatkan subfolder format: <code>NIP - Nama Pegawai</code>.
                                     </p>
-                                    <button type="submit" formaction="{{ route('settings.drive.generate_all') }}" formmethod="POST"
-                                            onclick="return confirm('Jalankan pembuatan folder Google Drive otomatis untuk seluruh pegawai yang belum memiliki folder?');"
+                                    <button type="button" onclick="submitGenerateAllFolders()"
                                             class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md transition flex items-center gap-2 whitespace-nowrap">
                                         <span>⚡</span> Generate Folder Semua Pegawai
                                     </button>
                                 </div>
+
+                                <script>
+                                    function submitDriveCreds() {
+                                        const form = document.getElementById('settingsForm');
+                                        form.noValidate = true;
+                                        form.action = "{{ route('settings.drive.credentials') }}";
+                                        form.submit();
+                                    }
+                                    function submitGenerateAllFolders() {
+                                        const inputMaster = document.querySelector('input[name="google_drive_master_folder"]');
+                                        if (!inputMaster || !inputMaster.value.trim()) {
+                                            alert('Harap isi Tautan / ID Folder Induk terlebih dahulu.');
+                                            return;
+                                        }
+                                        if (!confirm('Jalankan pembuatan folder Google Drive otomatis untuk seluruh pegawai yang belum memiliki folder?')) return;
+                                        const form = document.getElementById('settingsForm');
+                                        form.noValidate = true;
+                                        form.action = "{{ route('settings.drive.generate_all') }}";
+                                        form.submit();
+                                    }
+                                </script>
                             </div>
 
                             <!-- CARD LINK KE MATRIKS AKSES (RBAC) -->
