@@ -133,52 +133,70 @@
 
             <!-- CARD 2: CATAT KEGIATAN CEPAT (TEKS, SUARA 🎙️, & UPLOAD FOTO) -->
             <div class="bg-white rounded-[2.5rem] p-6 lg:p-8 shadow-xl border border-gray-100">
-                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <div>
-                        <h4 class="text-xl font-black text-sipega-navy uppercase tracking-tight flex items-center gap-2">
-                            <span>🎙️</span> Catat Kegiatan & Logbook Harian
-                        </h4>
-                        <p class="text-xs text-gray-400 font-medium mt-0.5">
-                            Gunakan tombol mikrofon untuk bicara atau ketik uraian. Sistem akan otomatis mengisi jam dan mengunggah bukti ke Google Drive.
+                        <div class="flex items-center gap-2">
+                            <h4 class="text-xl font-black text-sipega-navy uppercase tracking-tight flex items-center gap-2">
+                                <span>🎙️</span> Catat Kegiatan & Logbook Harian
+                            </h4>
+                            <span class="px-2 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider rounded-md border border-emerald-300">
+                                Voice Pro v2.2
+                            </span>
+                        </div>
+                        <p class="text-xs text-gray-500 font-medium mt-1">
+                            Gunakan tombol suara untuk dikte uraian kegiatan atau ketik manual. Teks yang sudah ada akan otomatis dilanjutkan (tidak terhapus).
                         </p>
-                    </div>
-
-                    <!-- Audio Control Buttons (Play, Pause, Stop, Clear) -->
-                    <div class="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-gray-200 shadow-sm flex-wrap">
-                        <!-- Play / Mulai / Lanjutkan -->
-                        <button type="button" id="btnVoicePlay" onclick="voiceStart()" class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 transition shadow-sm cursor-pointer">
-                            <span>▶</span>
-                            <span id="txtVoicePlay">Mulai Rekam</span>
-                        </button>
-
-                        <!-- Pause / Jeda -->
-                        <button type="button" id="btnVoicePause" onclick="voicePause()" disabled class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition shadow-sm">
-                            <span>⏸</span>
-                            <span>Jeda</span>
-                        </button>
-
-                        <!-- Stop / Selesai -->
-                        <button type="button" id="btnVoiceStop" onclick="voiceStop()" disabled class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition shadow-sm">
-                            <span>⏹</span>
-                            <span>Selesai</span>
-                        </button>
-
-                        <!-- Clear / Hapus -->
-                        <button type="button" onclick="voiceClear()" title="Bersihkan Teks" class="p-2 rounded-xl text-gray-400 hover:text-gray-700 hover:bg-white text-xs transition cursor-pointer">
-                            🧹
-                        </button>
                     </div>
                 </div>
 
-                <!-- LIVE VOICE STATUS & TIMER BAR -->
-                <div id="voiceLiveBar" class="hidden items-center justify-between bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white px-5 py-3 rounded-2xl text-xs mb-4 shadow-md transition-all">
-                    <div class="flex items-center gap-3">
-                        <span id="voiceLivePulse" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
-                        <span id="voiceLiveState" class="font-bold text-emerald-300">Merekam suara Anda... Bicara dengan santai.</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-white/50 text-[10px] font-mono uppercase tracking-wider">Durasi:</span>
-                        <span id="voiceTimer" class="font-mono font-black text-white text-xs bg-white/10 px-2 py-0.5 rounded-md">00:00</span>
+                <!-- DEDICATED VOICE RECORDER TOOLBAR PANEL -->
+                <div class="bg-slate-900 text-white p-4 sm:p-5 rounded-2xl mb-5 shadow-lg border border-slate-800">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <!-- Left Status & Wave Indicator -->
+                        <div class="flex items-center gap-3">
+                            <div id="voicePulseCircle" class="w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-lg border border-slate-700 shrink-0">
+                                🎙️
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span id="voiceStatusTitle" class="text-xs font-black uppercase tracking-wider text-slate-300">
+                                        Panel Rekam Suara (Dikte Otomatis)
+                                    </span>
+                                    <span id="voiceDurationBadge" class="hidden font-mono text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800 px-2 py-0.5 rounded">
+                                        00:00
+                                    </span>
+                                </div>
+                                <p id="voiceStatusSubtitle" class="text-xs text-slate-400 mt-0.5">
+                                    Klik tombol <b class="text-emerald-400">[Mulai Rekam]</b> untuk mulai bicara. Teks sebelumnya akan aman dilanjutkan.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Right Control Buttons (Play, Pause, Stop, Clear) -->
+                        <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-start sm:justify-end">
+                            <!-- Mulai / Lanjutkan -->
+                            <button type="button" id="btnVoicePlay" onclick="voiceStart()" class="px-4 py-2 rounded-xl text-xs font-black bg-emerald-500 hover:bg-emerald-600 text-white flex items-center gap-1.5 transition shadow cursor-pointer">
+                                <span>▶</span>
+                                <span id="txtVoicePlay">Mulai Rekam</span>
+                            </button>
+
+                            <!-- Jeda (Pause) -->
+                            <button type="button" id="btnVoicePause" onclick="voicePause()" disabled class="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-600 text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition shadow">
+                                <span>⏸</span>
+                                <span>Jeda</span>
+                            </button>
+
+                            <!-- Selesai (Stop) -->
+                            <button type="button" id="btnVoiceStop" onclick="voiceStop()" disabled class="px-4 py-2 rounded-xl text-xs font-black bg-rose-600 hover:bg-rose-700 text-white disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 transition shadow">
+                                <span>⏹</span>
+                                <span>Selesai</span>
+                            </button>
+
+                            <!-- Bersihkan (Clear) -->
+                            <button type="button" onclick="voiceClear()" title="Bersihkan isi kotak uraian" class="px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition cursor-pointer">
+                                🧹 Bersihkan
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -188,9 +206,14 @@
 
                     <!-- Voice Input Box & Uraian Kegiatan -->
                     <div class="relative">
-                        <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-2">
-                            Uraian Kegiatan (Kolom 5 e-Kinerja)
-                        </label>
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider">
+                                Uraian Kegiatan (Kolom 5 e-Kinerja)
+                            </label>
+                            <span class="text-[11px] text-emerald-600 font-bold flex items-center gap-1">
+                                <span>✓</span> Auto-Lanjut Teks Aktif
+                            </span>
+                        </div>
                         <div class="relative">
                             <textarea 
                                 id="voiceInputTextarea"
@@ -775,10 +798,10 @@
             });
         }
 
-        // --- SISTEM PEREKAMAN SUARA PROFESIONAL (PLAY, PAUSE, STOP & RESTART OTOMATIS) ---
+        // --- SISTEM PEREKAMAN SUARA PROFESIONAL (PLAY, PAUSE, STOP & AUTO-CONTINUE) ---
         let recognition = null;
         let voiceState = 'idle'; // 'idle' | 'recording' | 'paused'
-        let finalAccumulatedText = '';
+        let baseTextBeforeSession = '';
         let timerInterval = null;
         let timerSeconds = 0;
         let isManualStopping = false;
@@ -802,21 +825,25 @@
             };
 
             recognition.onresult = function(event) {
-                let interimTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                let sessionFinal = '';
+                let sessionInterim = '';
+
+                // Kumpulkan semua hasil dari sesi pengenalan suara saat ini
+                for (let i = 0; i < event.results.length; ++i) {
                     if (event.results[i].isFinal) {
-                        finalAccumulatedText += event.results[i][0].transcript + ' ';
+                        sessionFinal += event.results[i][0].transcript + ' ';
                     } else {
-                        interimTranscript += event.results[i][0].transcript;
+                        sessionInterim += event.results[i][0].transcript;
                     }
                 }
 
                 const textarea = document.getElementById('voiceInputTextarea');
-                const combinedText = (finalAccumulatedText + interimTranscript).trim();
-                textarea.value = combinedText;
+                // Gabungkan teks lama (base) + kata baru yang sudah final + kata yang sedang diucapkan (interim)
+                const fullText = (baseTextBeforeSession + sessionFinal + sessionInterim).trim();
+                textarea.value = fullText;
 
-                // Smart AI/Regex parser mendeteksi jam
-                parseSpokenTime(combinedText);
+                // Smart AI/Regex parser mendeteksi jam secara otomatis
+                parseSpokenTime(fullText);
             };
 
             recognition.onerror = function(event) {
@@ -829,19 +856,22 @@
 
             recognition.onend = function() {
                 console.log('Voice engine: onend (voiceState=' + voiceState + ')');
-                // KUNCI UTAMA: Jika browser berhenti karena jeda bicara/diam, tapi status masih 'recording':
-                // Restart otomatis setelah jeda 200ms agar browser audio pipeline reset sempurna!
+                // Jika browser memutus koneksi karena jeda bicara sejenak, tapi user masih ingin merekam:
                 if (voiceState === 'recording' && !isManualStopping) {
+                    const textarea = document.getElementById('voiceInputTextarea');
+                    const currentVal = textarea.value.trim();
+                    baseTextBeforeSession = currentVal ? currentVal + ' ' : '';
+
                     setTimeout(() => {
-                        if (voiceState === 'recording') {
+                        if (voiceState === 'recording' && !isManualStopping) {
                             try {
                                 recognition.start();
-                                console.log('Voice auto-restarted cleanly after pause.');
+                                console.log('Voice auto-restarted cleanly. Teks lama tetap utuh.');
                             } catch (e) {
-                                console.warn('Voice restart exception: ', e);
+                                console.warn('Voice restart notice: ', e);
                             }
                         }
-                    }, 200);
+                    }, 250);
                 }
             };
 
@@ -856,9 +886,11 @@
             isManualStopping = false;
             const textarea = document.getElementById('voiceInputTextarea');
 
+            // KUNCI: Kunci teks yang sudah ada di textarea agar tidak pernah terhapus
+            const currentVal = textarea.value.trim();
+            baseTextBeforeSession = currentVal ? currentVal + ' ' : '';
+
             if (voiceState === 'idle') {
-                // Ambil teks lama jika sudah ada isian manual
-                finalAccumulatedText = textarea.value.trim() ? textarea.value.trim() + ' ' : '';
                 timerSeconds = 0;
             }
 
@@ -870,26 +902,39 @@
                 console.log('Voice already running: ', e);
             }
 
-            // Jalankan Timer
+            // Jalankan Timer Durasi
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 timerSeconds++;
                 const mins = String(Math.floor(timerSeconds / 60)).padStart(2, '0');
                 const secs = String(timerSeconds % 60).padStart(2, '0');
-                document.getElementById('voiceTimer').textContent = `${mins}:${secs}`;
+                const badge = document.getElementById('voiceDurationBadge');
+                if (badge) badge.textContent = `${mins}:${secs}`;
             }, 1000);
 
-            // Update Tampilan UI
-            document.getElementById('voiceLiveBar').classList.remove('hidden');
-            document.getElementById('voiceLiveBar').classList.add('flex');
-            document.getElementById('voiceLivePulse').className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping';
-            document.getElementById('voiceLiveState').className = 'font-bold text-emerald-300';
-            document.getElementById('voiceLiveState').textContent = '🔴 Merekam suara... Silakan bicara bebas (jeda tidak akan mematikan mic)';
+            // Update Tampilan UI Panel
+            const circle = document.getElementById('voicePulseCircle');
+            if (circle) circle.className = 'w-10 h-10 rounded-xl bg-rose-600 text-white flex items-center justify-center text-lg border border-rose-500 shrink-0 animate-pulse';
 
+            const title = document.getElementById('voiceStatusTitle');
+            if (title) {
+                title.className = 'text-xs font-black uppercase tracking-wider text-rose-400';
+                title.textContent = '🔴 Sedang Merekam Suara (Mic Aktif)';
+            }
+
+            const sub = document.getElementById('voiceStatusSubtitle');
+            if (sub) sub.innerHTML = '<span class="text-rose-200 font-semibold">Silakan bicara bebas. Jeda bicara tidak akan menghentikan rekaman. Teks otomatis disambung!</span>';
+
+            const badge = document.getElementById('voiceDurationBadge');
+            if (badge) badge.classList.remove('hidden');
+
+            // Update Tombol Kontrol
             document.getElementById('btnVoicePlay').disabled = true;
             document.getElementById('btnVoicePlay').classList.add('opacity-40', 'cursor-not-allowed');
+
             document.getElementById('btnVoicePause').disabled = false;
             document.getElementById('btnVoicePause').classList.remove('opacity-30', 'cursor-not-allowed');
+
             document.getElementById('btnVoiceStop').disabled = false;
             document.getElementById('btnVoiceStop').classList.remove('opacity-30', 'cursor-not-allowed');
         }
@@ -906,11 +951,25 @@
                 try { recognition.stop(); } catch(e) {}
             }
 
-            // Update UI
-            document.getElementById('voiceLivePulse').className = 'w-2.5 h-2.5 rounded-full bg-amber-400';
-            document.getElementById('voiceLiveState').className = 'font-bold text-amber-300';
-            document.getElementById('voiceLiveState').textContent = '⏸️ Perekaman Dijeda — Ambil napas atau cek catatan. Klik [Lanjutkan] jika ingin bicara lagi.';
+            // Snapshot teks saat ini
+            const textarea = document.getElementById('voiceInputTextarea');
+            const currentVal = textarea.value.trim();
+            baseTextBeforeSession = currentVal ? currentVal + ' ' : '';
 
+            // Update UI Panel
+            const circle = document.getElementById('voicePulseCircle');
+            if (circle) circle.className = 'w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-lg border border-amber-400 shrink-0';
+
+            const title = document.getElementById('voiceStatusTitle');
+            if (title) {
+                title.className = 'text-xs font-black uppercase tracking-wider text-amber-400';
+                title.textContent = '⏸️ Perekaman Dijeda';
+            }
+
+            const sub = document.getElementById('voiceStatusSubtitle');
+            if (sub) sub.innerHTML = '<span class="text-amber-200">Perekaman dijeda. Anda dapat mengetik manual atau klik <b class="text-white underline">[Lanjutkan]</b> untuk menambah kata baru.</span>';
+
+            // Tombol
             document.getElementById('btnVoicePlay').disabled = false;
             document.getElementById('btnVoicePlay').classList.remove('opacity-40', 'cursor-not-allowed');
             document.getElementById('txtVoicePlay').textContent = 'Lanjutkan ▶';
@@ -929,20 +988,34 @@
                 try { recognition.stop(); } catch(e) {}
             }
 
-            // Reset UI
-            document.getElementById('voiceLiveBar').classList.add('hidden');
-            document.getElementById('voiceLiveBar').classList.remove('flex');
+            // Reset UI Panel
+            const circle = document.getElementById('voicePulseCircle');
+            if (circle) circle.className = 'w-10 h-10 rounded-xl bg-slate-800 flex items-center justify-center text-lg border border-slate-700 shrink-0';
 
+            const title = document.getElementById('voiceStatusTitle');
+            if (title) {
+                title.className = 'text-xs font-black uppercase tracking-wider text-slate-300';
+                title.textContent = 'Panel Rekam Suara (Dikte Otomatis)';
+            }
+
+            const sub = document.getElementById('voiceStatusSubtitle');
+            if (sub) sub.innerHTML = 'Klik tombol <b class="text-emerald-400">[Mulai Rekam]</b> untuk mulai bicara. Teks sebelumnya akan aman dilanjutkan.';
+
+            const badge = document.getElementById('voiceDurationBadge');
+            if (badge) badge.classList.add('hidden');
+
+            // Reset Tombol
             document.getElementById('btnVoicePlay').disabled = false;
             document.getElementById('btnVoicePlay').classList.remove('opacity-40', 'cursor-not-allowed');
             document.getElementById('txtVoicePlay').textContent = 'Mulai Rekam';
 
             document.getElementById('btnVoicePause').disabled = true;
             document.getElementById('btnVoicePause').classList.add('opacity-30', 'cursor-not-allowed');
+
             document.getElementById('btnVoiceStop').disabled = true;
             document.getElementById('btnVoiceStop').classList.add('opacity-30', 'cursor-not-allowed');
 
-            showToast('Perekaman suara selesai! Teks berhasil dicatat.');
+            showToast('Perekaman suara selesai! Teks berhasil dicatat & disimpan di kotak.');
         }
 
         // 4. CLEAR / BERSIHKAN
@@ -950,8 +1023,8 @@
             if (confirm('Kosongkan teks uraian kegiatan?')) {
                 voiceStop();
                 document.getElementById('voiceInputTextarea').value = '';
-                finalAccumulatedText = '';
-                showToast('Teks berhasil dibersihkan.');
+                baseTextBeforeSession = '';
+                showToast('Teks uraian kegiatan berhasil dikosongkan.');
             }
         }
 
