@@ -200,10 +200,12 @@ class GoogleDriveService
     }
 
     /**
-     * Batch Generate Folder untuk seluruh pegawai
+     * Batch Generate Folder untuk seluruh pegawai (dengan limit per batch agar tidak terkena timeout)
      */
-    public function batchGenerateFolders(?string $masterFolderId = null): array
+    public function batchGenerateFolders(?string $masterFolderId = null, int $limit = 12): array
     {
+        @ini_set('max_execution_time', '300');
+
         $master = $masterFolderId ?: Setting::get('google_drive_master_folder');
         if (empty($master)) {
             return [
@@ -239,11 +241,23 @@ class GoogleDriveService
             ];
         }
 
-        $employees = User::realPegawai()
+        $query = User::realPegawai()
             ->where(function ($q) {
                 $q->whereNull('drive_folder_link')->orWhere('drive_folder_link', '');
-            })
-            ->get();
+            });
+
+        $totalRemainingBefore = $query->count();
+        $employees = $limit > 0 ? $query->limit($limit)->get() : $query->get();
+
+        if ($employees->isEmpty()) {
+            return [
+                'success' => true,
+                'total_candidates' => 0,
+                'created_count' => 0,
+                'remaining_count' => 0,
+                'message' => 'Semua pegawai sudah memiliki folder Google Drive masing-masing!'
+            ];
+        }
 
         $createdCount = 0;
         $failedNames = [];
@@ -257,13 +271,26 @@ class GoogleDriveService
             }
         }
 
+        $remainingCount = User::realPegawai()
+            ->where(function ($q) {
+                $q->whereNull('drive_folder_link')->orWhere('drive_folder_link', '');
+            })->count();
+
+        $msg = "Berhasil membuat {$createdCount} folder baru.";
+        if ($remainingCount > 0) {
+            $msg .= " Masih tersisa {$remainingCount} pegawai. Klik tombol 'Generate' lagi untuk melanjutkan pembuatan sisa pegawai.";
+        } else {
+            $msg .= " Seluruh folder Google Drive pegawai kini telah lengkap 100%!";
+        }
+
         return [
             'success' => true,
-            'total_candidates' => $employees->count(),
+            'total_candidates' => $totalRemainingBefore,
             'created_count' => $createdCount,
+            'remaining_count' => $remainingCount,
             'failed_count' => count($failedNames),
             'failed_names' => $failedNames,
-            'message' => "Berhasil men-generate {$createdCount} folder Google Drive baru untuk pegawai di dalam folder induk!"
+            'message' => $msg
         ];
     }
 

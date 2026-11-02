@@ -764,9 +764,14 @@
                             </div>
 
                             <div class="pt-2 flex flex-col sm:flex-row justify-between items-center gap-3">
-                                <p class="text-[10px] text-gray-500 italic">
-                                    Pegawai yang belum memiliki folder akan otomatis dibuatkan subfolder format: <code>NIP - Nama Pegawai</code>.
-                                </p>
+                                <div>
+                                    <p class="text-[10px] text-gray-500 italic">
+                                        Pegawai yang belum memiliki folder akan otomatis dibuatkan subfolder format: <code>NIP - Nama Pegawai</code>.
+                                    </p>
+                                    <p class="text-[10px] text-blue-700 font-semibold mt-1">
+                                        💡 Tips PuTTY: Anda juga bisa menjalankan secara instan tanpa batas timeout via perintah: <code class="bg-blue-100 text-blue-900 px-1 py-0.5 rounded font-mono font-bold select-all">php artisan sipega:generate-drive-folders</code>
+                                    </p>
+                                </div>
                                 <button type="submit"
                                         onclick="return confirm('Jalankan pembuatan folder Google Drive otomatis untuk seluruh pegawai yang belum memiliki folder?');"
                                         class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-black rounded-xl shadow-md transition flex items-center gap-2 whitespace-nowrap">

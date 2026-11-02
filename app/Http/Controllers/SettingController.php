@@ -129,6 +129,8 @@ class SettingController extends Controller
      */
     public function generateAllEmployeeFolders(Request $request)
     {
+        @ini_set('max_execution_time', '300');
+
         if (!TukinController::isPrivilegedUser(auth()->user())) {
             abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
         }
@@ -139,7 +141,7 @@ class SettingController extends Controller
         }
 
         $driveService = new \App\Services\GoogleDriveService();
-        $result = $driveService->batchGenerateFolders();
+        $result = $driveService->batchGenerateFolders(null, 15);
 
         if ($result['success']) {
             return redirect(route('settings.index') . '#general')->with('success', $result['message']);
