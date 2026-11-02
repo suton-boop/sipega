@@ -26,6 +26,39 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// ROUTE DEDIKASI UNTUK BERSIHKAN CACHE TAMPILAN & KONFIGURASI DARI BROWSER
+Route::get('/clear-cache', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('view:clear');
+        \Illuminate\Support\Facades\Artisan::call('route:clear');
+        \Illuminate\Support\Facades\Artisan::call('config:clear');
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        
+        // Bersihkan manual file views jika ada permission issue di artisan
+        $viewFiles = glob(storage_path('framework/views/*.php'));
+        if ($viewFiles) {
+            foreach ($viewFiles as $file) {
+                if (is_file($file)) {
+                    @unlink($file);
+                }
+            }
+        }
+        
+        return response('
+            <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #f8fafc; min-height: 100vh;">
+                <div style="display: inline-block; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px;">
+                    <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
+                    <h2 style="color: #003366; margin-bottom: 10px; font-weight: 900;">Cache Berhasil Dibersihkan!</h2>
+                    <p style="color: #64748b; font-size: 14px; line-height: 1.6;">Seluruh cache tampilan Blade dan konfigurasi sistem telah di-reset ke versi terbaru (Voice Pro v2.2).</p>
+                    <a href="/agenda" style="display: inline-block; margin-top: 25px; background: #FF8C00; color: white; text-decoration: none; padding: 12px 28px; border-radius: 12px; font-weight: bold; font-size: 14px;">Buka Halaman Agenda Sekarang →</a>
+                </div>
+            </div>
+        ');
+    } catch (\Exception $e) {
+        return 'Gagal bersihkan cache: ' . $e->getMessage();
+    }
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     // DASHBOARD Core SIPEGA
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
