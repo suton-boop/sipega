@@ -144,9 +144,9 @@
                     </div>
 
                     <!-- Voice Record Status Indicator -->
-                    <div id="voiceStatusBadge" class="hidden items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 px-3 py-1.5 rounded-full text-xs font-bold animate-pulse">
-                        <span class="w-2 h-2 rounded-full bg-rose-600 animate-ping"></span>
-                        <span>Mendengarkan suara Anda...</span>
+                    <div id="voiceStatusBadge" class="hidden items-center gap-2 bg-rose-50 border border-rose-200 text-rose-700 px-3.5 py-1.5 rounded-full text-xs font-bold animate-pulse">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-600 animate-ping"></span>
+                        <span id="voiceStatusText">Mendengarkan... (Bicara bebas, klik tombol mic lagi untuk berhenti)</span>
                     </div>
                 </div>
 
@@ -756,9 +756,10 @@
             });
         }
 
-        // --- WEB SPEECH API (INPUT SUARA) ---
+        // --- WEB SPEECH API (INPUT SUARA BERKELANJUTAN / CONTINUOUS DURATION) ---
         let recognition = null;
         let isRecording = false;
+        let finalTranscript = '';
 
         function initSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -769,38 +770,67 @@
 
             const rec = new SpeechRecognition();
             rec.lang = 'id-ID'; // Bahasa Indonesia
-            rec.continuous = false;
-            rec.interimResults = true;
+            rec.continuous = true; // KUNCI: Terus merekam tanpa terputus otomatis!
+            rec.interimResults = true; // Menampilkan kata demi kata secara real-time
 
             rec.onstart = function() {
                 isRecording = true;
+                const textarea = document.getElementById('voiceInputTextarea');
+                finalTranscript = textarea.value ? textarea.value.trim() + ' ' : '';
+                
                 document.getElementById('voiceStatusBadge').classList.remove('hidden');
                 document.getElementById('voiceStatusBadge').classList.add('flex');
-                document.getElementById('micButton').classList.add('bg-rose-600', 'animate-pulse');
-                document.getElementById('micButton').classList.remove('bg-sipega-orange');
+                
+                const micBtn = document.getElementById('micButton');
+                micBtn.classList.add('bg-rose-600', 'animate-pulse');
+                micBtn.classList.remove('bg-sipega-orange');
+                micBtn.title = 'Klik untuk BERHENTI merekam';
+                
+                // Ubah icon tombol menjadi icon Stop (persegi)
+                document.getElementById('micIcon').innerHTML = '<rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor"></rect>';
             };
 
             rec.onresult = function(event) {
-                let transcript = '';
+                let interimTranscript = '';
                 for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    transcript += event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript + ' ';
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
                 }
                 
                 const textarea = document.getElementById('voiceInputTextarea');
-                textarea.value = transcript;
+                const fullText = (finalTranscript + interimTranscript).trim();
+                textarea.value = fullText;
 
                 // Smart AI/Regex parser untuk mendeteksi jam otomatis
-                parseSpokenTime(transcript);
+                parseSpokenTime(fullText);
             };
 
             rec.onerror = function(event) {
-                console.error('Speech recognition error: ', event.error);
-                stopVoiceRecognition();
-                showToast('Pengenalan suara dihentikan: ' + event.error);
+                console.warn('Speech recognition status/notice: ', event.error);
+                if (event.error === 'no-speech') {
+                    // Jangan matikan perekaman hanya karena hening sesaat
+                    return;
+                }
+                if (event.error === 'not-allowed') {
+                    showToast('Izin mikrofon belum diberikan pada browser Anda.');
+                    stopVoiceRecognition();
+                }
             };
 
             rec.onend = function() {
-                stopVoiceRecognition();
+                // Jika browser memutus koneksi karena jeda bicara tapi user belum klik Stop, hidupkan lagi otomatis!
+                if (isRecording) {
+                    try {
+                        rec.start();
+                    } catch (e) {
+                        // ignore if already starting
+                    }
+                } else {
+                    stopVoiceRecognition();
+                }
             };
 
             return rec;
@@ -809,12 +839,14 @@
         function toggleVoiceRecognition() {
             if (isRecording) {
                 stopVoiceRecognition();
+                showToast('Perekaman suara selesai.');
             } else {
                 if (!recognition) {
                     recognition = initSpeechRecognition();
                 }
                 if (recognition) {
                     try {
+                        isRecording = true;
                         recognition.start();
                     } catch (e) {
                         console.warn(e);
@@ -830,8 +862,14 @@
             }
             document.getElementById('voiceStatusBadge').classList.add('hidden');
             document.getElementById('voiceStatusBadge').classList.remove('flex');
-            document.getElementById('micButton').classList.remove('bg-rose-600', 'animate-pulse');
-            document.getElementById('micButton').classList.add('bg-sipega-orange');
+            
+            const micBtn = document.getElementById('micButton');
+            micBtn.classList.remove('bg-rose-600', 'animate-pulse');
+            micBtn.classList.add('bg-sipega-orange');
+            micBtn.title = 'Klik untuk bicara (Input Suara)';
+            
+            // Kembalikan ke icon Mikrofon biasa
+            document.getElementById('micIcon').innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>';
         }
 
         // Smart parser untuk mendeteksi "jam 8 sampai jam 10", "pukul 09.00 hingga 11.30", dll.
