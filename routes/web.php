@@ -35,6 +35,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/smartpengaturan', [SettingController::class, 'index'])->name('smartpengaturan');
     Route::get('/smart-pengaturan', [SettingController::class, 'index']);
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('/settings/drive/credentials', [SettingController::class, 'saveDriveCredentials'])->name('settings.drive.credentials');
     Route::post('/settings/drive/generate-all', [SettingController::class, 'generateAllEmployeeFolders'])->name('settings.drive.generate_all');
     Route::post('/settings/tukin', [SettingController::class, 'updateTukinRules'])->name('settings.tukin.update');
     Route::post('/settings/tukin/reset', [SettingController::class, 'resetTukinRules'])->name('settings.tukin.reset');

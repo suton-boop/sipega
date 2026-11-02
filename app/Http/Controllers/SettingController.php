@@ -148,6 +148,42 @@ class SettingController extends Controller
     }
 
     /**
+     * Simpan / Unggah Kredensial Service Account Google Drive (service-account.json)
+     */
+    public function saveDriveCredentials(Request $request)
+    {
+        if (!TukinController::isPrivilegedUser(auth()->user())) {
+            abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
+        }
+
+        $jsonContent = null;
+
+        if ($request->hasFile('credentials_file')) {
+            $jsonContent = file_get_contents($request->file('credentials_file')->getRealPath());
+        } elseif ($request->filled('credentials_json')) {
+            $jsonContent = trim($request->input('credentials_json'));
+        }
+
+        if (empty($jsonContent)) {
+            return back()->with('error', 'Silakan pilih file service-account.json atau tempel teks JSON-nya.');
+        }
+
+        $decoded = json_decode($jsonContent, true);
+        if (!is_array($decoded) || empty($decoded['client_email']) || empty($decoded['private_key'])) {
+            return back()->with('error', 'Format file tidak valid. Pastikan itu adalah kunci JSON Service Account dari Google Cloud Console.');
+        }
+
+        $dir = storage_path('app/google');
+        if (!file_exists($dir)) {
+            mkdir($dir, 0777, true);
+        }
+        file_put_contents($dir . DIRECTORY_SEPARATOR . 'service-account.json', $jsonContent);
+        Setting::set('google_service_account_json', $jsonContent);
+
+        return back()->with('success', 'Kredensial Service Account Google Drive berhasil disimpan! Email robot: ' . $decoded['client_email']);
+    }
+
+    /**
      * Reset Pengaturan Aturan Tukin ke Standar Resmi Permendikdasmen No. 14 Tahun 2025 & Perpres No. 18 Tahun 2025
      */
     public function resetTukinRules(Request $request)

@@ -86,7 +86,7 @@
             </div>
 
             <!-- FORM UTAMA PENGATURAN -->
-            <form action="{{ route('settings.tukin.update') }}" method="POST" id="settingsForm">
+            <form action="{{ route('settings.tukin.update') }}" method="POST" id="settingsForm" enctype="multipart/form-data">
                 @csrf
 
                 <!-- ========================================== -->
@@ -673,6 +673,55 @@
                                         </span>
                                     </div>
                                 </div>
+
+                                <!-- STATUS & FORM UPLOAD KREDENSIAL SERVICE ACCOUNT -->
+                                @if(!$driveConfigured)
+                                    <div class="bg-rose-50 border-2 border-rose-200 rounded-xl p-4 text-xs space-y-3">
+                                        <div class="flex items-center gap-2 text-rose-800 font-black">
+                                            <span>⚠️</span>
+                                            <span>Kredensial Service Account Belum Terpasang di Server Ini</span>
+                                        </div>
+                                        <p class="text-[11px] text-rose-700">
+                                            Silakan unggah berkas <code>service-account.json</code> atau tempel teks JSON dari Google Cloud Console di bawah ini untuk mengaktifkan integrasi Google Drive.
+                                        </p>
+                                        <div class="space-y-3 pt-2">
+                                            <div>
+                                                <label class="block text-[10px] font-black uppercase text-gray-700 mb-1">Opsi 1: Unggah Berkas JSON</label>
+                                                <input type="file" name="credentials_file" accept=".json" class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-rose-600 file:text-white hover:file:bg-rose-700 cursor-pointer">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[10px] font-black uppercase text-gray-700 mb-1">Opsi 2: Atau Tempel Isi Teks JSON</label>
+                                                <textarea name="credentials_json" rows="3" placeholder='{"type": "service_account", "project_id": "sipega-bpmp-kaltim", ...}' class="w-full text-[10px] font-mono rounded-lg border-gray-300 focus:border-rose-500 focus:ring-rose-500"></textarea>
+                                            </div>
+                                            <button type="submit" formaction="{{ route('settings.drive.credentials') }}" formmethod="POST" class="bg-rose-600 hover:bg-rose-700 text-white font-black text-xs uppercase px-4 py-2 rounded-xl shadow transition">
+                                                💾 Simpan & Aktifkan Kredensial API Drive
+                                            </button>
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex justify-between items-center text-xs">
+                                        <div class="flex items-center gap-2 text-emerald-800 font-bold">
+                                            <span>✅</span>
+                                            <span>Kredensial Aktif: <code>{{ $driveServiceEmail }}</code></span>
+                                        </div>
+                                        <button type="button" onclick="document.getElementById('reuploadCredentialsBox').classList.toggle('hidden')" class="text-[10px] text-blue-600 hover:underline font-bold">
+                                            Ganti Kunci JSON ⚙️
+                                        </button>
+                                    </div>
+
+                                    <div id="reuploadCredentialsBox" class="hidden bg-slate-50 border border-gray-200 rounded-xl p-4 text-xs space-y-3">
+                                        <p class="font-bold text-gray-700">Perbarui File Kredensial Service Account:</p>
+                                        <div>
+                                            <input type="file" name="credentials_file" accept=".json" class="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-black file:bg-blue-600 file:text-white cursor-pointer">
+                                        </div>
+                                        <div>
+                                            <textarea name="credentials_json" rows="2" placeholder="Atau tempel teks JSON di sini..." class="w-full text-[10px] font-mono rounded-lg border-gray-300"></textarea>
+                                        </div>
+                                        <button type="submit" formaction="{{ route('settings.drive.credentials') }}" formmethod="POST" class="bg-blue-600 hover:bg-blue-700 text-white font-black text-xs uppercase px-4 py-2 rounded-xl shadow transition">
+                                            Perbarui Kredensial
+                                        </button>
+                                    </div>
+                                @endif
 
                                 <!-- Petunjuk Ringkas -->
                                 <div class="bg-white p-4 rounded-xl border border-blue-100 text-xs text-gray-700 space-y-2">

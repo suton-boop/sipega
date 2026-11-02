@@ -27,7 +27,27 @@ class GoogleDriveService
                 $this->client->addScope(Drive::DRIVE);
                 $this->service = new Drive($this->client);
             } catch (\Throwable $e) {
-                Log::error('GoogleDriveService Init Failed: ' . $e->getMessage());
+                Log::error('GoogleDriveService Init File Failed: ' . $e->getMessage());
+                $this->client = null;
+                $this->service = null;
+            }
+        } elseif ($dbJson = Setting::get('google_service_account_json')) {
+            try {
+                $decoded = json_decode($dbJson, true);
+                if (is_array($decoded)) {
+                    $dir = dirname($this->credentialsPath);
+                    if (!file_exists($dir)) {
+                        mkdir($dir, 0777, true);
+                    }
+                    file_put_contents($this->credentialsPath, $dbJson);
+
+                    $this->client = new Client();
+                    $this->client->setAuthConfig($decoded);
+                    $this->client->addScope(Drive::DRIVE);
+                    $this->service = new Drive($this->client);
+                }
+            } catch (\Throwable $e) {
+                Log::error('GoogleDriveService Init DB Failed: ' . $e->getMessage());
                 $this->client = null;
                 $this->service = null;
             }
@@ -47,20 +67,25 @@ class GoogleDriveService
      */
     public function getServiceAccountEmail(): ?string
     {
-        if (!file_exists($this->credentialsPath)) {
-            return null;
+        if (file_exists($this->credentialsPath)) {
+            $json = json_decode(file_get_contents($this->credentialsPath), true);
+            if (!empty($json['client_email'])) {
+                return $json['client_email'];
+            }
         }
 
-        $json = json_decode(file_get_contents($this->credentialsPath), true);
-        return $json['client_email'] ?? null;
+        if ($dbJson = Setting::get('google_service_account_json')) {
+            $json = json_decode($dbJson, true);
+            if (!empty($json['client_email'])) {
+                return $json['client_email'];
+            }
+        }
+
+        return 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com';
     }
 
     /**
      * Ekstrak ID Folder Google Drive dari URL
-     * Mendukung format:
-     * - https://drive.google.com/drive/folders/1A2B3C...
-     * - https://drive.google.com/drive/u/0/folders/1A2B3C...
-     * - ID langsung: 1A2B3C...
      */
     public static function extractFolderId(?string $urlOrId): ?string
     {
@@ -70,7 +95,7 @@ class GoogleDriveService
 
         $trimmed = trim($urlOrId);
 
-        // Jika berbentuk URL Drive folder
+        // Jika berbentuk URL Drive folder (dengan atau tanpa parameter ?usp=...)
         if (preg_match('/folders\/([a-zA-Z0-9_-]+)/', $trimmed, $matches)) {
             return $matches[1];
         }
@@ -84,12 +109,7 @@ class GoogleDriveService
     }
 
     /**
-     * Buat folder baru di Google Drive (misalnya subfolder untuk pegawai)
-     *
-     * @param string $folderName Nama folder
-     * @param string|null $parentFolderUrlOrId ID atau URL folder induk (Master Folder)
-     * @param bool $makePublic Apakah folder dapat diakses siapa saja dengan link
-     * @return array|null Berisi ['id', 'name', 'web_view_link']
+     * Buat folder baru di Google Drive
      */
     public function createFolder(string $folderName, ?string $parentFolderUrlOrId = null, bool $makePublic = true): ?array
     {
@@ -112,16 +132,19 @@ class GoogleDriveService
 
             $folder = $this->service->files->create($folderMetadata, [
                 'fields' => 'id, name, webViewLink',
+                'supportsAllDrives' => true,
             ]);
 
-            // Set permission: Siapa saja yang punya link dapat membuka folder bukti (reader)
+            // Set permission reader publik
             if ($makePublic && !empty($folder->id)) {
                 try {
                     $permission = new Permission([
                         'type' => 'anyone',
                         'role' => 'reader',
                     ]);
-                    $this->service->permissions->create($folder->id, $permission);
+                    $this->service->permissions->create($folder->id, $permission, [
+                        'supportsAllDrives' => true,
+                    ]);
                 } catch (\Throwable $e) {
                     Log::warning('GoogleDriveService: Gagal set permission folder: ' . $e->getMessage());
                 }
@@ -164,7 +187,7 @@ class GoogleDriveService
     }
 
     /**
-     * Batch Generate Folder untuk semua pegawai yang belum memiliki folder
+     * Batch Generate Folder untuk seluruh pegawai
      */
     public function batchGenerateFolders(?string $masterFolderId = null): array
     {
@@ -172,14 +195,34 @@ class GoogleDriveService
         if (empty($master)) {
             return [
                 'success' => false,
-                'message' => 'Folder Induk Google Drive (Master Folder) belum diatur di Pengaturan Sistem.'
+                'message' => 'Tautan Folder Induk Google Drive (Master Folder) belum diisi.'
             ];
         }
 
         if (!$this->isConfigured()) {
             return [
                 'success' => false,
-                'message' => 'Google Drive API belum terkonfigurasi (file service-account.json tidak ditemukan).'
+                'message' => 'Google Drive API belum terkonfigurasi. Silakan unggah atau tempel file service-account.json terlebih dahulu.'
+            ];
+        }
+
+        // Uji apakah folder induk bisa diakses oleh Service Account
+        $cleanMasterId = self::extractFolderId($master);
+        try {
+            $this->service->files->get($cleanMasterId, [
+                'fields' => 'id, name',
+                'supportsAllDrives' => true
+            ]);
+        } catch (\Google\Service\Exception $e) {
+            if ($e->getCode() === 404) {
+                return [
+                    'success' => false,
+                    'message' => 'Folder Induk tidak ditemukan atau belum dibagikan! Pastikan Anda sudah membagikan (Share) folder tersebut ke email: ' . $this->getServiceAccountEmail() . ' dengan peran Editor.'
+                ];
+            }
+            return [
+                'success' => false,
+                'message' => 'Gagal mengakses Folder Induk: ' . $e->getMessage()
             ];
         }
 
@@ -193,7 +236,7 @@ class GoogleDriveService
         $failedNames = [];
 
         foreach ($employees as $emp) {
-            $result = $this->generateUserFolder($emp, $master);
+            $result = $this->generateUserFolder($emp, $cleanMasterId);
             if ($result) {
                 $createdCount++;
             } else {
@@ -207,7 +250,7 @@ class GoogleDriveService
             'created_count' => $createdCount,
             'failed_count' => count($failedNames),
             'failed_names' => $failedNames,
-            'message' => "Berhasil membuat {$createdCount} folder Google Drive baru untuk pegawai."
+            'message' => "Berhasil men-generate {$createdCount} folder Google Drive baru untuk pegawai di dalam folder induk!"
         ];
     }
 
@@ -245,16 +288,18 @@ class GoogleDriveService
                 'mimeType' => $mimeType,
                 'uploadType' => 'multipart',
                 'fields' => 'id, name, webViewLink, webContentLink',
+                'supportsAllDrives' => true,
             ]);
 
-            // Set permission: Siapa saja yang memiliki link bisa melihat bukti tanpa login
             if ($makePublic && !empty($file->id)) {
                 try {
                     $permission = new Permission([
                         'type' => 'anyone',
                         'role' => 'reader',
                     ]);
-                    $this->service->permissions->create($file->id, $permission);
+                    $this->service->permissions->create($file->id, $permission, [
+                        'supportsAllDrives' => true,
+                    ]);
                 } catch (\Throwable $e) {
                     Log::warning('GoogleDriveService: Gagal set permission publik: ' . $e->getMessage());
                 }
