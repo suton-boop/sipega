@@ -453,7 +453,6 @@ class AgendaController extends Controller
 
         return back()->with('success', 'Berkas PDF bukti dukung berhasil dibuat ulang dan disiapkan tautan Google Drive-nya!');
     }
-    }
 
     /**
      * Hapus Item Kegiatan
