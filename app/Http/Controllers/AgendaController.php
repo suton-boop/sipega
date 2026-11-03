@@ -481,8 +481,60 @@ class AgendaController extends Controller
         })->findOrFail($id);
 
         $this->generateItemEvidencePdf($item);
+        $item->refresh();
 
-        return back()->with('success', 'Berkas PDF bukti dukung berhasil dibuat ulang dan disiapkan tautan Google Drive-nya!');
+        if ($item->drive_file_id || str_contains($item->drive_link, 'drive.google.com')) {
+            return back()->with('success', '✓ Berhasil diunggah ke Google Drive! Tautan Google Drive telah diperbarui di tabel e-Kinerja.');
+        }
+
+        return back()->with('success', 'Berkas PDF berhasil diproses di server SIPEGA.');
+    }
+
+    /**
+     * Sinkronkan Seluruh Berkas PDF Kegiatan ke Google Drive Sekaligus
+     */
+    public function syncAllToDrive(Request $request)
+    {
+        $user = auth()->user();
+        $date = $request->date ?: Carbon::today('Asia/Makassar')->toDateString();
+
+        $agenda = DailyAgenda::where('user_id', $user->id)
+            ->whereDate('date', $date)
+            ->with('items')
+            ->first();
+
+        if (!$agenda || $agenda->items->isEmpty()) {
+            return back()->with('error', 'Tidak ada kegiatan pada tanggal tersebut untuk disinkronkan ke Google Drive.');
+        }
+
+        $driveService = new GoogleDriveService();
+        if (!$driveService->isConfigured()) {
+            return back()->with('error', 'Google Drive API belum terkonfigurasi. Pastikan kredensial service-account.json sudah aktif di Smart Pengaturan.');
+        }
+
+        $masterFolder = Setting::get('google_drive_master_folder');
+        if (empty($masterFolder)) {
+            return back()->with('error', 'Folder Induk Google Drive (Master Folder) belum disetel di Smart Pengaturan.');
+        }
+
+        $driveService->findOrCreateUserFolder($user, $masterFolder);
+
+        $successCount = 0;
+        foreach ($agenda->items as $item) {
+            try {
+                $this->generateItemEvidencePdf($item);
+                $item->refresh();
+                if ($item->drive_file_id || str_contains($item->drive_link, 'drive.google.com')) {
+                    $successCount++;
+                }
+            } catch (\Throwable $e) {}
+        }
+
+        if ($successCount > 0) {
+            return back()->with('success', "✓ Berhasil menyinkronkan {$successCount} berkas kegiatan langsung ke folder Google Drive Anda!");
+        }
+
+        return back()->with('error', 'Gagal mengunggah ke Google Drive. Pastikan folder Master sudah dibagikan ke email robot SIPEGA sebagai EDITOR.');
     }
 
     /**

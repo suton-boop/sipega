@@ -487,6 +487,18 @@
 
                     <!-- 1-Click Multi Copy Actions -->
                     <div class="flex items-center gap-2 flex-wrap">
+                        <form action="{{ route('agenda.sync_drive_all') }}" method="POST" class="inline">
+                            @csrf
+                            <input type="hidden" name="date" value="{{ $selectedDate }}">
+                            <button 
+                                type="submit" 
+                                class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-black px-4 py-2.5 rounded-2xl shadow-sm transition flex items-center gap-1.5"
+                                title="Unggah seluruh kegiatan tanggal ini langsung ke Google Drive"
+                            >
+                                <span>☁️</span> Sinkronkan Semua ke Drive
+                            </button>
+                        </form>
+
                         <button 
                             type="button" 
                             onclick="copyAllTabular()" 
@@ -605,29 +617,36 @@
 
                                         <!-- Kolom 7: Link Bukti Dukung (Google Drive File PDF / SIPEGA PDF Streamer) -->
                                         <td class="p-3">
-                                            <div class="flex items-center justify-between gap-1">
-                                                <a href="{{ $pdfOpenUrl }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline truncate max-w-[125px] inline-block font-bold text-xs" title="Buka Berkas PDF Bukti Dukung: {{ $pdfOpenUrl }}">
-                                                    📄 Berkas PDF ↗
-                                                </a>
-                                                <div class="flex items-center gap-0.5">
-                                                    <!-- Unduh Berkas PDF -->
-                                                    <a href="{{ route('agenda.item.pdf', $item->id) }}" title="Unduh Berkas PDF Resmi" class="text-emerald-600 hover:text-emerald-800 p-1 text-xs font-bold">
-                                                        ⬇️
+                                            <div class="space-y-1.5 min-w-[130px]">
+                                                <div class="flex items-center justify-between gap-1">
+                                                    <a href="{{ $pdfOpenUrl }}" target="_blank" class="underline truncate max-w-[110px] inline-block font-bold text-xs {{ $isDriveFile ? 'text-emerald-700 hover:text-emerald-900' : 'text-blue-600 hover:text-blue-800' }}" title="Buka Berkas PDF: {{ $pdfOpenUrl }}">
+                                                        {{ $isDriveFile ? '🟢 PDF di Drive ↗' : '📄 Berkas PDF ↗' }}
                                                     </a>
-                                                    <!-- Salin Tautan PDF e-Kinerja -->
-                                                    <button type="button" onclick="copyToClipboard('{{ addslashes($pdfOpenUrl) }}', 'Link File PDF e-Kinerja')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Tautan PDF">
-                                                        📋
-                                                    </button>
-                                                    @if(!$isDriveFile)
-                                                        <!-- Sinkronkan & Unggah Ulang ke Google Drive -->
-                                                        <form action="{{ route('agenda.item.generate_pdf', $item->id) }}" method="POST" class="inline" title="Unggah / Sinkronkan ke Google Drive">
-                                                            @csrf
-                                                            <button type="submit" class="text-amber-500 hover:text-amber-700 p-1 text-xs" title="Sinkronkan Berkas ke Google Drive">
-                                                                ☁️
-                                                            </button>
-                                                        </form>
-                                                    @endif
+                                                    <div class="flex items-center gap-0.5">
+                                                        <!-- Unduh Berkas PDF -->
+                                                        <a href="{{ route('agenda.item.pdf', $item->id) }}" title="Unduh Berkas PDF Resmi" class="text-emerald-600 hover:text-emerald-800 p-0.5 text-xs font-bold">
+                                                            ⬇️
+                                                        </a>
+                                                        <!-- Salin Tautan PDF e-Kinerja -->
+                                                        <button type="button" onclick="copyToClipboard('{{ addslashes($pdfOpenUrl) }}', 'Link File PDF e-Kinerja')" class="text-gray-400 hover:text-sipega-orange p-0.5 text-xs font-bold" title="Salin Tautan PDF">
+                                                            📋
+                                                        </button>
+                                                    </div>
                                                 </div>
+
+                                                @if(!$isDriveFile)
+                                                    <!-- Tombol Jelas Upload ke Google Drive -->
+                                                    <form action="{{ route('agenda.item.generate_pdf', $item->id) }}" method="POST">
+                                                        @csrf
+                                                        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-white font-black text-[10px] uppercase py-1 px-2 rounded-lg shadow-sm transition flex items-center justify-center gap-1" title="Kirim & Simpan Berkas PDF Ini ke Google Drive Anda">
+                                                            <span>☁️</span> Upload ke Drive
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <div class="flex items-center gap-1 text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                                                        <span>✓</span> Tersinkron Drive
+                                                    </div>
+                                                @endif
                                             </div>
                                         </td>
 
