@@ -584,16 +584,21 @@
                                             </div>
                                         </td>
 
-                                        <!-- Kolom 7: Link Bukti Dukung (Google Drive) -->
+                                        <!-- Kolom 7: Link Bukti Dukung (Google Drive File PDF) -->
                                         <td class="p-3">
                                             @if($driveFinalLink)
                                                 <div class="flex items-center justify-between gap-1">
-                                                    <a href="{{ $driveFinalLink }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline truncate max-w-[130px] inline-block font-semibold" title="{{ $driveFinalLink }}">
-                                                        {{ $item->proof_file_path ? '📄 Berkas Bukti' : '📁 Folder Drive' }} ↗
+                                                    <a href="{{ $driveFinalLink }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline truncate max-w-[125px] inline-block font-bold text-xs" title="Buka Berkas PDF Bukti Dukung di Google Drive: {{ $driveFinalLink }}">
+                                                        📄 Berkas PDF ↗
                                                     </a>
-                                                    <button type="button" onclick="copyToClipboard('{{ addslashes($driveFinalLink) }}', 'Link Bukti Drive')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Link Drive">
-                                                        📋
-                                                    </button>
+                                                    <div class="flex items-center gap-0.5">
+                                                        <a href="{{ route('agenda.item.pdf', $item->id) }}" title="Unduh Berkas PDF Resmi" class="text-emerald-600 hover:text-emerald-800 p-1 text-xs font-bold">
+                                                            ⬇️
+                                                        </a>
+                                                        <button type="button" onclick="copyToClipboard('{{ addslashes($driveFinalLink) }}', 'Link File PDF e-Kinerja')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Tautan PDF">
+                                                            📋
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             @else
                                                 <button type="button" onclick="openModal('driveModal')" class="text-amber-600 hover:underline text-[10px] font-bold">

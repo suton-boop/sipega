@@ -149,6 +149,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/agenda/{id}/realization', [AgendaController::class, 'updateRealization'])->name('agenda.realization');
     Route::post('/agenda/quick-add', [AgendaController::class, 'quickAddItem'])->name('agenda.quick_add');
     Route::delete('/agenda/item/{id}', [AgendaController::class, 'deleteItem'])->name('agenda.item.destroy');
+    Route::get('/agenda/item/{id}/pdf', [AgendaController::class, 'downloadItemPdf'])->name('agenda.item.pdf');
+    Route::post('/agenda/item/{id}/generate-pdf', [AgendaController::class, 'regenerateItemPdf'])->name('agenda.item.generate_pdf');
     Route::post('/agenda/rhk', [AgendaController::class, 'storeRhk'])->name('agenda.rhk.store');
     Route::delete('/agenda/rhk/{id}', [AgendaController::class, 'deleteRhk'])->name('agenda.rhk.destroy');
     Route::post('/agenda/drive-folder', [AgendaController::class, 'updateDriveFolder'])->name('agenda.drive_folder.update');

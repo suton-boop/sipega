@@ -71,6 +71,16 @@ class AgendaController extends Controller
             }
         }
 
+        // Auto-generate Bukti PDF untuk item kegiatan yang masih berupa folder link atau belum ada PDF-nya
+        if ($myAgendaToday && $myAgendaToday->items) {
+            foreach ($myAgendaToday->items as $agendaItem) {
+                if (empty($agendaItem->drive_link) || str_contains($agendaItem->drive_link, '/drive/folders/')) {
+                    $this->generateItemEvidencePdf($agendaItem);
+                }
+            }
+            $myAgendaToday->load('items');
+        }
+
         // Hitung Skor Kesiapan e-Kinerja (0 - 100%)
         $totalItems = $myAgendaToday ? $myAgendaToday->items->count() : 0;
         $readinessScore = 0;
@@ -293,7 +303,10 @@ class AgendaController extends Controller
                 }
                 $existingItem->save();
 
-                return back()->with('success', 'Kegiatan agenda berhasil diperbarui dan siap disalin ke e-Kinerja!');
+                // Otomatis hasilkan & unggah PDF Bukti Dukung ke Google Drive
+                $this->generateItemEvidencePdf($existingItem, $targetPath ?? null);
+
+                return back()->with('success', 'Kegiatan agenda berhasil diperbarui dan berkas PDF bukti dukung siap disalin ke e-Kinerja!');
             }
         }
 
@@ -310,7 +323,126 @@ class AgendaController extends Controller
             'drive_file_id' => $driveFileId,
         ]);
 
-        return back()->with('success', 'Kegiatan baru berhasil dicatat dan siap disalin ke e-Kinerja!');
+        // Otomatis hasilkan & unggah PDF Bukti Dukung ke Google Drive
+        $this->generateItemEvidencePdf($item, $targetPath ?? null);
+
+        return back()->with('success', 'Kegiatan baru berhasil dicatat dan berkas PDF bukti dukung siap disalin ke e-Kinerja!');
+    }
+
+    /**
+     * Hasilkan PDF Bukti Dukung Resmi e-Kinerja dan Unggah ke Google Drive Pegawai
+     */
+    public function generateItemEvidencePdf(DailyAgendaItem $item, ?string $photoLocalPath = null): DailyAgendaItem
+    {
+        try {
+            $item->loadMissing('dailyAgenda.user');
+            $user = $item->dailyAgenda->user;
+            $date = $item->dailyAgenda->date;
+
+            // Foto bukti fisik jika ada (convert ke Base64 untuk disematkan di dalam PDF Dompdf)
+            $photoBase64 = null;
+            if ($photoLocalPath && file_exists($photoLocalPath)) {
+                $type = pathinfo($photoLocalPath, PATHINFO_EXTENSION);
+                $data = file_get_contents($photoLocalPath);
+                $photoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            } elseif ($item->proof_file_path) {
+                $fullPath = storage_path('app/public/' . $item->proof_file_path);
+                if (file_exists($fullPath) && in_array(strtolower(pathinfo($fullPath, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])) {
+                    $type = pathinfo($fullPath, PATHINFO_EXTENSION);
+                    $data = file_get_contents($fullPath);
+                    $photoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                }
+            }
+
+            // Render PDF resmi menggunakan template activity_evidence
+            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.activity_evidence', [
+                'item' => $item,
+                'user' => $user,
+                'date' => $date,
+                'photoBase64' => $photoBase64,
+            ]);
+
+            $cleanNip = preg_replace('/[^0-9]/', '', $user->nip ?: (string)$user->id);
+            $cleanDate = str_replace('-', '', $date);
+            $filename = 'Bukti_eKinerja_' . $cleanNip . '_' . $cleanDate . '_Item' . $item->id . '.pdf';
+
+            $destinationDir = storage_path('app/public/agendas');
+            if (!file_exists($destinationDir)) {
+                mkdir($destinationDir, 0777, true);
+            }
+            $targetPdfPath = $destinationDir . DIRECTORY_SEPARATOR . $filename;
+            file_put_contents($targetPdfPath, $pdf->setPaper('a4', 'portrait')->output());
+
+            $dbPath = 'agendas/' . $filename;
+            $driveLink = url('storage/' . $dbPath);
+            $driveFileId = null;
+
+            // Unggah langsung file PDF ke Google Drive dalam Folder Pegawai
+            $driveService = new GoogleDriveService();
+            if ($driveService->isConfigured()) {
+                $driveUpload = $driveService->uploadEvidence(
+                    $targetPdfPath,
+                    $filename,
+                    $user->drive_folder_link,
+                    true
+                );
+
+                if ($driveUpload && !empty($driveUpload['web_view_link'])) {
+                    $driveLink = $driveUpload['web_view_link'];
+                    $driveFileId = $driveUpload['id'];
+                }
+            }
+
+            $item->proof_file_path = $dbPath;
+            $item->drive_link = $driveLink;
+            if ($driveFileId) {
+                $item->drive_file_id = $driveFileId;
+            }
+            $item->save();
+
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Gagal generate PDF bukti dukung: ' . $e->getMessage());
+        }
+
+        return $item;
+    }
+
+    /**
+     * Download / Buka Langsung File PDF Bukti Dukung
+     */
+    public function downloadItemPdf($id)
+    {
+        $user = auth()->user();
+        $item = DailyAgendaItem::whereHas('dailyAgenda', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->findOrFail($id);
+
+        if (!$item->proof_file_path || !file_exists(storage_path('app/public/' . $item->proof_file_path)) || !str_ends_with($item->proof_file_path, '.pdf')) {
+            $this->generateItemEvidencePdf($item);
+        }
+
+        $filePath = storage_path('app/public/' . $item->proof_file_path);
+        if (!file_exists($filePath)) {
+            return back()->with('error', 'Berkas PDF bukti kegiatan tidak ditemukan.');
+        }
+
+        return response()->download($filePath);
+    }
+
+    /**
+     * Buat Ulang Berkas PDF & Tautan Drive untuk Item Tertentu
+     */
+    public function regenerateItemPdf($id)
+    {
+        $user = auth()->user();
+        $item = DailyAgendaItem::whereHas('dailyAgenda', function($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->findOrFail($id);
+
+        $this->generateItemEvidencePdf($item);
+
+        return back()->with('success', 'Berkas PDF bukti dukung berhasil dibuat ulang dan disiapkan tautan Google Drive-nya!');
+    }
     }
 
     /**
