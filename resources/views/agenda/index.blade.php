@@ -202,59 +202,129 @@
 
                 <form action="{{ route('agenda.quick_add') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                     @csrf
+                    <input type="hidden" name="item_id" id="hiddenItemId" value="">
+
+                    @php
+                        $countLogbook = $myAgendaToday ? $myAgendaToday->items->count() : 0;
+                        $countMandiri = $mySchedules->count();
+                        $countST = $dutyLetters->count();
+                        $countMeeting = $upcomingMeetings->count();
+                        $totalAgendasToday = $countLogbook + $countMandiri + $countST + $countMeeting;
+                    @endphp
 
                     <!-- SELECTOR TANGGAL & PILIHAN AGENDA YANG SUDAH DIBUAT HARI ITU -->
                     <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-gray-200">
-                        <!-- 1. Pilihan Tanggal Kegiatan -->
-                        <div class="md:col-span-4">
+                        <!-- 1. Pilihan Tanggal Kegiatan & Tombol Sinkron -->
+                        <div class="md:col-span-5">
                             <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
                                 <span>📅</span> Tanggal Kegiatan
                             </label>
-                            <input 
-                                type="date" 
-                                name="date" 
-                                id="agendaDateInput" 
-                                value="{{ $selectedDate }}" 
-                                onchange="onDateChanged(this.value)"
-                                class="w-full bg-white border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-xl p-2.5 text-xs font-bold text-gray-800 shadow-sm cursor-pointer"
-                            >
-                            <p class="text-[10px] text-gray-400 mt-1">Ubah tanggal untuk mencatat atau melihat agenda tanggal lain.</p>
+                            <div class="flex items-center gap-2">
+                                <input 
+                                    type="date" 
+                                    name="date" 
+                                    id="agendaDateInput" 
+                                    value="{{ $selectedDate }}" 
+                                    onchange="onDateChanged(this.value)"
+                                    class="w-full bg-white border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-xl p-2.5 text-xs font-bold text-gray-800 shadow-sm cursor-pointer"
+                                >
+                                <button 
+                                    type="button" 
+                                    onclick="onDateChanged(document.getElementById('agendaDateInput').value)"
+                                    title="Sinkronkan tanggal dan muat agenda di tanggal ini"
+                                    class="px-3.5 py-2.5 bg-sipega-navy hover:bg-slate-800 text-white text-xs font-black rounded-xl transition shadow-sm shrink-0 flex items-center gap-1.5 cursor-pointer"
+                                >
+                                    <span>🔄</span> Sinkron
+                                </button>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1">Ubah tanggal & klik Sinkron untuk melihat agenda hari tersebut.</p>
                         </div>
 
-                        <!-- 2. Pilihan Agenda yang Sudah Dibuat di Hari Itu -->
-                        <div class="md:col-span-8">
+                        <!-- 2. Pilihan Agenda Terintegrasi (Mandiri, ST, Rapat, & Logbook) -->
+                        <div class="md:col-span-7">
                             <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-1.5 flex items-center justify-between">
                                 <span class="flex items-center gap-1.5">
                                     <span>📋</span> Pilihan Agenda di Hari Ini
                                 </span>
-                                <span class="text-[10px] text-sipega-orange font-bold font-mono">
-                                    {{ $myAgendaToday ? $myAgendaToday->items->count() : 0 }} kegiatan tercatat
+                                <span class="text-[10px] {{ $totalAgendasToday > 0 ? 'text-emerald-700 font-black' : 'text-gray-400 font-bold' }} font-mono">
+                                    {{ $totalAgendasToday }} Agenda Tersedia
                                 </span>
                             </label>
                             <select 
                                 id="agendaItemSelector" 
-                                name="item_id" 
-                                onchange="onSelectExistingAgenda(this.value)" 
+                                onchange="onSelectExistingAgenda()" 
                                 class="w-full bg-white border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-xl p-2.5 text-xs font-semibold text-gray-800 shadow-sm cursor-pointer"
                             >
-                                <option value="">➕ [Buat / Tambah Kegiatan Baru]</option>
-                                @if($myAgendaToday && $myAgendaToday->items->count() > 0)
-                                    <optgroup label="-- Pilih untuk Melanjutkan / Mengedit Kegiatan Ini --">
+                                <option value="">➕ [Buat / Tambah Kegiatan Baru (Kosong)]</option>
+
+                                <!-- Group 1: Agenda Mandiri Saya (Jadwal) -->
+                                @if($countMandiri > 0)
+                                    <optgroup label="📌 Agenda Mandiri Saya ({{ $countMandiri }})">
+                                        @foreach($mySchedules as $sch)
+                                            <option value="schedule_{{ $sch->id }}"
+                                                data-type="schedule"
+                                                data-plan="{{ htmlspecialchars($sch->title . ($sch->location ? ' di ' . $sch->location : '') . ($sch->remark ? ' (' . $sch->remark . ')' : ''), ENT_QUOTES) }}"
+                                                data-start="{{ $sch->start_time ? \Carbon\Carbon::parse($sch->start_time)->format('H:i') : '08:00' }}"
+                                                data-end="10:00"
+                                            >
+                                                🗓️ [Mandiri] {{ $sch->title }} {{ $sch->location ? '📍 '.$sch->location : '' }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+
+                                <!-- Group 2: Surat Tugas Dinas Luar Resmi (ST) -->
+                                @if($countST > 0)
+                                    <optgroup label="✈️ Surat Tugas Dinas Luar (ST) ({{ $countST }})">
+                                        @foreach($dutyLetters as $dl)
+                                            <option value="st_{{ $dl->id }}"
+                                                data-type="st"
+                                                data-plan="{{ htmlspecialchars('Melaksanakan tugas dinas luar: ' . $dl->title . ($dl->location ? ' di ' . $dl->location : '') . ($dl->number ? ' sesuai ST No: ' . $dl->number : ''), ENT_QUOTES) }}"
+                                                data-start="08:00"
+                                                data-end="16:00"
+                                            >
+                                                ✈️ [ST] {{ \Illuminate\Support\Str::limit($dl->title, 55) }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+
+                                <!-- Group 3: Rapat Dinas Resmi -->
+                                @if($countMeeting > 0)
+                                    <optgroup label="📢 Rapat Dinas Resmi ({{ $countMeeting }})">
+                                        @foreach($upcomingMeetings as $meet)
+                                            <option value="meeting_{{ $meet->id }}"
+                                                data-type="meeting"
+                                                data-plan="{{ htmlspecialchars('Mengikuti rapat dinas: ' . $meet->title . ($meet->location ? ' di ' . $meet->location : ''), ENT_QUOTES) }}"
+                                                data-start="{{ $meet->start_time ? \Carbon\Carbon::parse($meet->start_time)->format('H:i') : '09:00' }}"
+                                                data-end="{{ $meet->end_time ? \Carbon\Carbon::parse($meet->end_time)->format('H:i') : '11:00' }}"
+                                            >
+                                                👥 [Rapat] {{ \Illuminate\Support\Str::limit($meet->title, 55) }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+
+                                <!-- Group 4: Logbook e-Kinerja yang Sudah Dicatat -->
+                                @if($countLogbook > 0)
+                                    <optgroup label="📝 Logbook yang Sudah Dicatat Hari Ini ({{ $countLogbook }})">
                                         @foreach($myAgendaToday->items as $idx => $existingItem)
-                                            <option value="{{ $existingItem->id }}"
+                                            <option value="item_{{ $existingItem->id }}"
+                                                data-type="item"
+                                                data-item-id="{{ $existingItem->id }}"
                                                 data-plan="{{ htmlspecialchars($existingItem->plan_description, ENT_QUOTES) }}"
                                                 data-rhk="{{ htmlspecialchars($existingItem->rhk_text ?? '', ENT_QUOTES) }}"
                                                 data-start="{{ $existingItem->start_time ?? '08:00' }}"
                                                 data-end="{{ $existingItem->end_time ?? '10:00' }}"
                                                 data-realization="{{ htmlspecialchars($existingItem->realization_notes ?? '', ENT_QUOTES) }}"
                                             >
-                                                #{{ $idx + 1 }}. [{{ $existingItem->start_time ?: '08:00' }} - {{ $existingItem->end_time ?: '10:00' }}] {{ \Illuminate\Support\Str::limit($existingItem->plan_description, 55) }}
+                                                ✏️ #{{ $idx + 1 }}. [{{ $existingItem->start_time ?: '08:00' }} - {{ $existingItem->end_time ?: '10:00' }}] {{ \Illuminate\Support\Str::limit($existingItem->plan_description, 50) }}
                                             </option>
                                         @endforeach
                                     </optgroup>
                                 @endif
                             </select>
-                            <p class="text-[10px] text-gray-400 mt-1">Pilih kegiatan di atas untuk mengedit/melanjutkan, atau biarkan tanda [+] untuk menambah baru.</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Pilih salah satu agenda di atas untuk otomatis mengisi teks dan jam kegiatan.</p>
                         </div>
                     </div>
 
@@ -1135,12 +1205,14 @@
             window.location.href = "{{ route('agenda.index') }}?date=" + dateVal;
         }
 
-        function onSelectExistingAgenda(itemId) {
+        function onSelectExistingAgenda() {
             const selector = document.getElementById('agendaItemSelector');
             const submitBtn = document.getElementById('btnSubmitAgenda');
+            const hiddenItemId = document.getElementById('hiddenItemId');
 
-            if (!itemId) {
+            if (!selector.value) {
                 // Mode: Tambah Kegiatan Baru
+                hiddenItemId.value = '';
                 document.getElementById('voiceInputTextarea').value = '';
                 document.getElementById('startTimeInput').value = '08:00';
                 document.getElementById('endTimeInput').value = '10:00';
@@ -1156,13 +1228,14 @@
                 return;
             }
 
-            // Mode: Edit Kegiatan yang Sudah Ada
             const selectedOption = selector.options[selector.selectedIndex];
+            const type = selectedOption.getAttribute('data-type');
             const plan = selectedOption.getAttribute('data-plan') || '';
             const rhk = selectedOption.getAttribute('data-rhk') || '';
             const start = selectedOption.getAttribute('data-start') || '08:00';
             const end = selectedOption.getAttribute('data-end') || '10:00';
             const realization = selectedOption.getAttribute('data-realization') || '';
+            const itemId = selectedOption.getAttribute('data-item-id') || '';
 
             document.getElementById('voiceInputTextarea').value = plan;
             document.getElementById('startTimeInput').value = start;
@@ -1172,14 +1245,25 @@
             if (realInput) realInput.value = realization;
 
             const rhkInput = document.getElementById('rhkSelect');
-            if (rhkInput) rhkInput.value = rhk;
+            if (rhkInput && rhk) rhkInput.value = rhk;
 
-            if (submitBtn) {
-                submitBtn.innerHTML = '<span>✏️</span> Perbarui Kegiatan & Link Drive';
-                submitBtn.className = 'bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer';
+            if (type === 'item' && itemId) {
+                // Mode Edit Logbook Lama
+                hiddenItemId.value = itemId;
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<span>✏️</span> Perbarui Kegiatan #' + itemId + ' & Link Drive';
+                    submitBtn.className = 'bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer';
+                }
+                showToast('Memuat logbook kegiatan untuk diedit/dilanjutkan.');
+            } else {
+                // Mode dari Agenda Mandiri / ST / Rapat: Simpan baru ke Logbook
+                hiddenItemId.value = '';
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<span>⚡</span> Simpan Agenda Ini ke Logbook & Siapkan Link Drive';
+                    submitBtn.className = 'bg-sipega-orange hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer';
+                }
+                showToast('Agenda "' + plan.substring(0, 30) + '..." berhasil dimuat ke formulir!');
             }
-
-            showToast('Data kegiatan berhasil dimuat. Anda dapat mengedit teks atau melanjutkan bicara.');
         }
 
         // Smart parser untuk mendeteksi "jam 8 sampai jam 10", "pukul 09.00 hingga 11.30", dll.

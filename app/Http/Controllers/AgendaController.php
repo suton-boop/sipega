@@ -37,9 +37,21 @@ class AgendaController extends Controller
             })
             ->get();
 
-        // Get individual schedules for suggestions
+        // Get individual schedules for suggestions (Agenda Mandiri)
         $mySchedules = \App\Models\EmployeeSchedule::where('user_id', $user->id)
             ->where('date', $selectedDate)
+            ->get();
+
+        // Get duty letters (Surat Tugas Resmi Approved) for suggestions
+        $dutyLetters = $user->letters()
+            ->where('status', 'Approved')
+            ->where(function($q) use ($selectedDate) {
+                $q->whereDate('date_start', '<=', $selectedDate)
+                  ->where(function($sq) use ($selectedDate) {
+                      $sq->whereDate('date_end', '>=', $selectedDate)
+                        ->orWhereNull('date_end');
+                  });
+            })
             ->get();
 
         // Daftar RHK Pegawai
@@ -98,6 +110,7 @@ class AgendaController extends Controller
             'user',
             'upcomingMeetings',
             'mySchedules',
+            'dutyLetters',
             'userRhks',
             'driveConfigured',
             'serviceAccountEmail',
