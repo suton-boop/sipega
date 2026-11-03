@@ -19,6 +19,21 @@ class AgendaController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->has('refresh') || $request->has('clear')) {
+            try {
+                if (function_exists('opcache_reset')) {
+                    @opcache_reset();
+                }
+                \Illuminate\Support\Facades\Artisan::call('view:clear');
+                $viewFiles = glob(storage_path('framework/views/*.php'));
+                if ($viewFiles) {
+                    foreach ($viewFiles as $f) {
+                        @unlink($f);
+                    }
+                }
+            } catch (\Throwable $e) {}
+        }
+
         $user = auth()->user();
         $selectedDate = $request->input('date', Carbon::today()->format('Y-m-d'));
         

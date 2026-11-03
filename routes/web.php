@@ -29,6 +29,9 @@ Route::get('/', function () {
 // ROUTE DEDIKASI UNTUK BERSIHKAN CACHE TAMPILAN & KONFIGURASI DARI BROWSER
 Route::get('/clear-cache', function () {
     try {
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
         \Illuminate\Support\Facades\Artisan::call('view:clear');
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('config:clear');
@@ -44,6 +47,20 @@ Route::get('/clear-cache', function () {
                 if (is_file($file)) {
                     @unlink($file);
                 }
+            }
+        }
+
+        // Cek Git Commit Hash yang aktif di server
+        $gitHead = 'Unknown';
+        if (file_exists(base_path('.git/HEAD'))) {
+            $headContent = trim(file_get_contents(base_path('.git/HEAD')));
+            if (str_starts_with($headContent, 'ref: ')) {
+                $refFile = base_path('.git/' . substr($headContent, 5));
+                if (file_exists($refFile)) {
+                    $gitHead = substr(trim(file_get_contents($refFile)), 0, 7);
+                }
+            } else {
+                $gitHead = substr($headContent, 0, 7);
             }
         }
 
@@ -80,14 +97,19 @@ Route::get('/clear-cache', function () {
                 <div style="display: inline-block; background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 600px; text-align: left; width: 100%;">
                     <div style="text-align: center; font-size: 44px; margin-bottom: 5px;">⚡</div>
                     <h2 style="color: #003366; margin-bottom: 5px; font-weight: 900; text-align: center;">Diagnosis SIPEGA & Google Drive</h2>
-                    <p style="color: #64748b; font-size: 13px; line-height: 1.5; text-align: center; margin-bottom: 20px;">Hasil pengecekan koneksi live dari server ke Google Drive Anda:</p>
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.5; text-align: center; margin-bottom: 15px;">Hasil pengecekan koneksi live dari server ke Google Drive Anda:</p>
                     
+                    <div style="background:#f1f5f9;border-radius:10px;padding:10px 14px;margin-bottom:15px;font-size:11px;color:#334155;line-height:1.6;">
+                        <div><strong>📁 Folder Server:</strong> <code>' . base_path() . '</code></div>
+                        <div><strong>🔖 Versi Commit:</strong> <span style="background:#003366;color:white;padding:1px 6px;border-radius:4px;font-weight:bold;">' . $gitHead . '</span> ' . ($gitHead === 'a7f7bc3' || $gitHead === '3797068' ? '(Versi Terbaru ✓)' : '<span style="color:#e11d48;font-weight:bold;">(Bukan Versi Terbaru, butuh git pull di folder ini!)</span>') . '</div>
+                    </div>
+
                     <div style="margin-bottom: 20px;">
                         ' . $diagHtml . '
                     </div>
 
                     <div style="text-align: center; margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
-                        <a href="/agenda" style="background: #003366; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; font-size: 13px;">Buka Halaman Agenda →</a>
+                        <a href="/agenda?refresh=1" style="background: #003366; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; font-size: 13px;">Buka Halaman Agenda (Paksa Segarkan) →</a>
                         <a href="/settings#drive" style="background: #f1f5f9; color: #334155; text-decoration: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; font-size: 13px;">Smart Pengaturan ⚙</a>
                     </div>
                 </div>
