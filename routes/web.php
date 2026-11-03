@@ -33,6 +33,9 @@ Route::get('/clear-cache', function () {
         \Illuminate\Support\Facades\Artisan::call('route:clear');
         \Illuminate\Support\Facades\Artisan::call('config:clear');
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        try {
+            \Illuminate\Support\Facades\Artisan::call('storage:link');
+        } catch (\Throwable $e) {}
         
         // Bersihkan manual file views jika ada permission issue di artisan
         $viewFiles = glob(storage_path('framework/views/*.php'));
@@ -43,14 +46,33 @@ Route::get('/clear-cache', function () {
                 }
             }
         }
+
+        // Cek status Google Drive Service Account
+        $driveService = new \App\Services\GoogleDriveService();
+        $driveConfigured = $driveService->isConfigured();
+        $driveEmail = $driveService->getServiceAccountEmail();
+        $driveTest = $driveConfigured ? $driveService->testConnection() : ['success' => false, 'message' => 'Credentials belum disetel'];
+        
+        $driveStatusHtml = $driveTest['success'] 
+            ? '<span style="color: #059669; font-weight: bold;">✓ Terhubung & Siap Upload (Email: ' . htmlspecialchars($driveEmail) . ')</span>'
+            : '<span style="color: #e11d48; font-weight: bold;">✕ ' . htmlspecialchars($driveTest['message'] ?? 'Belum aktif') . '</span>';
         
         return response('
             <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #f8fafc; min-height: 100vh;">
-                <div style="display: inline-block; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 500px;">
-                    <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
-                    <h2 style="color: #003366; margin-bottom: 10px; font-weight: 900;">Cache Berhasil Dibersihkan!</h2>
-                    <p style="color: #64748b; font-size: 14px; line-height: 1.6;">Seluruh cache tampilan Blade dan konfigurasi sistem telah di-reset ke versi terbaru (Voice Pro v2.2).</p>
-                    <a href="/agenda" style="display: inline-block; margin-top: 25px; background: #FF8C00; color: white; text-decoration: none; padding: 12px 28px; border-radius: 12px; font-weight: bold; font-size: 14px;">Buka Halaman Agenda Sekarang →</a>
+                <div style="display: inline-block; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 550px; text-align: left;">
+                    <div style="text-align: center; font-size: 50px; margin-bottom: 10px;">✅</div>
+                    <h2 style="color: #003366; margin-bottom: 10px; font-weight: 900; text-align: center;">Cache & Konfigurasi Berhasil Diperbarui!</h2>
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.6; text-align: center;">Seluruh cache tampilan Blade, routing, dan storage link sistem telah di-reset ke versi terbaru.</p>
+                    
+                    <div style="margin-top: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px; font-size: 12px; line-height: 1.6;">
+                        <div style="font-weight: bold; color: #003366; margin-bottom: 5px;">Status Integrasi Google Drive:</div>
+                        <div>Status API: ' . $driveStatusHtml . '</div>
+                        <div>Master Folder: ' . htmlspecialchars(\App\Models\Setting::get('google_drive_master_folder') ?: 'Belum disetel di Smart Pengaturan') . '</div>
+                    </div>
+
+                    <div style="text-align: center; margin-top: 25px;">
+                        <a href="/agenda" style="display: inline-block; background: #FF8C00; color: white; text-decoration: none; padding: 12px 28px; border-radius: 12px; font-weight: bold; font-size: 14px;">Buka Halaman Agenda Sekarang →</a>
+                    </div>
                 </div>
             </div>
         ');
@@ -58,6 +80,19 @@ Route::get('/clear-cache', function () {
         return 'Gagal bersihkan cache: ' . $e->getMessage();
     }
 });
+
+// ROUTE DIRECT VIEW PDF (ANTI 403 & AKSES PUBLIK E-KINERJA)
+Route::get('/agenda/item/{id}/view-pdf', [AgendaController::class, 'viewItemPdf'])->name('agenda.item.view_pdf');
+Route::get('/storage/agendas/{filename}', function ($filename) {
+    $path = storage_path('app/public/agendas/' . $filename);
+    if (!file_exists($path)) {
+        abort(404, 'Berkas bukti dukung tidak ditemukan.');
+    }
+    return response()->file($path, [
+        'Content-Type' => mime_content_type($path) ?: 'application/pdf',
+        'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+    ]);
+})->where('filename', '.*');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // DASHBOARD Core SIPEGA

@@ -113,6 +113,11 @@ class GoogleDriveService
             return $matches[1];
         }
 
+        // Jika berbentuk URL dengan parameter query ?id=... atau &id=...
+        if (preg_match('/[?&]id=([a-zA-Z0-9_-]+)/', $trimmed, $matches)) {
+            return $matches[1];
+        }
+
         // Jika berbentuk ID langsung (alfanumerik panjang tanpa slash)
         if (preg_match('/^[a-zA-Z0-9_-]{15,}$/', $trimmed)) {
             return $trimmed;
@@ -175,6 +180,109 @@ class GoogleDriveService
             ]);
             return null;
         }
+    }
+
+    /**
+     * Cari folder berdasarkan nama di dalam parent folder tertentu
+     */
+    public function findFolderByName(string $folderName, ?string $parentFolderUrlOrId = null): ?array
+    {
+        if (!$this->isConfigured()) {
+            return null;
+        }
+
+        $parentId = self::extractFolderId($parentFolderUrlOrId);
+
+        try {
+            $escapedName = str_replace("'", "\\'", $folderName);
+            $q = "name = '{$escapedName}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
+            if ($parentId) {
+                $q .= " and '{$parentId}' in parents";
+            }
+
+            $response = $this->service->files->listFiles([
+                'q' => $q,
+                'fields' => 'files(id, name, webViewLink)',
+                'supportsAllDrives' => true,
+                'includeItemsFromAllDrives' => true,
+                'pageSize' => 5,
+            ]);
+
+            $files = $response->getFiles();
+            if (!empty($files)) {
+                return [
+                    'id' => $files[0]->id,
+                    'name' => $files[0]->name,
+                    'web_view_link' => $files[0]->webViewLink,
+                ];
+            }
+        } catch (\Throwable $e) {
+            Log::warning('GoogleDriveService findFolderByName Error: ' . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Cari atau buat folder Google Drive untuk satu pegawai
+     */
+    public function findOrCreateUserFolder(User $user, ?string $masterFolderId = null): ?array
+    {
+        if (!$this->isConfigured()) {
+            return null;
+        }
+
+        $master = $masterFolderId ?: Setting::get('google_drive_master_folder');
+        if (empty($master)) {
+            return null;
+        }
+
+        $masterId = self::extractFolderId($master);
+        $exactName = ($user->nip ? trim($user->nip) . ' - ' : '') . trim($user->name);
+
+        // 1. Coba cari dengan nama persis di Master Folder
+        $found = $this->findFolderByName($exactName, $masterId);
+        if ($found) {
+            if ($user->drive_folder_link !== $found['web_view_link']) {
+                $user->update(['drive_folder_link' => $found['web_view_link']]);
+            }
+            return $found;
+        }
+
+        // 2. Jika tidak ketemu dan user punya NIP, cari folder yang memuat NIP user di Master Folder
+        if (!empty($user->nip)) {
+            try {
+                $cleanNip = trim($user->nip);
+                $q = "name contains '{$cleanNip}' and mimeType = 'application/vnd.google-apps.folder' and trashed = false";
+                if ($masterId) {
+                    $q .= " and '{$masterId}' in parents";
+                }
+                $response = $this->service->files->listFiles([
+                    'q' => $q,
+                    'fields' => 'files(id, name, webViewLink)',
+                    'supportsAllDrives' => true,
+                    'includeItemsFromAllDrives' => true,
+                    'pageSize' => 5,
+                ]);
+                $files = $response->getFiles();
+                if (!empty($files)) {
+                    $found = [
+                        'id' => $files[0]->id,
+                        'name' => $files[0]->name,
+                        'web_view_link' => $files[0]->webViewLink,
+                    ];
+                    if ($user->drive_folder_link !== $found['web_view_link']) {
+                        $user->update(['drive_folder_link' => $found['web_view_link']]);
+                    }
+                    return $found;
+                }
+            } catch (\Throwable $e) {
+                Log::warning('GoogleDriveService findFolderByNip Error: ' . $e->getMessage());
+            }
+        }
+
+        // 3. Jika belum ada di Google Drive, buat baru di Master Folder
+        return $this->generateUserFolder($user, $masterId);
     }
 
     /**
@@ -323,13 +431,54 @@ class GoogleDriveService
             $mimeType = mime_content_type($localFilePath) ?: 'application/octet-stream';
             $content = file_get_contents($localFilePath);
 
-            $file = $this->service->files->create($fileMetadata, [
-                'data' => $content,
-                'mimeType' => $mimeType,
-                'uploadType' => 'multipart',
-                'fields' => 'id, name, webViewLink, webContentLink',
-                'supportsAllDrives' => true,
-            ]);
+            $file = null;
+            try {
+                $file = $this->service->files->create($fileMetadata, [
+                    'data' => $content,
+                    'mimeType' => $mimeType,
+                    'uploadType' => 'multipart',
+                    'fields' => 'id, name, webViewLink, webContentLink',
+                    'supportsAllDrives' => true,
+                ]);
+            } catch (\Throwable $primaryEx) {
+                Log::warning("GoogleDriveService: Upload ke parent {$folderId} gagal: " . $primaryEx->getMessage() . ". Mencoba fallback parent...");
+
+                // Fallback 1: Coba upload ke Master Folder jika parent awal gagal
+                $master = Setting::get('google_drive_master_folder');
+                $masterId = self::extractFolderId($master);
+
+                if ($masterId && $masterId !== $folderId) {
+                    try {
+                        $fileMetadata->setParents([$masterId]);
+                        $file = $this->service->files->create($fileMetadata, [
+                            'data' => $content,
+                            'mimeType' => $mimeType,
+                            'uploadType' => 'multipart',
+                            'fields' => 'id, name, webViewLink, webContentLink',
+                            'supportsAllDrives' => true,
+                        ]);
+                    } catch (\Throwable $masterEx) {
+                        Log::warning("GoogleDriveService: Upload ke Master Folder gagal: " . $masterEx->getMessage() . ". Fallback ke root...");
+                    }
+                }
+
+                // Fallback 2: Jika masih belum berhasil, coba upload ke Service Account root (tanpa parent)
+                if (!$file) {
+                    try {
+                        $fileMetadata->setParents([]);
+                        $file = $this->service->files->create($fileMetadata, [
+                            'data' => $content,
+                            'mimeType' => $mimeType,
+                            'uploadType' => 'multipart',
+                            'fields' => 'id, name, webViewLink, webContentLink',
+                            'supportsAllDrives' => true,
+                        ]);
+                    } catch (\Throwable $rootEx) {
+                        Log::error("GoogleDriveService: Seluruh jalur upload Drive gagal: " . $rootEx->getMessage());
+                        throw $rootEx;
+                    }
+                }
+            }
 
             if ($makePublic && !empty($file->id)) {
                 try {

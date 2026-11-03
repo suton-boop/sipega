@@ -384,16 +384,25 @@ class AgendaController extends Controller
             file_put_contents($targetPdfPath, $pdf->setPaper('a4', 'portrait')->output());
 
             $dbPath = 'agendas/' . $filename;
-            $driveLink = url('storage/' . $dbPath);
+            $driveLink = route('agenda.item.view_pdf', $item->id);
             $driveFileId = null;
 
             // Unggah langsung file PDF ke Google Drive dalam Folder Pegawai
             $driveService = new GoogleDriveService();
             if ($driveService->isConfigured()) {
+                // Pastikan folder Drive user sudah terpasang / temukan folder di Master Folder
+                $targetFolder = $user->drive_folder_link;
+                if (empty($targetFolder)) {
+                    $foundFolder = $driveService->findOrCreateUserFolder($user);
+                    if ($foundFolder && !empty($foundFolder['web_view_link'])) {
+                        $targetFolder = $foundFolder['web_view_link'];
+                    }
+                }
+
                 $driveUpload = $driveService->uploadEvidence(
                     $targetPdfPath,
                     $filename,
-                    $user->drive_folder_link,
+                    $targetFolder,
                     true
                 );
 
@@ -415,6 +424,28 @@ class AgendaController extends Controller
         }
 
         return $item;
+    }
+
+    /**
+     * Buka Langsung File PDF Bukti Dukung di Browser (Inline Streaming, Anti-403)
+     */
+    public function viewItemPdf($id)
+    {
+        $item = DailyAgendaItem::findOrFail($id);
+
+        if (!$item->proof_file_path || !file_exists(storage_path('app/public/' . $item->proof_file_path)) || !str_ends_with($item->proof_file_path, '.pdf')) {
+            $this->generateItemEvidencePdf($item);
+        }
+
+        $filePath = storage_path('app/public/' . $item->proof_file_path);
+        if (!file_exists($filePath)) {
+            abort(404, 'Berkas PDF bukti kegiatan tidak ditemukan.');
+        }
+
+        return response()->file($filePath, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . basename($filePath) . '"'
+        ]);
     }
 
     /**

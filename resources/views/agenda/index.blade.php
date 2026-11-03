@@ -524,7 +524,9 @@
                             <tbody class="divide-y divide-gray-100 font-medium">
                                 @foreach($myAgendaToday->items as $item)
                                     @php 
-                                        $driveFinalLink = $item->drive_link ?: $user->drive_folder_link;
+                                        $isDriveFile = $item->drive_link && str_contains($item->drive_link, 'drive.google.com/file/d/');
+                                        $pdfOpenUrl = $isDriveFile ? $item->drive_link : route('agenda.item.view_pdf', $item->id);
+                                        $driveFinalLink = $item->drive_link ?: $pdfOpenUrl;
                                         $itemScore = $itemsReadiness[$item->id] ?? 0;
                                     @endphp
                                     <tr class="hover:bg-slate-50 transition group" data-item-id="{{ $item->id }}">
@@ -601,27 +603,32 @@
                                             </div>
                                         </td>
 
-                                        <!-- Kolom 7: Link Bukti Dukung (Google Drive File PDF) -->
+                                        <!-- Kolom 7: Link Bukti Dukung (Google Drive File PDF / SIPEGA PDF Streamer) -->
                                         <td class="p-3">
-                                            @if($driveFinalLink)
-                                                <div class="flex items-center justify-between gap-1">
-                                                    <a href="{{ $driveFinalLink }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline truncate max-w-[125px] inline-block font-bold text-xs" title="Buka Berkas PDF Bukti Dukung di Google Drive: {{ $driveFinalLink }}">
-                                                        📄 Berkas PDF ↗
+                                            <div class="flex items-center justify-between gap-1">
+                                                <a href="{{ $pdfOpenUrl }}" target="_blank" class="text-blue-600 hover:text-blue-800 underline truncate max-w-[125px] inline-block font-bold text-xs" title="Buka Berkas PDF Bukti Dukung: {{ $pdfOpenUrl }}">
+                                                    📄 Berkas PDF ↗
+                                                </a>
+                                                <div class="flex items-center gap-0.5">
+                                                    <!-- Unduh Berkas PDF -->
+                                                    <a href="{{ route('agenda.item.pdf', $item->id) }}" title="Unduh Berkas PDF Resmi" class="text-emerald-600 hover:text-emerald-800 p-1 text-xs font-bold">
+                                                        ⬇️
                                                     </a>
-                                                    <div class="flex items-center gap-0.5">
-                                                        <a href="{{ route('agenda.item.pdf', $item->id) }}" title="Unduh Berkas PDF Resmi" class="text-emerald-600 hover:text-emerald-800 p-1 text-xs font-bold">
-                                                            ⬇️
-                                                        </a>
-                                                        <button type="button" onclick="copyToClipboard('{{ addslashes($driveFinalLink) }}', 'Link File PDF e-Kinerja')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Tautan PDF">
-                                                            📋
-                                                        </button>
-                                                    </div>
+                                                    <!-- Salin Tautan PDF e-Kinerja -->
+                                                    <button type="button" onclick="copyToClipboard('{{ addslashes($pdfOpenUrl) }}', 'Link File PDF e-Kinerja')" class="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-sipega-orange p-1" title="Salin Tautan PDF">
+                                                        📋
+                                                    </button>
+                                                    @if(!$isDriveFile)
+                                                        <!-- Sinkronkan & Unggah Ulang ke Google Drive -->
+                                                        <form action="{{ route('agenda.item.generate_pdf', $item->id) }}" method="POST" class="inline" title="Unggah / Sinkronkan ke Google Drive">
+                                                            @csrf
+                                                            <button type="submit" class="text-amber-500 hover:text-amber-700 p-1 text-xs" title="Sinkronkan Berkas ke Google Drive">
+                                                                ☁️
+                                                            </button>
+                                                        </form>
+                                                    @endif
                                                 </div>
-                                            @else
-                                                <button type="button" onclick="openModal('driveModal')" class="text-amber-600 hover:underline text-[10px] font-bold">
-                                                    + Pasang Link Drive
-                                                </button>
-                                            @endif
+                                            </div>
                                         </td>
 
                                         <!-- Aksi Hapus -->
