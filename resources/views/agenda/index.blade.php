@@ -676,70 +676,65 @@
                 @endif
             </div>
 
-            <!-- CARD 4: WORKFLOW SIKLUS SORE SIPEGA (EVALUASI & WATERMARK RESMI SIPEGA) -->
-            @if($myAgendaToday && !$myAgendaToday->realization_submitted_at)
-                @php 
-                    $hour = (int) now('Asia/Makassar')->format('H'); 
-                    $isFlexible = \App\Models\Setting::get('is_realization_open_anytime') === '1';
-                @endphp
+            <!-- CARD 4: WORKFLOW SIKLUS SORE SIPEGA (EVALUASI REALISASI & SINKRONISASI DRIVE) -->
+            @if($myAgendaToday && $myAgendaToday->items->count() > 0)
                 <div class="bg-sipega-navy rounded-[2.5rem] p-6 lg:p-8 text-white shadow-xl relative overflow-hidden">
                     <div class="flex justify-between items-center mb-6">
                         <div>
-                            <h4 class="text-xl font-black uppercase tracking-tight">Evaluasi Sore & Validasi SIPEGA</h4>
-                            <p class="text-xs text-white/50 font-medium">Tetapkan status penyelesaian akhir seluruh kegiatan hari ini.</p>
+                            <h4 class="text-xl font-black uppercase tracking-tight">Evaluasi Realisasi & Validasi Kinerja SIPEGA</h4>
+                            <p class="text-xs text-white/50 font-medium">Tetapkan status capaian akhir dan catatan realisasi untuk e-Kinerja BKN.</p>
                         </div>
-                        @if($isFlexible)
-                            <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full text-[10px] font-black uppercase">
-                                Mode Terbuka Bebas
+                        @if($myAgendaToday->realization_submitted_at)
+                            <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 rounded-full text-[10px] font-black uppercase flex items-center gap-1.5">
+                                <span>✓</span> Evaluasi Terkirim: {{ \Carbon\Carbon::parse($myAgendaToday->realization_submitted_at)->format('H:i') }} WITA
+                            </span>
+                        @else
+                            <span class="px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-400/30 rounded-full text-[10px] font-black uppercase">
+                                Belum Terkirim
                             </span>
                         @endif
                     </div>
 
-                    @if($isFlexible || ($hour >= 15 && $hour < 17))
-                        <form action="{{ route('agenda.realization', $myAgendaToday->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
-                            @csrf
-                            <div class="space-y-4">
-                                @foreach($myAgendaToday->items as $item)
-                                    <div class="bg-white/5 p-5 rounded-2xl border border-white/10 space-y-3">
-                                        <div class="flex justify-between items-start gap-4">
-                                            <p class="font-bold text-sm text-white">{{ $item->plan_description }}</p>
-                                            <div class="flex gap-2">
-                                                <label class="cursor-pointer">
-                                                    <input type="radio" name="items[{{ $item->id }}][status]" value="completed" {{ $item->status === 'completed' ? 'checked' : '' }} class="hidden peer">
-                                                    <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 block transition">Selesai</span>
-                                                </label>
-                                                <label class="cursor-pointer">
-                                                    <input type="radio" name="items[{{ $item->id }}][status]" value="progress" {{ $item->status === 'progress' ? 'checked' : '' }} class="hidden peer">
-                                                    <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 block transition">Progres</span>
-                                                </label>
-                                                <label class="cursor-pointer">
-                                                    <input type="radio" name="items[{{ $item->id }}][status]" value="changed" {{ $item->status === 'changed' ? 'checked' : '' }} class="hidden peer">
-                                                    <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:border-amber-500 block transition">Berubah</span>
-                                                </label>
-                                            </div>
+                    <form action="{{ route('agenda.realization', $myAgendaToday->id) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+                        @csrf
+                        <div class="space-y-4">
+                            @foreach($myAgendaToday->items as $item)
+                                <div class="bg-white/5 p-5 rounded-2xl border border-white/10 space-y-3">
+                                    <div class="flex justify-between items-start gap-4">
+                                        <p class="font-bold text-sm text-white">{{ $item->plan_description }}</p>
+                                        <div class="flex gap-2">
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="items[{{ $item->id }}][status]" value="completed" {{ $item->status === 'completed' ? 'checked' : '' }} class="hidden peer">
+                                                <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-emerald-500 peer-checked:text-white peer-checked:border-emerald-500 block transition">Selesai</span>
+                                            </label>
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="items[{{ $item->id }}][status]" value="progress" {{ $item->status === 'progress' ? 'checked' : '' }} class="hidden peer">
+                                                <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-blue-500 peer-checked:text-white peer-checked:border-blue-500 block transition">Progres</span>
+                                            </label>
+                                            <label class="cursor-pointer">
+                                                <input type="radio" name="items[{{ $item->id }}][status]" value="changed" {{ $item->status === 'changed' ? 'checked' : '' }} class="hidden peer">
+                                                <span class="px-3 py-1 rounded-xl text-[10px] font-black uppercase border border-white/20 bg-white/5 text-white/60 peer-checked:bg-amber-500 peer-checked:text-white peer-checked:border-amber-500 block transition">Berubah</span>
+                                            </label>
                                         </div>
-                                        <input type="text" name="items[{{ $item->id }}][notes]" value="{{ $item->realization_notes }}" class="w-full bg-white/10 border-0 rounded-xl text-xs text-white placeholder-white/30 p-2.5 font-medium" placeholder="Catatan capaian / kendala...">
                                     </div>
-                                @endforeach
-                            </div>
-
-                            <div class="bg-white/5 p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                <div>
-                                    <label class="block text-xs font-black uppercase tracking-wider text-white/80">Lampiran Bukti Sore (Opsional)</label>
-                                    <span class="text-[10px] text-white/40">Otomatis diunggah ke Google Drive & diberi stempel watermark SIPEGA</span>
+                                    <input type="text" name="items[{{ $item->id }}][notes]" value="{{ $item->realization_notes }}" class="w-full bg-white/10 border-0 rounded-xl text-xs text-white placeholder-white/30 p-2.5 font-medium" placeholder="Catatan capaian realisasi / kendala kegiatan...">
                                 </div>
-                                <input type="file" name="proof_file" accept="image/*,.pdf" class="text-xs text-white/60 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-sipega-orange file:text-white hover:file:bg-orange-600 cursor-pointer">
-                            </div>
-
-                            <button type="submit" class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-4 rounded-2xl w-full shadow-lg transition uppercase tracking-wider text-xs">
-                                Kirim Evaluasi Kinerja Sore
-                            </button>
-                        </form>
-                    @else
-                        <div class="bg-white/5 border border-dashed border-white/10 rounded-2xl p-6 text-center text-xs text-white/50">
-                            Evaluasi sore terbuka otomatis pukul 15:00 - 17:00 WITA. Anda tetap bisa mencatat kegiatan melalui tombol di atas.
+                            @endforeach
                         </div>
-                    @endif
+
+                        <div class="bg-white/5 p-5 rounded-2xl border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                            <div>
+                                <label class="block text-xs font-black uppercase tracking-wider text-white/80">Lampiran Bukti Sore Tambahan (Opsional)</label>
+                                <span class="text-[10px] text-white/40">Otomatis diunggah ke Google Drive & disematkan ke PDF resmi</span>
+                            </div>
+                            <input type="file" name="proof_file" accept="image/*,.pdf" class="text-xs text-white/60 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-sipega-orange file:text-white hover:file:bg-orange-600 cursor-pointer">
+                        </div>
+
+                        <button type="submit" class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-4 rounded-2xl w-full shadow-lg transition uppercase tracking-wider text-xs flex items-center justify-center gap-2">
+                            <span>⚡</span>
+                            <span>{{ $myAgendaToday->realization_submitted_at ? 'Perbarui Catatan Realisasi & Sinkronkan ke Google Drive' : 'Kirim Catatan Realisasi & Sinkronkan ke Google Drive' }}</span>
+                        </button>
+                    </form>
                 </div>
             @endif
 
