@@ -536,4 +536,141 @@ class GoogleDriveService
             ];
         }
     }
+
+    /**
+     * Diagnosis Menyeluruh Step-by-Step Google Drive (Koneksi, Izin Folder Induk, Subfolder Pegawai, & Uji Tulis)
+     */
+    public function diagnoseDrive(?User $user = null): array
+    {
+        $steps = [];
+
+        // Step 1: Kredensial & Library
+        if (!self::isLibraryInstalled()) {
+            return [
+                'success' => false,
+                'steps' => [
+                    ['name' => '1. Library Google API Client', 'status' => false, 'message' => 'Library google/apiclient belum terpasang di vendor.']
+                ]
+            ];
+        }
+
+        if (!$this->isConfigured()) {
+            return [
+                'success' => false,
+                'steps' => [
+                    ['name' => '1. Kredensial Service Account', 'status' => false, 'message' => 'Kredensial service-account.json belum diunggah atau tidak valid.']
+                ]
+            ];
+        }
+
+        $steps[] = ['name' => '1. Kredensial Service Account', 'status' => true, 'message' => 'Kredensial aktif di server.'];
+
+        // Step 2: Cek Koneksi API & Email Robot
+        $robotEmail = $this->getServiceAccountEmail();
+        try {
+            $about = $this->service->about->get(['fields' => 'user']);
+            if ($about->getUser()) {
+                $robotEmail = $about->getUser()->getEmailAddress() ?: $robotEmail;
+            }
+            $steps[] = ['name' => '2. Koneksi Google Drive API', 'status' => true, 'message' => "Terhubung sebagai robot: {$robotEmail}"];
+        } catch (\Throwable $e) {
+            $steps[] = ['name' => '2. Koneksi Google Drive API', 'status' => false, 'message' => "Gagal terhubung ke Google: " . $e->getMessage()];
+            return ['success' => false, 'steps' => $steps];
+        }
+
+        // Step 3: Cek Folder Induk (Master Folder)
+        $masterUrl = Setting::get('google_drive_master_folder');
+        $masterId = self::extractFolderId($masterUrl);
+
+        if (empty($masterId)) {
+            $steps[] = ['name' => '3. Folder Induk (Master Folder)', 'status' => false, 'message' => 'Tautan / ID Folder Induk belum diisi di Pengaturan Sistem.'];
+            return ['success' => false, 'steps' => $steps];
+        }
+
+        try {
+            $folder = $this->service->files->get($masterId, [
+                'fields' => 'id, name, capabilities',
+                'supportsAllDrives' => true
+            ]);
+            
+            $canAddChildren = $folder->getCapabilities() ? $folder->getCapabilities()->getCanAddChildren() : true;
+            if ($canAddChildren) {
+                $steps[] = ['name' => '3. Akses Folder Induk (' . $folder->getName() . ')', 'status' => true, 'message' => "Berhasil diakses dengan izin EDITOR!"];
+            } else {
+                $steps[] = [
+                    'name' => '3. Akses Folder Induk (' . $folder->getName() . ')',
+                    'status' => false,
+                    'message' => "Robot hanya memiliki izin Lihat (Viewer). Mohon buka Google Drive > klik kanan folder > Bagikan > ubah peran {$robotEmail} menjadi EDITOR!"
+                ];
+                return ['success' => false, 'steps' => $steps];
+            }
+        } catch (\Google\Service\Exception $e) {
+            if ($e->getCode() === 404) {
+                $steps[] = [
+                    'name' => '3. Akses Folder Induk (ID: ' . $masterId . ')',
+                    'status' => false,
+                    'message' => "Folder Induk TIDAK DITEMUKAN / BELUM DIBAGIKAN! Mohon buka Google Drive, klik kanan folder 'BUKTI KINERJA 2026' > pilih Bagikan (Share) > tambahkan: {$robotEmail} sebagai EDITOR."
+                ];
+            } else {
+                $steps[] = ['name' => '3. Akses Folder Induk (ID: ' . $masterId . ')', 'status' => false, 'message' => "Akses ditolak: " . $e->getMessage()];
+            }
+            return ['success' => false, 'steps' => $steps];
+        }
+
+        // Step 4: Uji Coba Tulis (Create File Test) di Folder Induk
+        try {
+            $testFileMetadata = new DriveFile([
+                'name' => 'sipega_test_connection_' . time() . '.txt',
+                'parents' => [$masterId]
+            ]);
+            $testContent = "Koneksi Google Drive SIPEGA Berhasil pada " . date('Y-m-d H:i:s');
+            $createdTestFile = $this->service->files->create($testFileMetadata, [
+                'data' => $testContent,
+                'mimeType' => 'text/plain',
+                'uploadType' => 'multipart',
+                'fields' => 'id, name, webViewLink',
+                'supportsAllDrives' => true,
+            ]);
+
+            // Hapus file uji coba agar tidak mengotori Drive
+            if (!empty($createdTestFile->id)) {
+                try {
+                    $this->service->files->delete($createdTestFile->id, ['supportsAllDrives' => true]);
+                } catch (\Throwable $delEx) {}
+            }
+
+            $steps[] = ['name' => '4. Uji Coba Tulis & Unggah File', 'status' => true, 'message' => "SUKSES! Robot dapat membuat dan mengunggah berkas ke Google Drive."];
+        } catch (\Throwable $e) {
+            $steps[] = [
+                'name' => '4. Uji Coba Tulis & Unggah File',
+                'status' => false,
+                'message' => "Gagal membuat berkas uji coba: " . $e->getMessage() . ". Pastikan role email robot adalah EDITOR pada folder induk."
+            ];
+            return ['success' => false, 'steps' => $steps];
+        }
+
+        // Step 5: Jika ada user, cari / hubungkan folder pegawai
+        if ($user) {
+            try {
+                $userFolder = $this->findOrCreateUserFolder($user, $masterId);
+                if ($userFolder && !empty($userFolder['web_view_link'])) {
+                    $steps[] = [
+                        'name' => '5. Folder Pegawai (' . $user->name . ')',
+                        'status' => true,
+                        'message' => "Folder pegawai siap: <a href='{$userFolder['web_view_link']}' target='_blank' style='color:#2563eb;text-decoration:underline;'>Buka Folder Pegawai di Drive ↗</a>"
+                    ];
+                } else {
+                    $steps[] = [
+                        'name' => '5. Folder Pegawai (' . $user->name . ')',
+                        'status' => false,
+                        'message' => "Gagal mendeteksi / membuat subfolder pegawai di dalam Folder Induk."
+                    ];
+                }
+            } catch (\Throwable $e) {
+                $steps[] = ['name' => '5. Folder Pegawai', 'status' => false, 'message' => $e->getMessage()];
+            }
+        }
+
+        return ['success' => true, 'steps' => $steps];
+    }
 }

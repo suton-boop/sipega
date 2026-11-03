@@ -54,31 +54,41 @@ Route::get('/clear-cache', function () {
             });
         } catch (\Throwable $e) {}
 
-        // Cek status Google Drive Service Account
+        // Cek status & diagnosis Google Drive Service Account
         $driveService = new \App\Services\GoogleDriveService();
-        $driveConfigured = $driveService->isConfigured();
-        $driveEmail = $driveService->getServiceAccountEmail();
-        $driveTest = $driveConfigured ? $driveService->testConnection() : ['success' => false, 'message' => 'Credentials belum disetel'];
+        $user = auth()->user() ?: \App\Models\User::where('nip', '198109282002121005')->first();
+        $diag = $driveService->diagnoseDrive($user);
         
-        $driveStatusHtml = $driveTest['success'] 
-            ? '<span style="color: #059669; font-weight: bold;">✓ Terhubung & Siap Upload (Email: ' . htmlspecialchars($driveEmail) . ')</span>'
-            : '<span style="color: #e11d48; font-weight: bold;">✕ ' . htmlspecialchars($driveTest['message'] ?? 'Belum aktif') . '</span>';
+        $diagHtml = '';
+        foreach ($diag['steps'] as $st) {
+            $icon = $st['status'] ? '<span style="color:#059669;font-weight:900;">✓</span>' : '<span style="color:#e11d48;font-weight:900;">✕</span>';
+            $bgColor = $st['status'] ? '#ecfdf5' : '#fff1f2';
+            $borderColor = $st['status'] ? '#a7f3d0' : '#fecdd3';
+            $diagHtml .= "
+                <div style='display:flex;align-items:flex-start;gap:10px;padding:8px 12px;background:{$bgColor};border:1px solid {$borderColor};border-radius:8px;margin-bottom:6px;font-size:12px;'>
+                    <div style='font-size:14px;line-height:1;'>{$icon}</div>
+                    <div style='flex:1;'>
+                        <div style='font-weight:bold;color:#1e293b;'>{$st['name']}</div>
+                        <div style='color:#475569;margin-top:2px;'>{$st['message']}</div>
+                    </div>
+                </div>
+            ";
+        }
         
         return response('
-            <div style="font-family: sans-serif; text-align: center; padding: 50px; background: #f8fafc; min-height: 100vh;">
-                <div style="display: inline-block; background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 550px; text-align: left;">
-                    <div style="text-align: center; font-size: 50px; margin-bottom: 10px;">✅</div>
-                    <h2 style="color: #003366; margin-bottom: 10px; font-weight: 900; text-align: center;">Cache & Konfigurasi Berhasil Diperbarui!</h2>
-                    <p style="color: #64748b; font-size: 13px; line-height: 1.6; text-align: center;">Seluruh cache tampilan Blade, routing, dan storage link sistem telah di-reset ke versi terbaru.</p>
+            <div style="font-family: sans-serif; text-align: center; padding: 40px 15px; background: #f8fafc; min-height: 100vh;">
+                <div style="display: inline-block; background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); max-width: 600px; text-align: left; width: 100%;">
+                    <div style="text-align: center; font-size: 44px; margin-bottom: 5px;">⚡</div>
+                    <h2 style="color: #003366; margin-bottom: 5px; font-weight: 900; text-align: center;">Diagnosis SIPEGA & Google Drive</h2>
+                    <p style="color: #64748b; font-size: 13px; line-height: 1.5; text-align: center; margin-bottom: 20px;">Hasil pengecekan koneksi live dari server ke Google Drive Anda:</p>
                     
-                    <div style="margin-top: 20px; padding: 15px; background: #f1f5f9; border-radius: 12px; font-size: 12px; line-height: 1.6;">
-                        <div style="font-weight: bold; color: #003366; margin-bottom: 5px;">Status Integrasi Google Drive:</div>
-                        <div>Status API: ' . $driveStatusHtml . '</div>
-                        <div>Master Folder: ' . htmlspecialchars(\App\Models\Setting::get('google_drive_master_folder') ?: 'Belum disetel di Smart Pengaturan') . '</div>
+                    <div style="margin-bottom: 20px;">
+                        ' . $diagHtml . '
                     </div>
 
-                    <div style="text-align: center; margin-top: 25px;">
-                        <a href="/agenda" style="display: inline-block; background: #FF8C00; color: white; text-decoration: none; padding: 12px 28px; border-radius: 12px; font-weight: bold; font-size: 14px;">Buka Halaman Agenda Sekarang →</a>
+                    <div style="text-align: center; margin-top: 25px; display: flex; gap: 10px; justify-content: center;">
+                        <a href="/agenda" style="background: #003366; color: white; text-decoration: none; padding: 12px 24px; border-radius: 12px; font-weight: bold; font-size: 13px;">Buka Halaman Agenda →</a>
+                        <a href="/settings#drive" style="background: #f1f5f9; color: #334155; text-decoration: none; padding: 12px 20px; border-radius: 12px; font-weight: bold; font-size: 13px;">Smart Pengaturan ⚙</a>
                     </div>
                 </div>
             </div>
