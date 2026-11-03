@@ -208,6 +208,8 @@ class AgendaController extends Controller
             'realization_notes' => 'nullable|string',
             'status' => 'nullable|in:pending,completed,changed,progress',
             'proof_file' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'proof_files' => 'nullable|array',
+            'proof_files.*' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
         ]);
 
         // Cari atau buat parent DailyAgenda
@@ -220,61 +222,58 @@ class AgendaController extends Controller
             ]
         );
 
+        // Kumpulkan berkas foto (bisa dari proof_files[] multi atau proof_file single)
+        $filesToProcess = [];
+        if ($request->hasFile('proof_files')) {
+            $filesToProcess = $request->file('proof_files');
+        } elseif ($request->hasFile('proof_file')) {
+            $filesToProcess = [$request->file('proof_file')];
+        }
+
+        $photoPaths = [];
         $dbPath = null;
-        $driveLink = $user->drive_folder_link;
-        $driveFileId = null;
+        $destinationDir = storage_path('app/public/agendas');
+        if (!file_exists($destinationDir)) {
+            mkdir($destinationDir, 0777, true);
+        }
 
-        // Upload bukti jika ada
-        if ($request->hasFile('proof_file')) {
-            $file = $request->file('proof_file');
-            $extension = strtolower($file->getClientOriginalExtension());
-            $filename = 'evidence_' . $user->id . '_' . time() . '.' . $extension;
-            $destinationDir = storage_path('app/public/agendas');
-            if (!file_exists($destinationDir)) {
-                mkdir($destinationDir, 0777, true);
-            }
-            $targetPath = $destinationDir . DIRECTORY_SEPARATOR . $filename;
+        if (!empty($filesToProcess)) {
+            foreach ($filesToProcess as $idx => $file) {
+                if (!$file || !$file->isValid()) continue;
 
-            if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
-                try {
-                    $manager = new ImageManager(new Driver());
-                    $image = $manager->read($file->getRealPath());
-                    $image->scaleDown(width: 1280);
+                $extension = strtolower($file->getClientOriginalExtension());
+                $filename = 'evidence_' . $user->id . '_' . time() . '_' . ($idx + 1) . '.' . $extension;
+                $targetPath = $destinationDir . DIRECTORY_SEPARATOR . $filename;
 
-                    $watermarkText = "SIPEGA e-KINERJA\nPegawai: " . $user->name . "\nWaktu: " . $now->format('d/m/Y H:i') . " WITA";
-                    $image->drawRectangle(10, 10, function ($rectangle) {
-                        $rectangle->size(420, 65);
-                        $rectangle->background('rgba(0,0,0,0.6)');
-                    });
-                    $image->text($watermarkText, 20, 25, function($font) {
-                        $font->file(3);
-                        $font->color('#ffffff');
-                        $font->align('left');
-                        $font->valign('top');
-                        $font->lineHeight(1.4);
-                    });
-                    $image->toJpeg(85)->save($targetPath);
-                } catch (\Throwable $e) {
+                if (in_array($extension, ['jpg', 'jpeg', 'png'])) {
+                    try {
+                        $manager = new ImageManager(new Driver());
+                        $image = $manager->read($file->getRealPath());
+                        $image->scaleDown(width: 1280);
+
+                        $watermarkText = "SIPEGA e-KINERJA\nPegawai: " . $user->name . "\nWaktu: " . $now->format('d/m/Y H:i') . " WITA (Foto " . ($idx + 1) . ")";
+                        $image->drawRectangle(10, 10, function ($rectangle) {
+                            $rectangle->size(430, 65);
+                            $rectangle->background('rgba(0,0,0,0.6)');
+                        });
+                        $image->text($watermarkText, 20, 25, function($font) {
+                            $font->file(3);
+                            $font->color('#ffffff');
+                            $font->align('left');
+                            $font->valign('top');
+                            $font->lineHeight(1.4);
+                        });
+                        $image->toJpeg(85)->save($targetPath);
+                    } catch (\Throwable $e) {
+                        $file->move($destinationDir, $filename);
+                    }
+                } else {
                     $file->move($destinationDir, $filename);
                 }
-            } else {
-                $file->move($destinationDir, $filename);
-            }
 
-            $dbPath = 'agendas/' . $filename;
-
-            // Upload ke Google Drive
-            $driveService = new GoogleDriveService();
-            if ($driveService->isConfigured()) {
-                $driveUpload = $driveService->uploadEvidence(
-                    $targetPath,
-                    $filename,
-                    $user->drive_folder_link,
-                    true
-                );
-                if ($driveUpload && !empty($driveUpload['web_view_link'])) {
-                    $driveLink = $driveUpload['web_view_link'];
-                    $driveFileId = $driveUpload['id'];
+                $photoPaths[] = $targetPath;
+                if (!$dbPath) {
+                    $dbPath = 'agendas/' . $filename;
                 }
             }
         }
@@ -298,13 +297,11 @@ class AgendaController extends Controller
                 }
                 if ($dbPath) {
                     $existingItem->proof_file_path = $dbPath;
-                    $existingItem->drive_link = $driveLink;
-                    $existingItem->drive_file_id = $driveFileId;
                 }
                 $existingItem->save();
 
-                // Otomatis hasilkan & unggah PDF Bukti Dukung ke Google Drive
-                $this->generateItemEvidencePdf($existingItem, $targetPath ?? null);
+                // Otomatis hasilkan & unggah PDF Bukti Dukung ke Google Drive dengan seluruh foto yang diunggah
+                $this->generateItemEvidencePdf($existingItem, $photoPaths);
 
                 return back()->with('success', 'Kegiatan agenda berhasil diperbarui dan berkas PDF bukti dukung siap disalin ke e-Kinerja!');
             }
@@ -319,12 +316,12 @@ class AgendaController extends Controller
             'status' => $itemStatus,
             'realization_notes' => $request->realization_notes,
             'proof_file_path' => $dbPath,
-            'drive_link' => $driveLink,
-            'drive_file_id' => $driveFileId,
+            'drive_link' => $user->drive_folder_link,
+            'drive_file_id' => null,
         ]);
 
-        // Otomatis hasilkan & unggah PDF Bukti Dukung ke Google Drive
-        $this->generateItemEvidencePdf($item, $targetPath ?? null);
+        // Otomatis hasilkan & unggah PDF Bukti Dukung ke Google Drive dengan seluruh foto yang diunggah
+        $this->generateItemEvidencePdf($item, $photoPaths);
 
         return back()->with('success', 'Kegiatan baru berhasil dicatat dan berkas PDF bukti dukung siap disalin ke e-Kinerja!');
     }
@@ -332,25 +329,37 @@ class AgendaController extends Controller
     /**
      * Hasilkan PDF Bukti Dukung Resmi e-Kinerja dan Unggah ke Google Drive Pegawai
      */
-    public function generateItemEvidencePdf(DailyAgendaItem $item, ?string $photoLocalPath = null): DailyAgendaItem
+    public function generateItemEvidencePdf(DailyAgendaItem $item, $photoLocalPaths = []): DailyAgendaItem
     {
         try {
             $item->loadMissing('dailyAgenda.user');
             $user = $item->dailyAgenda->user;
             $date = $item->dailyAgenda->date;
 
-            // Foto bukti fisik jika ada (convert ke Base64 untuk disematkan di dalam PDF Dompdf)
-            $photoBase64 = null;
-            if ($photoLocalPath && file_exists($photoLocalPath)) {
-                $type = pathinfo($photoLocalPath, PATHINFO_EXTENSION);
-                $data = file_get_contents($photoLocalPath);
-                $photoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+            // Foto-foto bukti fisik (convert ke Base64 untuk disematkan di dalam PDF Dompdf)
+            $photoBase64s = [];
+            
+            // Format photoLocalPaths ke array
+            if (is_string($photoLocalPaths)) {
+                $photoLocalPaths = [$photoLocalPaths];
+            } elseif (!is_array($photoLocalPaths)) {
+                $photoLocalPaths = [];
+            }
+
+            if (!empty($photoLocalPaths)) {
+                foreach ($photoLocalPaths as $pPath) {
+                    if ($pPath && file_exists($pPath)) {
+                        $type = pathinfo($pPath, PATHINFO_EXTENSION);
+                        $data = file_get_contents($pPath);
+                        $photoBase64s[] = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    }
+                }
             } elseif ($item->proof_file_path) {
                 $fullPath = storage_path('app/public/' . $item->proof_file_path);
                 if (file_exists($fullPath) && in_array(strtolower(pathinfo($fullPath, PATHINFO_EXTENSION)), ['jpg', 'jpeg', 'png'])) {
                     $type = pathinfo($fullPath, PATHINFO_EXTENSION);
                     $data = file_get_contents($fullPath);
-                    $photoBase64 = 'data:image/' . $type . ';base64,' . base64_encode($data);
+                    $photoBase64s[] = 'data:image/' . $type . ';base64,' . base64_encode($data);
                 }
             }
 
@@ -359,7 +368,8 @@ class AgendaController extends Controller
                 'item' => $item,
                 'user' => $user,
                 'date' => $date,
-                'photoBase64' => $photoBase64,
+                'photoBase64s' => $photoBase64s,
+                'photoBase64' => $photoBase64s[0] ?? null,
             ]);
 
             $cleanNip = preg_replace('/[^0-9]/', '', $user->nip ?: (string)$user->id);

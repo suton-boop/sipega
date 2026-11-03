@@ -272,7 +272,37 @@
     </table>
 
     <!-- FOTO DOKUMENTASI FISIK JIKA ADA -->
-    @if(!empty($photoBase64))
+    @if(!empty($photoBase64s) && count($photoBase64s) > 0)
+        <div class="section-label">III. Dokumentasi Bukti Fisik ({{ count($photoBase64s) }} Foto)</div>
+        @if(count($photoBase64s) === 1)
+            <div class="photo-container">
+                <img src="{{ $photoBase64s[0] }}" class="photo-img">
+                <div class="photo-caption">
+                    Dokumentasi Kegiatan • Diambil pada: {{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }} • Tersemat Watermark SIPEGA
+                </div>
+            </div>
+        @else
+            <table style="width: 100%; border-collapse: collapse; margin-top: 8px;">
+                @foreach(array_chunk($photoBase64s, 2) as $row)
+                    <tr>
+                        @foreach($row as $idx => $p)
+                            <td style="width: 50%; text-align: center; padding: 6px; vertical-align: top;">
+                                <div style="background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 6px; padding: 6px;">
+                                    <img src="{{ $p }}" style="max-width: 95%; max-height: 210px; border: 1px solid #94a3b8; border-radius: 4px;">
+                                    <div style="font-size: 7.5pt; color: #64748b; margin-top: 4px; font-style: italic;">
+                                        Dokumentasi Foto #{{ ($loop->parent->index * 2) + $idx + 1 }} • Tersemat Watermark SIPEGA
+                                    </div>
+                                </div>
+                            </td>
+                        @endforeach
+                        @if(count($row) === 1)
+                            <td style="width: 50%;"></td>
+                        @endif
+                    </tr>
+                @endforeach
+            </table>
+        @endif
+    @elseif(!empty($photoBase64))
         <div class="section-label">III. Dokumentasi Bukti Fisik</div>
         <div class="photo-container">
             <img src="{{ $photoBase64 }}" class="photo-img">

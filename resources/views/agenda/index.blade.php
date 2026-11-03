@@ -425,20 +425,37 @@
                             >
                         </div>
 
-                        <!-- Upload Foto Bukti Dukung (Direct Google Drive Upload) -->
+                        <!-- Upload Foto Bukti Dukung (Multi Foto & Tombol Tambah) -->
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
-                                <label class="text-xs font-black text-sipega-navy uppercase tracking-wider">
-                                    Upload Foto Bukti (Kolom 7 ☁️)
+                                <label class="text-xs font-black text-sipega-navy uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>📸</span> Upload Foto Bukti (Kolom 7 ☁️)
                                 </label>
-                                <span class="text-[10px] text-emerald-600 font-bold">Auto Watermark & Auto Drive</span>
+                                <button 
+                                    type="button" 
+                                    onclick="addPhotoSlot()" 
+                                    class="text-[10px] bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-black px-2.5 py-1 rounded-xl border border-emerald-300 flex items-center gap-1 transition shadow-sm cursor-pointer"
+                                    title="Tambah slot untuk unggah lebih dari 1 foto dokumentasi"
+                                >
+                                    <span>+ Tambah Foto Lain</span>
+                                </button>
                             </div>
-                            <input 
-                                type="file" 
-                                name="proof_file" 
-                                accept="image/*,.pdf" 
-                                class="block w-full text-xs text-gray-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-slate-100 file:text-sipega-navy hover:file:bg-slate-200 cursor-pointer"
-                            >
+                            
+                            <!-- Container Slot Foto Dinamis -->
+                            <div id="photoSlotsContainer" class="space-y-2">
+                                <div class="flex items-center gap-2 photo-slot">
+                                    <input 
+                                        type="file" 
+                                        name="proof_files[]" 
+                                        accept="image/*" 
+                                        class="block w-full text-xs text-gray-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-slate-100 file:text-sipega-navy hover:file:bg-slate-200 cursor-pointer"
+                                    >
+                                </div>
+                            </div>
+                            <p class="text-[10px] text-gray-400 mt-1 flex justify-between">
+                                <span>💡 Klik <b>[+ Tambah Foto Lain]</b> jika memiliki beberapa foto bukti kegiatan.</span>
+                                <span class="text-emerald-600 font-bold">Auto Gabung ke PDF e-Kinerja</span>
+                            </p>
                         </div>
                     </div>
 
@@ -1269,6 +1286,32 @@
                 }
                 showToast('Agenda "' + plan.substring(0, 30) + '..." berhasil dimuat ke formulir!');
             }
+        }
+
+        // Tambah slot foto dokumentasi tambahan
+        function addPhotoSlot() {
+            const container = document.getElementById('photoSlotsContainer');
+            const currentSlots = container.querySelectorAll('.photo-slot').length;
+            if (currentSlots >= 6) {
+                showToast('Maksimal 6 foto dokumentasi untuk 1 kegiatan.');
+                return;
+            }
+
+            const newSlot = document.createElement('div');
+            newSlot.className = 'flex items-center gap-2 photo-slot';
+            newSlot.innerHTML = `
+                <input 
+                    type="file" 
+                    name="proof_files[]" 
+                    accept="image/*" 
+                    class="block w-full text-xs text-gray-500 file:mr-3 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:bg-slate-100 file:text-sipega-navy hover:file:bg-slate-200 cursor-pointer"
+                >
+                <button type="button" onclick="this.parentElement.remove()" class="p-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition border border-rose-200 shrink-0 cursor-pointer" title="Hapus slot foto ini">
+                    ✕
+                </button>
+            `;
+            container.appendChild(newSlot);
+            showToast('Slot foto #' + (currentSlots + 1) + ' ditambahkan.');
         }
 
         // Smart parser untuk mendeteksi "jam 8 sampai jam 10", "pukul 09.00 hingga 11.30", dll.
