@@ -47,6 +47,13 @@ Route::get('/clear-cache', function () {
             }
         }
 
+        // Otomatis perbaiki link lama di database yang masih menunjuk ke /storage/ agar langsung menggunakan route view-pdf aman (Anti-403)
+        try {
+            \App\Models\DailyAgendaItem::where('drive_link', 'like', '%/storage/%')->get()->each(function($it) {
+                $it->update(['drive_link' => route('agenda.item.view_pdf', $it->id)]);
+            });
+        } catch (\Throwable $e) {}
+
         // Cek status Google Drive Service Account
         $driveService = new \App\Services\GoogleDriveService();
         $driveConfigured = $driveService->isConfigured();
