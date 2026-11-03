@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Log;
 
 class GoogleDriveService
 {
+    public static ?string $lastError = null;
     protected ?Client $client = null;
     protected ?Drive $service = null;
     protected string $credentialsPath;
@@ -408,11 +409,13 @@ class GoogleDriveService
     public function uploadEvidence(string $localFilePath, string $fileName, ?string $folderUrlOrId = null, bool $makePublic = true): ?array
     {
         if (!$this->isConfigured()) {
+            self::$lastError = 'Kredensial Google Drive belum aktif atau file service-account.json belum diunggah.';
             Log::warning('GoogleDriveService: Credentials belum siap.');
             return null;
         }
 
         if (!file_exists($localFilePath)) {
+            self::$lastError = 'Berkas lokal PDF tidak ditemukan di server: ' . $localFilePath;
             Log::error('GoogleDriveService: Berkas lokal tidak ditemukan: ' . $localFilePath);
             return null;
         }
@@ -474,6 +477,7 @@ class GoogleDriveService
                             'supportsAllDrives' => true,
                         ]);
                     } catch (\Throwable $rootEx) {
+                        self::$lastError = $primaryEx->getMessage();
                         Log::error("GoogleDriveService: Seluruh jalur upload Drive gagal: " . $rootEx->getMessage());
                         throw $rootEx;
                     }
@@ -502,6 +506,7 @@ class GoogleDriveService
             ];
 
         } catch (\Throwable $e) {
+            self::$lastError = $e->getMessage();
             Log::error('GoogleDriveService Upload Error: ' . $e->getMessage(), [
                 'file' => $fileName,
                 'folder' => $folderUrlOrId

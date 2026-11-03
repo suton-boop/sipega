@@ -425,6 +425,8 @@ class AgendaController extends Controller
                     $driveLink = $driveUpload['web_view_link'];
                     $driveFileId = $driveUpload['id'];
                 }
+            } else {
+                GoogleDriveService::$lastError = 'Kredensial API Google Drive belum terkonfigurasi di server.';
             }
 
             $item->proof_file_path = $dbPath;
@@ -502,7 +504,8 @@ class AgendaController extends Controller
             return back()->with('success', '✓ Berhasil diunggah ke Google Drive! Tautan Google Drive telah diperbarui di tabel e-Kinerja.');
         }
 
-        return back()->with('success', 'Berkas PDF berhasil diproses di server SIPEGA.');
+        $err = GoogleDriveService::$lastError ?: 'Koneksi ke Google Drive gagal atau izin folder ditolak.';
+        return back()->with('error', 'Gagal mengunggah ke Google Drive: ' . $err);
     }
 
     /**
