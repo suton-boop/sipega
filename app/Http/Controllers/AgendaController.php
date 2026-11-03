@@ -616,6 +616,9 @@ class AgendaController extends Controller
                 }
 
                 $item->update($updateData);
+
+                // Otomatis hasilkan & perbarui PDF Bukti Dukung resmi yang memuat catatan realisasi & unggah ke Google Drive
+                $this->generateItemEvidencePdf($item);
             }
         }
 
@@ -680,16 +683,20 @@ class AgendaController extends Controller
             'drive_folder_link' => trim($request->drive_folder_link)
         ]);
 
-        // Opsional: perbarui juga item agenda hari ini yang belum punya link
-        DailyAgendaItem::whereHas('dailyAgenda', function($q) use ($user) {
-            $q->where('user_id', $user->id);
-        })->whereNull('drive_link')->update(['drive_link' => trim($request->drive_folder_link)]);
+        // Perbarui dan sinkronkan seluruh item agenda hari ini ke folder Drive yang baru disetel
+        $todayItems = DailyAgendaItem::whereHas('dailyAgenda', function($q) use ($user) {
+            $q->where('user_id', $user->id)->whereDate('date', Carbon::today('Asia/Makassar'));
+        })->get();
 
-        return back()->with('success', 'Link folder Google Drive pegawai berhasil diperbarui!');
+        foreach ($todayItems as $item) {
+            $this->generateItemEvidencePdf($item);
+        }
+
+        return back()->with('success', 'Link folder Google Drive pegawai berhasil diperbarui dan berkas agenda hari ini disinkronkan ke Drive!');
     }
 
     /**
-     * Buat Folder Google Drive Pribadi secara Otomatis
+     * Buat / Hubungkan Folder Google Drive Pribadi secara Otomatis
      */
     public function generateMyFolder(Request $request)
     {
@@ -705,12 +712,20 @@ class AgendaController extends Controller
             return back()->with('error', 'Folder Induk Google Drive (Master Folder) belum disetel oleh Administrator di Pengaturan Sistem.');
         }
 
-        $folder = $driveService->generateUserFolder($user, $master);
+        $folder = $driveService->findOrCreateUserFolder($user, $master);
         if ($folder) {
-            return back()->with('success', 'Folder Google Drive Anda berhasil dibuat otomatis!');
+            // Upload / sinkronkan seluruh item agenda hari ini ke folder Drive yang baru terhubung
+            $todayItems = DailyAgendaItem::whereHas('dailyAgenda', function($q) use ($user) {
+                $q->where('user_id', $user->id)->whereDate('date', Carbon::today('Asia/Makassar'));
+            })->get();
+            foreach ($todayItems as $item) {
+                $this->generateItemEvidencePdf($item);
+            }
+
+            return back()->with('success', 'Folder Google Drive Anda berhasil dihubungkan dan seluruh berkas agenda hari ini telah disinkronkan ke Drive!');
         }
 
-        return back()->with('error', 'Gagal membuat folder Google Drive otomatis. Pastikan Service Account memiliki izin Editor pada Folder Induk.');
+        return back()->with('error', 'Gagal menghubungkan folder Google Drive otomatis. Pastikan Service Account memiliki izin Editor pada Folder Induk.');
     }
 
     /**
