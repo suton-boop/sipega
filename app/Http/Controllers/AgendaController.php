@@ -178,6 +178,7 @@ class AgendaController extends Controller
 
         $request->validate([
             'plan_description' => 'required|string|min:3',
+            'item_id' => 'nullable|integer',
             'rhk_text' => 'nullable|string',
             'start_time' => 'nullable|string',
             'end_time' => 'nullable|string',
@@ -256,6 +257,32 @@ class AgendaController extends Controller
         }
 
         $itemStatus = $request->status ?: ($request->realization_notes ? 'completed' : 'pending');
+
+        // Jika item_id diisi, update kegiatan yang sudah ada
+        if ($request->filled('item_id')) {
+            $existingItem = DailyAgendaItem::whereHas('dailyAgenda', function($q) use ($user) {
+                $q->where('user_id', $user->id);
+            })->find($request->item_id);
+
+            if ($existingItem) {
+                $existingItem->plan_description = $request->plan_description;
+                if ($request->filled('rhk_text')) $existingItem->rhk_text = $request->rhk_text;
+                if ($request->filled('start_time')) $existingItem->start_time = $request->start_time;
+                if ($request->filled('end_time')) $existingItem->end_time = $request->end_time;
+                if ($request->filled('realization_notes')) {
+                    $existingItem->realization_notes = $request->realization_notes;
+                    $existingItem->status = 'completed';
+                }
+                if ($dbPath) {
+                    $existingItem->proof_file_path = $dbPath;
+                    $existingItem->drive_link = $driveLink;
+                    $existingItem->drive_file_id = $driveFileId;
+                }
+                $existingItem->save();
+
+                return back()->with('success', 'Kegiatan agenda berhasil diperbarui dan siap disalin ke e-Kinerja!');
+            }
+        }
 
         $item = DailyAgendaItem::create([
             'daily_agenda_id' => $agenda->id,

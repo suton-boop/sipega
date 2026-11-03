@@ -202,7 +202,61 @@
 
                 <form action="{{ route('agenda.quick_add') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
                     @csrf
-                    <input type="hidden" name="date" value="{{ $selectedDate }}">
+
+                    <!-- SELECTOR TANGGAL & PILIHAN AGENDA YANG SUDAH DIBUAT HARI ITU -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 bg-slate-50 p-4 sm:p-5 rounded-2xl border border-gray-200">
+                        <!-- 1. Pilihan Tanggal Kegiatan -->
+                        <div class="md:col-span-4">
+                            <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                                <span>📅</span> Tanggal Kegiatan
+                            </label>
+                            <input 
+                                type="date" 
+                                name="date" 
+                                id="agendaDateInput" 
+                                value="{{ $selectedDate }}" 
+                                onchange="onDateChanged(this.value)"
+                                class="w-full bg-white border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-xl p-2.5 text-xs font-bold text-gray-800 shadow-sm cursor-pointer"
+                            >
+                            <p class="text-[10px] text-gray-400 mt-1">Ubah tanggal untuk mencatat atau melihat agenda tanggal lain.</p>
+                        </div>
+
+                        <!-- 2. Pilihan Agenda yang Sudah Dibuat di Hari Itu -->
+                        <div class="md:col-span-8">
+                            <label class="block text-xs font-black text-sipega-navy uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                                <span class="flex items-center gap-1.5">
+                                    <span>📋</span> Pilihan Agenda di Hari Ini
+                                </span>
+                                <span class="text-[10px] text-sipega-orange font-bold font-mono">
+                                    {{ $myAgendaToday ? $myAgendaToday->items->count() : 0 }} kegiatan tercatat
+                                </span>
+                            </label>
+                            <select 
+                                id="agendaItemSelector" 
+                                name="item_id" 
+                                onchange="onSelectExistingAgenda(this.value)" 
+                                class="w-full bg-white border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-xl p-2.5 text-xs font-semibold text-gray-800 shadow-sm cursor-pointer"
+                            >
+                                <option value="">➕ [Buat / Tambah Kegiatan Baru]</option>
+                                @if($myAgendaToday && $myAgendaToday->items->count() > 0)
+                                    <optgroup label="-- Pilih untuk Melanjutkan / Mengedit Kegiatan Ini --">
+                                        @foreach($myAgendaToday->items as $idx => $existingItem)
+                                            <option value="{{ $existingItem->id }}"
+                                                data-plan="{{ htmlspecialchars($existingItem->plan_description, ENT_QUOTES) }}"
+                                                data-rhk="{{ htmlspecialchars($existingItem->rhk_text ?? '', ENT_QUOTES) }}"
+                                                data-start="{{ $existingItem->start_time ?? '08:00' }}"
+                                                data-end="{{ $existingItem->end_time ?? '10:00' }}"
+                                                data-realization="{{ htmlspecialchars($existingItem->realization_notes ?? '', ENT_QUOTES) }}"
+                                            >
+                                                #{{ $idx + 1 }}. [{{ $existingItem->start_time ?: '08:00' }} - {{ $existingItem->end_time ?: '10:00' }}] {{ \Illuminate\Support\Str::limit($existingItem->plan_description, 55) }}
+                                            </option>
+                                        @endforeach
+                                    </optgroup>
+                                @endif
+                            </select>
+                            <p class="text-[10px] text-gray-400 mt-1">Pilih kegiatan di atas untuk mengedit/melanjutkan, atau biarkan tanda [+] untuk menambah baru.</p>
+                        </div>
+                    </div>
 
                     <!-- Voice Input Box & Uraian Kegiatan -->
                     <div class="relative">
@@ -220,9 +274,22 @@
                                 name="plan_description" 
                                 required 
                                 rows="3" 
-                                class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-4 text-sm font-semibold text-gray-800 placeholder-gray-400 transition"
+                                class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-4 pr-16 text-sm font-semibold text-gray-800 placeholder-gray-400 transition"
                                 placeholder="Contoh: Mengikuti rapat koordinasi persiapan pendampingan sekolah dan menyusun notulen rapat..."
                             ></textarea>
+
+                            <!-- Tombol Mikrofon Oranye Ikonik di Dalam Textarea -->
+                            <button 
+                                type="button" 
+                                id="micButton" 
+                                onclick="toggleVoiceRecognition()" 
+                                title="Klik untuk bicara (Dikte Suara)"
+                                class="absolute right-3.5 top-3.5 w-10 h-10 rounded-2xl bg-sipega-orange hover:bg-orange-600 text-white flex items-center justify-center shadow transition-all cursor-pointer z-10"
+                            >
+                                <svg id="micIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path>
+                                </svg>
+                            </button>
                         </div>
                         <p class="text-[10px] text-gray-400 mt-1.5 italic">
                             💡 Tips Suara: Ucapkan kegiatan Anda, contoh: <span class="text-sipega-orange font-bold">"Dari jam 9 sampai 11 saya melakukan telaah berkas SKP pegawai"</span>. Jam otomatis terisi!
@@ -242,7 +309,7 @@
                                 </button>
                             </div>
                             @if($userRhks->count() > 0)
-                                <select name="rhk_text" class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800">
+                                <select id="rhkSelect" name="rhk_text" class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800">
                                     <option value="">-- Pilih Rencana Hasil Kerja --</option>
                                     @foreach($userRhks as $rhk)
                                         <option value="{{ $rhk->rhk_desc }}">
@@ -251,7 +318,7 @@
                                     @endforeach
                                 </select>
                             @else
-                                <input type="text" name="rhk_text" placeholder="Ketik atau kelola daftar RHK..." class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800">
+                                <input type="text" id="rhkSelect" name="rhk_text" placeholder="Ketik atau kelola daftar RHK..." class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800">
                             @endif
                         </div>
 
@@ -281,6 +348,7 @@
                             </label>
                             <input 
                                 type="text" 
+                                id="realizationNotesInput"
                                 name="realization_notes" 
                                 placeholder="Contoh: Tersusunnya 1 draf notulen dan daftar hadir kegiatan..." 
                                 class="w-full bg-slate-50 border border-gray-200 focus:border-sipega-orange focus:ring-0 rounded-2xl p-3 text-xs font-semibold text-gray-800"
@@ -306,7 +374,7 @@
 
                     <!-- Submit Button -->
                     <div class="flex justify-end pt-2">
-                        <button type="submit" class="bg-sipega-navy hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2">
+                        <button type="submit" id="btnSubmitAgenda" class="bg-sipega-navy hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer">
                             <span>⚡</span> Simpan Kegiatan & Siapkan Link Drive
                         </button>
                     </div>
@@ -928,7 +996,7 @@
             const badge = document.getElementById('voiceDurationBadge');
             if (badge) badge.classList.remove('hidden');
 
-            // Update Tombol Kontrol
+            // Update Tombol Kontrol Toolbar
             document.getElementById('btnVoicePlay').disabled = true;
             document.getElementById('btnVoicePlay').classList.add('opacity-40', 'cursor-not-allowed');
 
@@ -937,6 +1005,14 @@
 
             document.getElementById('btnVoiceStop').disabled = false;
             document.getElementById('btnVoiceStop').classList.remove('opacity-30', 'cursor-not-allowed');
+
+            // Update Tombol Mic Oranye di dalam textarea
+            const micBtn = document.getElementById('micButton');
+            if (micBtn) {
+                micBtn.className = 'absolute right-3.5 top-3.5 w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-md transition-all cursor-pointer z-10 animate-pulse';
+                micBtn.title = 'Sedang merekam... Klik untuk jeda';
+                micBtn.innerHTML = '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"></rect></svg>';
+            }
         }
 
         // 2. PAUSE / JEDA
@@ -969,13 +1045,21 @@
             const sub = document.getElementById('voiceStatusSubtitle');
             if (sub) sub.innerHTML = '<span class="text-amber-200">Perekaman dijeda. Anda dapat mengetik manual atau klik <b class="text-white underline">[Lanjutkan]</b> untuk menambah kata baru.</span>';
 
-            // Tombol
+            // Tombol Toolbar
             document.getElementById('btnVoicePlay').disabled = false;
             document.getElementById('btnVoicePlay').classList.remove('opacity-40', 'cursor-not-allowed');
             document.getElementById('txtVoicePlay').textContent = 'Lanjutkan ▶';
 
             document.getElementById('btnVoicePause').disabled = true;
             document.getElementById('btnVoicePause').classList.add('opacity-30', 'cursor-not-allowed');
+
+            // Update Tombol Mic Oranye di dalam textarea
+            const micBtn = document.getElementById('micButton');
+            if (micBtn) {
+                micBtn.className = 'absolute right-3.5 top-3.5 w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center shadow-md transition-all cursor-pointer z-10';
+                micBtn.title = 'Dijeda. Klik untuk melanjutkan bicara';
+                micBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>';
+            }
         }
 
         // 3. STOP / SELESAI
@@ -1004,7 +1088,7 @@
             const badge = document.getElementById('voiceDurationBadge');
             if (badge) badge.classList.add('hidden');
 
-            // Reset Tombol
+            // Reset Tombol Toolbar
             document.getElementById('btnVoicePlay').disabled = false;
             document.getElementById('btnVoicePlay').classList.remove('opacity-40', 'cursor-not-allowed');
             document.getElementById('txtVoicePlay').textContent = 'Mulai Rekam';
@@ -1015,7 +1099,24 @@
             document.getElementById('btnVoiceStop').disabled = true;
             document.getElementById('btnVoiceStop').classList.add('opacity-30', 'cursor-not-allowed');
 
+            // Reset Tombol Mic Oranye di dalam textarea
+            const micBtn = document.getElementById('micButton');
+            if (micBtn) {
+                micBtn.className = 'absolute right-3.5 top-3.5 w-10 h-10 rounded-2xl bg-sipega-orange hover:bg-orange-600 text-white flex items-center justify-center shadow transition-all cursor-pointer z-10';
+                micBtn.title = 'Klik untuk bicara (Dikte Suara)';
+                micBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>';
+            }
+
             showToast('Perekaman suara selesai! Teks berhasil dicatat & disimpan di kotak.');
+        }
+
+        // Toggle dari tombol mic di dalam textarea
+        function toggleVoiceRecognition() {
+            if (voiceState === 'recording') {
+                voicePause();
+            } else {
+                voiceStart();
+            }
         }
 
         // 4. CLEAR / BERSIHKAN
@@ -1026,6 +1127,59 @@
                 baseTextBeforeSession = '';
                 showToast('Teks uraian kegiatan berhasil dikosongkan.');
             }
+        }
+
+        // --- SISTEM PILIHAN TANGGAL & AGENDA HARI TERPILIH ---
+        function onDateChanged(dateVal) {
+            if (!dateVal) return;
+            window.location.href = "{{ route('agenda.index') }}?date=" + dateVal;
+        }
+
+        function onSelectExistingAgenda(itemId) {
+            const selector = document.getElementById('agendaItemSelector');
+            const submitBtn = document.getElementById('btnSubmitAgenda');
+
+            if (!itemId) {
+                // Mode: Tambah Kegiatan Baru
+                document.getElementById('voiceInputTextarea').value = '';
+                document.getElementById('startTimeInput').value = '08:00';
+                document.getElementById('endTimeInput').value = '10:00';
+                const realInput = document.getElementById('realizationNotesInput');
+                if (realInput) realInput.value = '';
+                const rhkInput = document.getElementById('rhkSelect');
+                if (rhkInput) rhkInput.value = '';
+
+                if (submitBtn) {
+                    submitBtn.innerHTML = '<span>⚡</span> Simpan Kegiatan & Siapkan Link Drive';
+                    submitBtn.className = 'bg-sipega-navy hover:bg-slate-800 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer';
+                }
+                return;
+            }
+
+            // Mode: Edit Kegiatan yang Sudah Ada
+            const selectedOption = selector.options[selector.selectedIndex];
+            const plan = selectedOption.getAttribute('data-plan') || '';
+            const rhk = selectedOption.getAttribute('data-rhk') || '';
+            const start = selectedOption.getAttribute('data-start') || '08:00';
+            const end = selectedOption.getAttribute('data-end') || '10:00';
+            const realization = selectedOption.getAttribute('data-realization') || '';
+
+            document.getElementById('voiceInputTextarea').value = plan;
+            document.getElementById('startTimeInput').value = start;
+            document.getElementById('endTimeInput').value = end;
+
+            const realInput = document.getElementById('realizationNotesInput');
+            if (realInput) realInput.value = realization;
+
+            const rhkInput = document.getElementById('rhkSelect');
+            if (rhkInput) rhkInput.value = rhk;
+
+            if (submitBtn) {
+                submitBtn.innerHTML = '<span>✏️</span> Perbarui Kegiatan & Link Drive';
+                submitBtn.className = 'bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider px-6 py-3.5 rounded-2xl shadow-md transition flex items-center gap-2 cursor-pointer';
+            }
+
+            showToast('Data kegiatan berhasil dimuat. Anda dapat mengedit teks atau melanjutkan bicara.');
         }
 
         // Smart parser untuk mendeteksi "jam 8 sampai jam 10", "pukul 09.00 hingga 11.30", dll.
