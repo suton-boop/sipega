@@ -696,8 +696,79 @@
                             </div>
                         @endif
 
-                        <!-- FORM STANDALONE 1: UPLOAD / SIMPAN KREDENSIAL SERVICE ACCOUNT -->
+                        <!-- KARTU UTAMA: GOOGLE OAUTH 2.0 (AKUN PRIBADI GOOGLE ONE 2 TB) -->
+                        <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white p-6 rounded-3xl shadow-xl space-y-4">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/10 pb-4">
+                                <div>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="text-xl">⚡</span>
+                                        <h4 class="font-black text-sm uppercase tracking-wider text-white">Google OAuth 2.0 (Akun Pribadi Google One 2 TB)</h4>
+                                        <span class="bg-emerald-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded-full">Solusi Kuota 2 TB</span>
+                                    </div>
+                                    <p class="text-xs text-blue-200 mt-1">
+                                        Hubungkan akun Google Drive pribadi Anda untuk upload bukti dukung otomatis tanpa terkena batasan kuota Service Account (bebas error 403 <code>storageQuotaExceeded</code>).
+                                    </p>
+                                </div>
+                                @if($oauthConnected)
+                                    <div class="flex items-center gap-2">
+                                        <span class="px-3 py-1.5 bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 rounded-xl text-xs font-bold flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                            <span>Aktif: <b>{{ $oauthUserEmail }}</b></span>
+                                        </span>
+                                        <form action="{{ route('settings.google.oauth.disconnect') }}" method="POST" onsubmit="return confirm('Putuskan koneksi akun Google OAuth?')">
+                                            @csrf
+                                            <button type="submit" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition">
+                                                Putuskan
+                                            </button>
+                                        </form>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="bg-white/10 p-5 rounded-2xl border border-white/15 space-y-4 text-xs">
+                                <form action="{{ route('settings.google.oauth.config') }}" method="POST" class="space-y-4">
+                                    @csrf
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-[10px] font-black uppercase text-blue-200 mb-1">Google OAuth Client ID</label>
+                                            <input type="text" name="google_oauth_client_id" value="{{ $oauthClientId }}" placeholder="Contoh: 123456789-xxxx.apps.googleusercontent.com" class="w-full text-xs font-mono font-bold rounded-xl bg-slate-900/80 border-white/20 text-white focus:border-blue-400 p-2.5" required>
+                                        </div>
+                                        <div>
+                                            <label class="block text-[10px] font-black uppercase text-blue-200 mb-1">Google OAuth Client Secret</label>
+                                            <input type="password" name="google_oauth_client_secret" value="{{ $oauthClientSecret }}" placeholder="Contoh: GOCSPX-xxxxxxxxxxxx" class="w-full text-xs font-mono font-bold rounded-xl bg-slate-900/80 border-white/20 text-white focus:border-blue-400 p-2.5" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pt-2 border-t border-white/10">
+                                        <div class="text-[11px] text-blue-200">
+                                            <span class="font-bold">Authorized Redirect URI (Wajib didaftarkan di Google Cloud Console):</span>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <code class="bg-black/50 text-emerald-300 px-3 py-1 rounded-lg font-mono text-[11px] select-all border border-emerald-500/30">{{ $oauthRedirectUri }}</code>
+                                                <button type="button" onclick="navigator.clipboard.writeText('{{ $oauthRedirectUri }}'); alert('Redirect URI tersalin!');" class="underline text-amber-300 font-bold hover:text-white text-xs">
+                                                    Salin URI
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2 flex-wrap">
+                                            <button type="submit" class="px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white font-bold text-xs rounded-xl transition border border-white/30">
+                                                💾 Simpan Client ID & Secret
+                                            </button>
+                                            @if(!empty($oauthClientId) && !empty($oauthClientSecret))
+                                                <a href="{{ route('settings.google.oauth.connect') }}" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs rounded-xl shadow-lg transition flex items-center gap-1.5 uppercase tracking-wider">
+                                                    <span>🔗</span> <span>{{ $oauthConnected ? 'Hubungkan Ulang Akun 2 TB' : 'Masuk & Hubungkan Akun Google 2 TB' }}</span>
+                                                </a>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- METODE ALTERNATIF: KREDENSIAL SERVICE ACCOUNT (KUNCI JSON) -->
                         <div class="bg-white p-5 rounded-2xl border border-blue-100 shadow-sm space-y-4">
+                            <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                                <span class="text-xs font-black uppercase text-gray-500">Alternatif: Kredensial Service Account (Kunci JSON)</span>
+                            </div>
                             @if(!$driveConfigured)
                                 <div class="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-xs text-rose-800 flex items-center gap-2 font-bold">
                                     <span>⚠️</span>

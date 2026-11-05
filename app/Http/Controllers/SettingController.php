@@ -35,7 +35,21 @@ class SettingController extends Controller
         $driveConfigured = $driveService->isConfigured();
         $driveServiceEmail = $driveService->getServiceAccountEmail();
 
-        return view('settings.index', compact('tukinRules', 'rates', 'officialRates', 'generalSettings', 'driveConfigured', 'driveServiceEmail', 'libraryInstalled'));
+        $oauthClientId = Setting::get('google_oauth_client_id', '');
+        $oauthClientSecret = Setting::get('google_oauth_client_secret', '');
+        $oauthRefreshToken = Setting::get('google_oauth_refresh_token', '');
+        $oauthUserEmail = Setting::get('google_oauth_user_email', '');
+        $oauthConnected = !empty($oauthRefreshToken);
+        $authMode = $driveService->getAuthMode();
+        $connectedEmail = $driveService->getConnectedEmail();
+        $oauthRedirectUri = route('settings.google.oauth.callback');
+
+        return view('settings.index', compact(
+            'tukinRules', 'rates', 'officialRates', 'generalSettings', 
+            'driveConfigured', 'driveServiceEmail', 'libraryInstalled',
+            'oauthClientId', 'oauthClientSecret', 'oauthConnected',
+            'oauthUserEmail', 'authMode', 'connectedEmail', 'oauthRedirectUri'
+        ));
     }
 
     /**
@@ -227,5 +241,128 @@ class SettingController extends Controller
         Setting::set($request->key, $request->value);
 
         return back()->with('success', "Pengaturan '{$request->key}' berhasil diperbarui.");
+    }
+
+    /**
+     * Simpan Konfigurasi Google OAuth 2.0 (Client ID & Client Secret)
+     */
+    public function saveGoogleOAuthConfig(Request $request)
+    {
+        if (!TukinController::isPrivilegedUser(auth()->user())) {
+            abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
+        }
+
+        $request->validate([
+            'google_oauth_client_id' => 'required|string',
+            'google_oauth_client_secret' => 'required|string',
+        ]);
+
+        Setting::set('google_oauth_client_id', trim($request->google_oauth_client_id));
+        Setting::set('google_oauth_client_secret', trim($request->google_oauth_client_secret));
+
+        return redirect(route('settings.index') . '#general')->with('success', 'Konfigurasi Google OAuth Client ID & Secret berhasil disimpan! Silakan klik tombol "Hubungkan Akun Google Drive (2 TB)".');
+    }
+
+    /**
+     * Redirect ke Layanan Google OAuth Consent Screen
+     */
+    public function connectGoogleOAuth()
+    {
+        if (!TukinController::isPrivilegedUser(auth()->user())) {
+            abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
+        }
+
+        $clientId = Setting::get('google_oauth_client_id');
+        $clientSecret = Setting::get('google_oauth_client_secret');
+
+        if (empty($clientId) || empty($clientSecret)) {
+            return redirect(route('settings.index') . '#general')->with('error', 'Harap isi dan simpan Client ID dan Client Secret terlebih dahulu sebelum menghubungkan.');
+        }
+
+        $client = new \Google\Client();
+        $client->setClientId($clientId);
+        $client->setClientSecret($clientSecret);
+        $client->setRedirectUri(route('settings.google.oauth.callback'));
+        $client->addScope(\Google\Service\Drive::DRIVE);
+        $client->setAccessType('offline');
+        $client->setPrompt('consent');
+        $client->setIncludeGrantedScopes(true);
+
+        $authUrl = $client->createAuthUrl();
+
+        return redirect()->away($authUrl);
+    }
+
+    /**
+     * Callback setelah user mengizinkan akses di Google OAuth
+     */
+    public function handleGoogleOAuthCallback(Request $request)
+    {
+        if (!TukinController::isPrivilegedUser(auth()->user())) {
+            abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
+        }
+
+        if ($request->has('error')) {
+            return redirect(route('settings.index') . '#general')->with('error', 'Otorisasi Google Drive dibatalkan atau gagal: ' . $request->get('error'));
+        }
+
+        $code = $request->get('code');
+        if (empty($code)) {
+            return redirect(route('settings.index') . '#general')->with('error', 'Kode otorisasi dari Google tidak ditemukan.');
+        }
+
+        $clientId = Setting::get('google_oauth_client_id');
+        $clientSecret = Setting::get('google_oauth_client_secret');
+
+        try {
+            $client = new \Google\Client();
+            $client->setClientId($clientId);
+            $client->setClientSecret($clientSecret);
+            $client->setRedirectUri(route('settings.google.oauth.callback'));
+
+            $token = $client->fetchAccessTokenWithAuthCode($code);
+
+            if (isset($token['error'])) {
+                throw new \Exception($token['error_description'] ?? $token['error']);
+            }
+
+            if (!empty($token['refresh_token'])) {
+                Setting::set('google_oauth_refresh_token', $token['refresh_token']);
+            }
+
+            // Dapatkan informasi akun pengguna Google Drive
+            $userEmail = 'Akun Google Anda';
+            try {
+                $service = new \Google\Service\Drive($client);
+                $about = $service->about->get(['fields' => 'user']);
+                if ($about->getUser() && $about->getUser()->getEmailAddress()) {
+                    $userEmail = $about->getUser()->getEmailAddress();
+                }
+            } catch (\Throwable $e) {
+                // fallback
+            }
+
+            Setting::set('google_oauth_user_email', $userEmail);
+
+            return redirect(route('settings.index') . '#general')->with('success', "🎉 Berhasil! Akun Google Drive ({$userEmail}) berhasil terhubung dengan kuota 2 TB!");
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Google OAuth Callback Error: ' . $e->getMessage());
+            return redirect(route('settings.index') . '#general')->with('error', 'Gagal memproses otorisasi Google: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Putuskan Sambungan Google OAuth
+     */
+    public function disconnectGoogleOAuth()
+    {
+        if (!TukinController::isPrivilegedUser(auth()->user())) {
+            abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
+        }
+
+        Setting::set('google_oauth_refresh_token', '');
+        Setting::set('google_oauth_user_email', '');
+
+        return redirect(route('settings.index') . '#general')->with('success', 'Koneksi Google OAuth berhasil diputus. Sistem akan kembali menggunakan Service Account.');
     }
 }

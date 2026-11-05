@@ -26,6 +26,28 @@ class GoogleDriveService
             return;
         }
 
+        // 1. Cek Mode OAuth 2.0 (Akun Google Pribadi / Google One 2 TB - Solusi Kuota Penuh)
+        $oauthClientId = Setting::get('google_oauth_client_id');
+        $oauthClientSecret = Setting::get('google_oauth_client_secret');
+        $oauthRefreshToken = Setting::get('google_oauth_refresh_token');
+
+        if ($oauthClientId && $oauthClientSecret && $oauthRefreshToken) {
+            try {
+                $this->client = new Client();
+                $this->client->setClientId($oauthClientId);
+                $this->client->setClientSecret($oauthClientSecret);
+                $this->client->addScope(Drive::DRIVE);
+                $this->client->refreshToken($oauthRefreshToken);
+                $this->service = new Drive($this->client);
+                return;
+            } catch (\Throwable $e) {
+                Log::error('GoogleDriveService OAuth Init Failed: ' . $e->getMessage());
+                $this->client = null;
+                $this->service = null;
+            }
+        }
+
+        // 2. Fallback ke Mode Service Account (Kunci JSON)
         if (file_exists($this->credentialsPath)) {
             try {
                 $this->client = new Client();
@@ -80,6 +102,28 @@ class GoogleDriveService
     public function isConfigured(): bool
     {
         return self::isLibraryInstalled() && $this->client !== null && $this->service !== null;
+    }
+
+    /**
+     * Dapatkan mode autentikasi aktif ('oauth' atau 'service_account')
+     */
+    public function getAuthMode(): string
+    {
+        if (Setting::get('google_oauth_refresh_token')) {
+            return 'oauth';
+        }
+        return 'service_account';
+    }
+
+    /**
+     * Dapatkan email akun yang sedang terhubung (OAuth 2.0 atau Service Account)
+     */
+    public function getConnectedEmail(): ?string
+    {
+        if ($this->getAuthMode() === 'oauth') {
+            return Setting::get('google_oauth_user_email') ?: 'Akun Google Pribadi (OAuth 2.0)';
+        }
+        return $this->getServiceAccountEmail();
     }
 
     /**

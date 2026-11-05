@@ -144,6 +144,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/settings/update', [SettingController::class, 'update'])->name('settings.update');
     Route::post('/settings/drive/credentials', [SettingController::class, 'saveDriveCredentials'])->name('settings.drive.credentials');
     Route::post('/settings/drive/generate-all', [SettingController::class, 'generateAllEmployeeFolders'])->name('settings.drive.generate_all');
+    Route::post('/settings/drive/oauth/config', [SettingController::class, 'saveGoogleOAuthConfig'])->name('settings.google.oauth.config');
+    Route::get('/settings/drive/oauth/connect', [SettingController::class, 'connectGoogleOAuth'])->name('settings.google.oauth.connect');
+    Route::get('/settings/google/oauth/callback', [SettingController::class, 'handleGoogleOAuthCallback'])->name('settings.google.oauth.callback');
+    Route::post('/settings/drive/oauth/disconnect', [SettingController::class, 'disconnectGoogleOAuth'])->name('settings.google.oauth.disconnect');
     Route::post('/settings/tukin', [SettingController::class, 'updateTukinRules'])->name('settings.tukin.update');
     Route::post('/settings/tukin/reset', [SettingController::class, 'resetTukinRules'])->name('settings.tukin.reset');
 
