@@ -239,4 +239,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserRhk::class)->orderBy('id', 'desc');
     }
+
+    public function getDriveFolderUrlAttribute(): ?string
+    {
+        return $this->drive_folder_link ?: ($this->attributes['drive_folder_url'] ?? null);
+    }
 }

@@ -1366,11 +1366,14 @@
             }
         }
 
-        // Buka otomatis modal RHK jika diarahkan dari menu navigasi (?open_rhk=1 atau hash #rhkModal)
+        // Buka otomatis modal RHK atau Drive jika diarahkan dari menu / dashboard
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('open_rhk') === '1' || window.location.hash === '#rhkModal') {
                 openModal('rhkModal');
+            }
+            if (urlParams.get('open_drive') === '1' || window.location.hash === '#driveModal') {
+                openModal('driveModal');
             }
         });
     </script>

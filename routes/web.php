@@ -230,6 +230,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/agenda/rhk/{id}', [AgendaController::class, 'deleteRhk'])->name('agenda.rhk.destroy');
     Route::post('/agenda/drive-folder', [AgendaController::class, 'updateDriveFolder'])->name('agenda.drive_folder.update');
     Route::post('/agenda/generate-my-folder', [AgendaController::class, 'generateMyFolder'])->name('agenda.generate_my_folder');
+    Route::get('/drive/my-folder', [AgendaController::class, 'openMyDriveFolder'])->name('drive.my_folder');
     
     // MODUL MONITORING (Fokus Pimpinan/Leader Penilaian)
     Route::get('/leader/agenda', [AgendaController::class, 'leaderIndex'])->name('leader.agenda.index');

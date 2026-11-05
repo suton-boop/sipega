@@ -908,4 +908,35 @@ class AgendaController extends Controller
 
         return back()->with('success', $evaluatedCount . ' laporan berhasil dinilai secara massal.');
     }
+
+    /**
+     * Buka folder Google Drive milik pegawai yang sedang login
+     */
+    public function openMyDriveFolder(GoogleDriveService $driveService)
+    {
+        $user = auth()->user();
+
+        // 1. Jika sudah ada link di profil pegawai, langsung buka
+        $link = $user->drive_folder_link ?: ($user->drive_folder_url ?? null);
+        if (!empty($link)) {
+            return redirect()->away($link);
+        }
+
+        // 2. Jika belum ada, cari atau buatkan otomatis di Google Drive
+        if ($driveService->isConfigured()) {
+            try {
+                $folder = $driveService->findOrCreateUserFolder($user);
+                if ($folder && !empty($folder['web_view_link'])) {
+                    $user->update(['drive_folder_link' => $folder['web_view_link']]);
+                    return redirect()->away($folder['web_view_link']);
+                }
+            } catch (\Throwable $e) {
+                \Log::warning('openMyDriveFolder error: ' . $e->getMessage());
+            }
+        }
+
+        // 3. Jika gagal atau belum disetel, arahkan ke halaman Agenda dengan modal Drive terbuka
+        return redirect()->route('agenda.index', ['open_drive' => 1])
+            ->with('info', 'Folder Google Drive belum terhubung. Silakan pasang link folder Google Drive Anda.');
+    }
 }
