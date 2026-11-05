@@ -969,9 +969,10 @@
 
         // 📋 FILL SAMPLE TEMPLATE (Verifikasi dan Validasi Data Pokok Pendidikan)
         function fillSampleTemplate() {
-            document.getElementById('employee_name').value = "Sutono,S.Kom";
-            document.getElementById('employee_nip').value = "198109282002121005";
-            document.getElementById('employee_position').value = "Widyaprada Ahli Pertama";
+            // Gunakan data identitas pegawai yang sedang login (bukan hardcoded)
+            document.getElementById('employee_name').value = @json($user->name ?? '');
+            document.getElementById('employee_nip').value = @json($user->nip ?? '');
+            document.getElementById('employee_position').value = @json($user->position ?? '');
             document.getElementById('st_number').value = "1188/C6.24/DM.00.02/2026 Tanggal 24 September 2026";
 
             document.getElementById('activity_name').value = "Verifikasi dan Validasi Data Pokok Pendidikan Tahun 2026";
@@ -1061,10 +1062,11 @@ Dengan demikian, tindak lanjut hasil uji petik diarahkan pada penguatan pemahama
             document.getElementById('signed_place').value = "Samarinda";
             document.getElementById('signed_date').value = "2026-10-03";
 
-            // Pasang TTD bawaan dari public/images/sample_report/image1.png
-            document.getElementById('existing_signature_image').value = "images/sample_report/image1.png";
-            document.getElementById('signature_preview_img').src = "{{ asset('images/sample_report/image1.png') }}";
-            document.getElementById('signature_preview_box').classList.remove('hidden');
+            // Tanda tangan dikosongkan sesuai instruksi
+            document.getElementById('existing_signature_image').value = "";
+            document.getElementById('signature_image').value = "";
+            document.getElementById('signature_preview_img').src = "";
+            document.getElementById('signature_preview_box').classList.add('hidden');
 
             // Pasang foto dokumentasi preset
             const presetPhotos = [
@@ -1074,6 +1076,7 @@ Dengan demikian, tindak lanjut hasil uji petik diarahkan pada penguatan pemahama
             document.getElementById('preset_photos_json').value = JSON.stringify(presetPhotos);
             document.getElementById('preset_photos_preview').classList.remove('hidden');
 
+            showToast('Contoh template uji petik berhasil dimuat dengan data identitas Anda.', '📋');
             window.scrollTo({ top: 300, behavior: 'smooth' });
         }
     </script>
