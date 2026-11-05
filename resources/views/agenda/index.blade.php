@@ -1365,5 +1365,13 @@
                 showToast(`Waktu otomatis terdeteksi: ${start} - ${end}`);
             }
         }
+
+        // Buka otomatis modal RHK jika diarahkan dari menu navigasi (?open_rhk=1 atau hash #rhkModal)
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('open_rhk') === '1' || window.location.hash === '#rhkModal') {
+                openModal('rhkModal');
+            }
+        });
     </script>
 </x-app-layout>

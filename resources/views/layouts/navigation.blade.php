@@ -33,6 +33,16 @@
                         </x-slot>
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Manajemen Output</div>
+                            <x-dropdown-link :href="route('agenda.index', ['open_rhk' => 1])" onclick="if(typeof openModal === 'function' && document.getElementById('rhkModal')){ openModal('rhkModal'); event.preventDefault(); }" class="text-[11px] font-bold py-3 flex items-center justify-between text-sipega-navy hover:bg-slate-50">
+                                <span class="flex items-center gap-1.5">
+                                    <span>🎯</span> Kelola RHK
+                                </span>
+                                @if(auth()->check())
+                                    <span class="text-[9px] font-black bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full">
+                                        {{ auth()->user()->rhks->count() }}
+                                    </span>
+                                @endif
+                            </x-dropdown-link>
                             <x-dropdown-link :href="route('agenda.index')" class="text-[11px] font-bold py-3">Agenda & Realisasi</x-dropdown-link>
                             <x-dropdown-link :href="route('evidence.index')" class="text-[11px] font-bold py-3 text-sipega-navy bg-sipega-orange/5">Bukti Fisik (SKP)</x-dropdown-link>
                             <x-dropdown-link :href="route('schedules.index')" class="text-[11px] font-bold py-3">Agenda Individu</x-dropdown-link>
@@ -210,7 +220,15 @@
             <div class="px-6 py-4 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50 flex items-center gap-3 mt-4">
                 <span class="w-1.5 h-1.5 bg-sipega-navy rounded-full"></span> KINERJA PEGAWAI
             </div>
-            <x-responsive-nav-link :href="route('agenda.index')" :active="request()->routeIs('agenda.index')" class="text-xs font-medium py-3 ps-8">
+            <x-responsive-nav-link :href="route('agenda.index', ['open_rhk' => 1])" onclick="if(typeof openModal === 'function' && document.getElementById('rhkModal')){ openModal('rhkModal'); event.preventDefault(); }" :active="request()->has('open_rhk')" class="text-xs font-semibold py-3 ps-8 flex items-center justify-between">
+                <span>🎯 {{ __('Kelola RHK') }}</span>
+                @if(auth()->check())
+                    <span class="text-[9px] font-black bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full me-4">
+                        {{ auth()->user()->rhks->count() }}
+                    </span>
+                @endif
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('agenda.index')" :active="request()->routeIs('agenda.index') && !request()->has('open_rhk')" class="text-xs font-medium py-3 ps-8">
                 {{ __('Agenda & Realisasi') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('evidence.index')" :active="request()->routeIs('evidence.*')" class="text-xs font-medium py-3 ps-8">
