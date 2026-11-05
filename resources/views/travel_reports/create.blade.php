@@ -14,7 +14,7 @@
                     <span>🎙️</span> Input Suara
                 </button>
                 <button type="button" onclick="fillSampleTemplate()" class="bg-purple-600 hover:bg-purple-700 text-white font-black py-3 px-6 rounded-2xl shadow-xl transition-all hover:-translate-y-0.5 flex items-center gap-2 uppercase text-[10px] tracking-widest">
-                    <span>📋</span> Gunakan Contoh Template Uji Petik
+                    <span>📋</span> Contoh Template
                 </button>
                 <a href="{{ route('travel-reports.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-black py-3 px-6 rounded-2xl transition-all flex items-center gap-2 uppercase text-[10px] tracking-widest">
                     <span>⬅️</span> Kembali
@@ -1076,7 +1076,7 @@ Dengan demikian, tindak lanjut hasil uji petik diarahkan pada penguatan pemahama
             document.getElementById('preset_photos_json').value = JSON.stringify(presetPhotos);
             document.getElementById('preset_photos_preview').classList.remove('hidden');
 
-            showToast('Contoh template uji petik berhasil dimuat dengan data identitas Anda.', '📋');
+            showToast('Contoh template berhasil dimuat dengan data identitas Anda.', '📋');
             window.scrollTo({ top: 300, behavior: 'smooth' });
         }
     </script>
