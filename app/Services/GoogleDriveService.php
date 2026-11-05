@@ -31,6 +31,9 @@ class GoogleDriveService
                 $this->client = new Client();
                 $this->client->setAuthConfig($this->credentialsPath);
                 $this->client->addScope(Drive::DRIVE);
+                if ($impersonate = Setting::get('google_drive_impersonate_email')) {
+                    $this->client->setSubject(trim($impersonate));
+                }
                 $this->service = new Drive($this->client);
             } catch (\Throwable $e) {
                 Log::error('GoogleDriveService Init File Failed: ' . $e->getMessage());
@@ -50,6 +53,9 @@ class GoogleDriveService
                     $this->client = new Client();
                     $this->client->setAuthConfig($decoded);
                     $this->client->addScope(Drive::DRIVE);
+                    if ($impersonate = Setting::get('google_drive_impersonate_email')) {
+                        $this->client->setSubject(trim($impersonate));
+                    }
                     $this->service = new Drive($this->client);
                 }
             } catch (\Throwable $e) {
@@ -477,7 +483,13 @@ class GoogleDriveService
                             'supportsAllDrives' => true,
                         ]);
                     } catch (\Throwable $rootEx) {
-                        self::$lastError = $primaryEx->getMessage();
+                        $rawMsg = $primaryEx->getMessage() . ' ' . $rootEx->getMessage();
+                        if (str_contains($rawMsg, 'storageQuotaExceeded') || str_contains($rawMsg, 'Service Accounts do not have storage quota')) {
+                            $robotEmail = $this->getServiceAccountEmail() ?: 'sipega-drive@sipega-bpmp-kaltim.iam.gserviceaccount.com';
+                            self::$lastError = "Google Drive menolak unggahan (Error Kuota Service Account): Akun robot Google tidak memiliki kuota pribadi di 'Drive Saya' biasa. Solusi: Gunakan 'Drive Bersama' (Shared Drive Google Workspace) dan undang email robot ({$robotEmail}) sebagai 'Pengelola Konten' (Content Manager).";
+                        } else {
+                            self::$lastError = $primaryEx->getMessage();
+                        }
                         Log::error("GoogleDriveService: Seluruh jalur upload Drive gagal: " . $rootEx->getMessage());
                         throw $rootEx;
                     }
