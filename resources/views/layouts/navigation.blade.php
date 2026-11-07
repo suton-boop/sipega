@@ -16,11 +16,14 @@
                 <!-- Navigation Links (Menu Utama) -->
                 <div class="hidden space-x-1 sm:-my-px sm:ms-8 sm:flex items-center">
                     <!-- 1. HOME -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_home'))
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-[10px] font-black uppercase tracking-[0.2em] px-3.5 text-white/70 hover:text-white transition-all">
                         {{ __('Home') }}
                     </x-nav-link>
+                    @endif
 
                     <!-- 2. MIK (MONITORING IZIN KARYAWAN) -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_mik'))
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-blue-300 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('mik.*') ? 'text-white bg-blue-600/30 rounded-full border border-blue-400/40 shadow-sm' : '' }}">
@@ -37,19 +40,25 @@
                                 <span class="flex items-center gap-1.5"><span>🏢</span> Monitoring Izin Karyawan</span>
                                 <span class="text-[7px] bg-[#0070ba] text-white px-1.5 py-0.5 rounded font-black">TERTIB</span>
                             </div>
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_dashboard', 'menu_mik'))
                             <x-dropdown-link :href="route('mik.index')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-blue-50 flex items-center justify-between">
                                 <span>Dashboard MiK (Statistik Izin Keluar)</span>
                                 <span class="text-[8px] bg-[#0070ba] text-white px-2 py-0.5 rounded-full font-black">UTAMA</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_form_kantor', 'menu_mik'))
                             <x-dropdown-link :href="route('mik.form_kantor')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span>Form_Kantor (Izin Keluar Kantor)</span>
                                 <span class="text-[8px] bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded font-bold">Kantor</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_form_ruangan', 'menu_mik'))
                             <x-dropdown-link :href="route('mik.form_ruangan')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span>Form_Ruangan (Izin Keluar Ruangan)</span>
                                 <span class="text-[8px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Ruangan</span>
                             </x-dropdown-link>
-                            @if(auth()->user()?->canApproveMik())
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_approvals', 'menu_mik') && auth()->user()?->canApproveMik())
                             <x-dropdown-link :href="route('mik.approvals')" class="text-[11px] font-bold py-2 flex items-center justify-between border-t border-gray-50">
                                 <span>Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">APPROVAL</span>
@@ -57,13 +66,17 @@
                             @endif
                         </x-slot>
                     </x-dropdown>
+                    @endif
 
                     <!-- 3. ARSIP -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_arsip'))
                     <x-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="text-[10px] font-black uppercase tracking-[0.2em] px-3.5 text-white/70 hover:text-white transition-all">
                         {{ __('Arsip') }}
                     </x-nav-link>
+                    @endif
 
                     <!-- 4. KINERJA -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_kinerja'))
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-white/70 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('agenda.*', 'evidence.*', 'schedules.*') ? 'text-white bg-white/10 rounded-full' : '' }}">
@@ -73,6 +86,7 @@
                         </x-slot>
                         <x-slot name="content">
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-50 mb-1">Manajemen Output SKP</div>
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_rhk', 'menu_kinerja'))
                             <x-dropdown-link :href="route('agenda.index', ['open_rhk' => 1])" onclick="if(typeof openModal === 'function' && document.getElementById('rhkModal')){ openModal('rhkModal'); event.preventDefault(); }" class="text-[11px] font-bold py-2.5 flex items-center justify-between text-sipega-navy hover:bg-slate-50">
                                 <span class="flex items-center gap-1.5">
                                     <span>🎯</span> Kelola RHK
@@ -83,13 +97,22 @@
                                     </span>
                                 @endif
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_agenda', 'menu_kinerja'))
                             <x-dropdown-link :href="route('agenda.index')" class="text-[11px] font-bold py-2.5">Agenda & Realisasi</x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_evidence', 'menu_kinerja'))
                             <x-dropdown-link :href="route('evidence.index')" class="text-[11px] font-bold py-2.5 text-sipega-navy bg-sipega-orange/5">Bukti Fisik (SKP)</x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_individu', 'menu_kinerja'))
                             <x-dropdown-link :href="route('schedules.index')" class="text-[11px] font-bold py-2.5">Agenda Individu</x-dropdown-link>
+                            @endif
                         </x-slot>
                     </x-dropdown>
+                    @endif
 
                     <!-- 5. CUTI (ADMINISTRASI CUTI ASN) -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_cuti'))
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-amber-300 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leaves.*') ? 'text-white bg-amber-500/20 rounded-full border border-amber-400/30' : '' }}">
@@ -106,21 +129,25 @@
                                 <span class="flex items-center gap-1"><span>🏖️</span> Administrasi Cuti ASN</span>
                                 <span class="text-[7px] bg-amber-600 text-white px-1.5 py-0.5 rounded font-black">BKN</span>
                             </div>
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_index', 'menu_cuti'))
                             <x-dropdown-link :href="route('leaves.index')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-amber-50 flex items-center justify-between">
                                 <span>Kelola Data Cuti</span>
                                 <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">CUTI</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_create', 'menu_cuti'))
                             <x-dropdown-link :href="route('leaves.create')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span>+ Ajukan Cuti Baru</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">FORM</span>
                             </x-dropdown-link>
-                            @if(auth()->user()?->isPimpinanOrAdmin())
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_approvals', 'menu_cuti') && auth()->user()?->isPimpinanOrAdmin())
                             <x-dropdown-link :href="route('leaves.approvals')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span>Persetujuan Cuti</span>
                                 <span class="text-[8px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black">APPROVAL</span>
                             </x-dropdown-link>
                             @endif
-                            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_balances', 'menu_cuti') && auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
                             <x-dropdown-link :href="route('leaves.balances')" class="text-[11px] font-bold py-2 text-emerald-800 flex items-center justify-between border-t border-gray-50">
                                 <span>Saldo Cuti Satker</span>
                                 <span class="text-[8px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">KUOTA</span>
@@ -128,8 +155,10 @@
                             @endif
                         </x-slot>
                     </x-dropdown>
+                    @endif
 
-                    <!-- 5. PIKET PELAYANAN (ULT & PERPUSTAKAAN) -->
+                    <!-- 6. PIKET PELAYANAN (ULT & PERPUSTAKAAN) -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_piket'))
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-emerald-300 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('piket.*') ? 'text-white bg-emerald-600/30 rounded-full border border-emerald-400/30' : '' }}">
@@ -145,40 +174,60 @@
                                 <span>Piket Pelayanan ULT & Perpus</span>
                                 <span class="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">TAHUNAN</span>
                             </div>
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_dashboard', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.dashboard')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-emerald-50 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>📊</span> Dashboard Piket</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">UTAMA</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_calendar', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.schedules.calendar')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>📅</span> Kalender Piket</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_schedules', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.schedules.index')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>🗓️</span> Pengaturan Jadwal</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_conflicts', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.conflicts.index')" class="text-[11px] font-bold py-2 text-rose-700 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>⚠️</span> Deteksi Konflik</span>
                                 <span class="text-[8px] bg-rose-100 text-rose-800 px-1.5 py-0.5 rounded font-black">OTOMATIS</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_replacements', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.replacements.index')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>🔄</span> Penggantian Petugas</span>
                                 <span class="text-[8px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded font-bold">3 Level</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_swaps', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.swaps.index')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>🔀</span> Tukar Jadwal</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_monitoring', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.monitoring.index')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>📡</span> Monitoring & Presensi</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_officers', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.officers.index')" class="text-[11px] font-bold py-2 flex items-center justify-between border-t border-gray-50">
                                 <span class="flex items-center gap-2"><span>👥</span> Data Petugas Piket</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_reports', 'menu_piket'))
                             <x-dropdown-link :href="route('piket.reports.index')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span class="flex items-center gap-2"><span>📈</span> Laporan & Rekapitulasi</span>
                             </x-dropdown-link>
+                            @endif
                         </x-slot>
                     </x-dropdown>
+                    @endif
 
-                    <!-- 6. PRESENSI -->
+                    <!-- 7. PRESENSI -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_presensi'))
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-sky-200 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('attendance.*', 'letters.*', 'travel-reports.*', 'tukin.*', 'qrcode.*') ? 'text-white bg-sky-500/20 rounded-full border border-sky-400/30' : '' }}">
@@ -195,19 +244,30 @@
                                 <span>Presensi & Kedinasan</span>
                                 <span class="text-[7px] bg-sky-600 text-white px-1.5 py-0.5 rounded font-black">LOG</span>
                             </div>
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_recap', 'menu_presensi'))
                             <x-dropdown-link :href="route('attendance.recap')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-sky-50 flex items-center justify-between">
                                 <span>Laporan Harian (Log Presensi)</span>
                                 <span class="text-[8px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-black">LOG</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_meeting', 'menu_presensi'))
                             <x-dropdown-link :href="route('attendance.index')" class="text-[11px] font-bold py-2">Presensi Rapat / Kegiatan</x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_letters', 'menu_presensi'))
                             <x-dropdown-link :href="route('letters.index')" class="text-[11px] font-bold py-2">SK & Surat Tugas</x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_travel', 'menu_presensi'))
                             <x-dropdown-link :href="route('travel-reports.index')" class="text-[11px] font-bold py-2 text-sipega-navy bg-sipega-orange/5 flex items-center justify-between">
                                 <span>Laporan Perjalanan Dinas</span>
                                 <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">LAPORAN</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_qrcode', 'menu_presensi'))
                             <x-dropdown-link :href="route('qrcode.index')" class="text-[11px] font-bold py-2 border-b border-gray-50">Pembuat QR Code</x-dropdown-link>
+                            @endif
 
                             <!-- Remunerasi / Tukin -->
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
                             <div class="px-4 py-2 text-[8px] font-black text-emerald-800 uppercase tracking-widest border-b border-gray-50 my-1 flex items-center justify-between bg-emerald-50/60">
                                 <span>Tunjangan Kinerja (Tukin)</span>
                                 <span class="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">14/2025</span>
@@ -222,11 +282,13 @@
                                 <span>Slip Tukin Saya</span>
                             </x-dropdown-link>
                             @endif
+                            @endif
                         </x-slot>
                     </x-dropdown>
+                    @endif
 
-                    <!-- 7. ADMIN (HANYA MUNCUL UNTUK ADMIN, PIMPINAN, KASUBAG) -->
-                    @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
+                    <!-- 8. ADMIN (HANYA MUNCUL UNTUK ADMIN, PIMPINAN, KASUBAG) -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_admin') && auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*', 'duty-simulation.*', 'performance.*', 'attendance.import.*', 'admin.attendance.*', 'pimpinan.auto_evaluation.*', 'users.*', 'settings.*') ? 'text-white bg-sipega-orange rounded-full shadow-md shadow-orange-500/20' : '' }}">
@@ -243,7 +305,7 @@
                                 <span>Peralatan & Evaluasi Pimpinan</span>
                                 <span class="text-[7px] bg-rose-600 text-white px-1.5 py-0.5 rounded font-black">PIMPINAN</span>
                             </div>
-                            @if(in_array(auth()->user()->role, ['Pimpinan', 'Admin']))
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_auto_eval', 'menu_admin') && in_array(auth()->user()->role, ['Pimpinan', 'Admin']))
                             <x-dropdown-link :href="route('pimpinan.auto_evaluation.index')" class="text-[11px] font-bold py-2.5 text-amber-950 bg-amber-50/90 hover:bg-amber-100 flex items-center justify-between">
                                 <span class="flex items-center gap-1.5">
                                     <span>⚡</span>
@@ -252,42 +314,59 @@
                                 <span class="text-[8px] bg-red-600 text-white px-2 py-0.5 rounded-full font-black">AUTO</span>
                             </x-dropdown-link>
                             @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_monitoring', 'menu_admin'))
                             <x-dropdown-link :href="route('leader.agenda.index')" class="text-[11px] font-bold py-2.5 flex items-center justify-between">
                                 <span>Monitoring & Penilaian Pegawai</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_performance_recap', 'menu_admin'))
                             <x-dropdown-link :href="route('performance.recap')" class="text-[11px] font-bold py-2.5 text-emerald-800 bg-emerald-50/70 hover:bg-emerald-100 flex items-center justify-between">
                                 <span>Raport Capaian Pegawai</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">SKOR</span>
                             </x-dropdown-link>
+                            @endif
 
                             <!-- Manajemen Operasional -->
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-y border-gray-50 my-1 flex items-center justify-between bg-slate-50">
                                 <span>Operasional Kehadiran & ST</span>
                                 <span class="text-[7px] bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded font-bold">ADMIN</span>
                             </div>
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_attendance_manage', 'menu_admin'))
                             <x-dropdown-link :href="route('admin.attendance.manage')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-orange-50 flex items-center justify-between">
                                 <span>Kelola Kehadiran Pegawai</span>
                                 <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">KELOLA</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_import_presence', 'menu_admin'))
                             <x-dropdown-link :href="route('attendance.import.index')" class="text-[11px] font-bold py-2 text-emerald-800 hover:bg-emerald-50 flex items-center justify-between">
                                 <span>Import Log (SIPEGA-Check)</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">SYNC</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_simulation', 'menu_admin'))
                             <x-dropdown-link :href="route('duty-simulation.index')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-orange-50 flex items-center justify-between">
                                 <span>Simulasi Beban Surat Tugas</span>
                                 <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">SIMULASI</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_travel_recap', 'menu_admin'))
                             <x-dropdown-link :href="route('travel.recap')" class="text-[11px] font-bold py-2">Rekap Dinas Luar</x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_calendar', 'menu_admin'))
                             <x-dropdown-link :href="route('admin.calendar.index')" class="text-[11px] font-bold py-2">Kalender Kerja Dinas</x-dropdown-link>
+                            @endif
 
                             <!-- Master Data & Konfigurasi -->
                             <div class="px-4 py-2 text-[8px] font-black text-gray-400 uppercase tracking-widest border-y border-gray-50 my-1 bg-slate-50">
                                 Master Data & Sistem
                             </div>
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_users', 'menu_admin'))
                             <x-dropdown-link :href="route('users.index')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-orange-50/50 flex items-center justify-between">
                                 <span>Data Pegawai (NIP & Satker)</span>
                                 <span class="text-[8px] bg-sipega-navy text-white px-2 py-0.5 rounded-full font-black">NIP</span>
                             </x-dropdown-link>
+                            @endif
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_settings', 'menu_admin'))
                             <x-dropdown-link :href="route('settings.index')" class="text-[11px] font-bold py-2 text-sipega-navy bg-amber-50/70 hover:bg-amber-100 flex items-center justify-between border-t border-amber-200/60">
                                 <span class="flex items-center gap-1.5">
                                     <span class="text-sm">⚙️</span>
@@ -295,6 +374,7 @@
                                 </span>
                                 <span class="text-[8px] bg-amber-500 text-white px-2 py-0.5 rounded-full font-black tracking-wider">SISTEM</span>
                             </x-dropdown-link>
+                            @endif
                         </x-slot>
                     </x-dropdown>
                     @endif
@@ -357,41 +437,55 @@
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-gray-100 shadow-2xl">
         <div class="pt-2 pb-3 space-y-1 bg-white">
             <!-- 1: HOME -->
+            @if(\App\Models\Setting::isMenuEnabled('menu_home'))
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="font-black uppercase tracking-widest text-[11px]">
                 {{ __('Home') }}
             </x-responsive-nav-link>
+            @endif
 
             <!-- 2: MIK (MONITORING IZIN KARYAWAN) -->
+            @if(\App\Models\Setting::isMenuEnabled('menu_mik'))
             <div class="px-6 py-3.5 text-[9px] font-black text-[#0070ba] bg-blue-50 uppercase tracking-[0.2em] border-y border-blue-200/50 flex items-center justify-between mt-2">
                 <span class="flex items-center gap-1.5">
                     <span>🏢</span> MIK
                 </span>
                 <span class="text-[8px] bg-[#0070ba] text-white px-2 py-0.5 rounded font-black">TERTIB</span>
             </div>
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_dashboard', 'menu_mik'))
             <x-responsive-nav-link :href="route('mik.index')" :active="request()->routeIs('mik.index')" class="text-xs font-bold py-2.5 ps-8 text-[#0070ba]">
                 {{ __('Dashboard MiK (Statistik Izin Keluar)') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_form_kantor', 'menu_mik'))
             <x-responsive-nav-link :href="route('mik.form_kantor')" :active="request()->routeIs('mik.form_kantor')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Form_Kantor (Izin Keluar Kantor)') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_form_ruangan', 'menu_mik'))
             <x-responsive-nav-link :href="route('mik.form_ruangan')" :active="request()->routeIs('mik.form_ruangan')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Form_Ruangan (Izin Keluar Ruangan)') }}
             </x-responsive-nav-link>
-            @if(auth()->user()?->canApproveMik())
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_mik_approvals', 'menu_mik') && auth()->user()?->canApproveMik())
             <x-responsive-nav-link :href="route('mik.approvals')" :active="request()->routeIs('mik.approvals')" class="text-xs font-medium py-2.5 ps-8 text-emerald-700">
                 {{ __('Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)') }}
             </x-responsive-nav-link>
             @endif
+            @endif
 
             <!-- 3: ARSIP -->
+            @if(\App\Models\Setting::isMenuEnabled('menu_arsip'))
             <x-responsive-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="font-black uppercase tracking-widest text-[11px] text-sipega-orange mt-2">
                 {{ __('Arsip') }}
             </x-responsive-nav-link>
+            @endif
 
             <!-- 4: KINERJA -->
+            @if(\App\Models\Setting::isMenuEnabled('menu_kinerja'))
             <div class="px-6 py-3.5 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50 flex items-center gap-2 mt-3 bg-slate-50">
                 <span>🎯</span> KINERJA
             </div>
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_rhk', 'menu_kinerja'))
             <x-responsive-nav-link :href="route('agenda.index', ['open_rhk' => 1])" onclick="if(typeof openModal === 'function' && document.getElementById('rhkModal')){ openModal('rhkModal'); event.preventDefault(); }" :active="request()->has('open_rhk')" class="text-xs font-semibold py-2.5 ps-8 flex items-center justify-between">
                 <span>Kelola RHK</span>
                 @if(auth()->check())
@@ -400,94 +494,138 @@
                     </span>
                 @endif
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_agenda', 'menu_kinerja'))
             <x-responsive-nav-link :href="route('agenda.index')" :active="request()->routeIs('agenda.index') && !request()->has('open_rhk')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Agenda & Realisasi') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_evidence', 'menu_kinerja'))
             <x-responsive-nav-link :href="route('evidence.index')" :active="request()->routeIs('evidence.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Bukti Fisik (SKP)') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_kinerja_individu', 'menu_kinerja'))
             <x-responsive-nav-link :href="route('schedules.index')" :active="request()->routeIs('schedules.index')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Agenda Individu') }}
             </x-responsive-nav-link>
+            @endif
+            @endif
 
             <!-- 5: CUTI ASN -->
+            @if(\App\Models\Setting::isMenuEnabled('menu_cuti'))
             <div class="px-6 py-3.5 text-[9px] font-black text-amber-800 bg-amber-50 uppercase tracking-[0.2em] border-y border-amber-200/50 flex items-center justify-between mt-2">
                 <span class="flex items-center gap-1.5">
                     <span>🏖️</span> CUTI
                 </span>
                 <span class="text-[8px] bg-amber-600 text-white px-2 py-0.5 rounded font-black">BKN</span>
             </div>
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_index', 'menu_cuti'))
             <x-responsive-nav-link :href="route('leaves.index')" :active="request()->routeIs('leaves.index')" class="text-xs font-bold py-2.5 ps-8 text-sipega-navy">
                 {{ __('Kelola Data Cuti ASN') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_create', 'menu_cuti'))
             <x-responsive-nav-link :href="route('leaves.create')" :active="request()->routeIs('leaves.create')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('+ Ajukan Cuti Baru') }}
             </x-responsive-nav-link>
-            @if(auth()->user()?->isPimpinanOrAdmin())
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_approvals', 'menu_cuti') && auth()->user()?->isPimpinanOrAdmin())
             <x-responsive-nav-link :href="route('leaves.approvals')" :active="request()->routeIs('leaves.approvals')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Persetujuan Cuti (Approval)') }}
             </x-responsive-nav-link>
             @endif
-            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_cuti_balances', 'menu_cuti') && auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
             <x-responsive-nav-link :href="route('leaves.balances')" :active="request()->routeIs('leaves.balances')" class="text-xs font-medium py-2.5 ps-8 text-emerald-700">
                 {{ __('Saldo Cuti Satker') }}
             </x-responsive-nav-link>
             @endif
+            @endif
 
             <!-- 6: PIKET -->
+            @if(\App\Models\Setting::isMenuEnabled('menu_piket'))
             <div class="px-6 py-3.5 text-[9px] font-black text-emerald-800 bg-emerald-50 uppercase tracking-[0.2em] border-y border-emerald-200/50 flex items-center justify-between mt-2">
                 <span class="flex items-center gap-1.5">
                     <span>🛡️</span> PIKET
                 </span>
                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">PELAYANAN</span>
             </div>
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_dashboard', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.dashboard')" :active="request()->routeIs('piket.dashboard')" class="text-xs font-bold py-2.5 ps-8 text-emerald-800">
                 {{ __('Dashboard Piket') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_calendar', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.schedules.calendar')" :active="request()->routeIs('piket.schedules.calendar')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Kalender Piket') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_schedules', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.schedules.index')" :active="request()->routeIs('piket.schedules.*') && !request()->routeIs('piket.schedules.calendar')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Pengaturan Jadwal Tahunan') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_conflicts', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.conflicts.index')" :active="request()->routeIs('piket.conflicts.*')" class="text-xs font-medium py-2.5 ps-8 text-rose-700">
                 {{ __('Deteksi Konflik Jadwal') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_replacements', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.replacements.index')" :active="request()->routeIs('piket.replacements.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Penggantian Petugas (3 Prioritas)') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_swaps', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.swaps.index')" :active="request()->routeIs('piket.swaps.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Pengajuan Tukar Jadwal') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_monitoring', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.monitoring.index')" :active="request()->routeIs('piket.monitoring.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Monitoring & Presensi Layanan') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_piket_reports', 'menu_piket'))
             <x-responsive-nav-link :href="route('piket.reports.index')" :active="request()->routeIs('piket.reports.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Laporan dan Rekapitulasi') }}
             </x-responsive-nav-link>
+            @endif
+            @endif
 
             <!-- 6: PRESENSI -->
+            @if(\App\Models\Setting::isMenuEnabled('menu_presensi'))
             <div class="px-6 py-3.5 text-[9px] font-black text-sky-800 bg-sky-50 uppercase tracking-[0.2em] border-y border-sky-200/50 flex items-center justify-between mt-2">
                 <span class="flex items-center gap-1.5">
                     <span>⏱️</span> PRESENSI
                 </span>
                 <span class="text-[8px] bg-sky-600 text-white px-2 py-0.5 rounded font-black">PRESENSI</span>
             </div>
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_recap', 'menu_presensi'))
             <x-responsive-nav-link :href="route('attendance.recap')" :active="request()->routeIs('attendance.recap')" class="text-xs font-bold py-2.5 ps-8 text-blue-700 bg-blue-50/50">
                 {{ __('Laporan Harian (Log Presensi)') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_meeting', 'menu_presensi'))
             <x-responsive-nav-link :href="route('attendance.index')" :active="request()->routeIs('attendance.index')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Presensi Rapat / Kegiatan') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_letters', 'menu_presensi'))
             <x-responsive-nav-link :href="route('letters.index')" :active="request()->routeIs('letters.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('SK & Surat Tugas') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_travel', 'menu_presensi'))
             <x-responsive-nav-link :href="route('travel-reports.index')" :active="request()->routeIs('travel-reports.*')" class="text-xs font-semibold py-2.5 ps-8 text-sipega-orange">
                 {{ __('Laporan Perjalanan Dinas') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_qrcode', 'menu_presensi'))
             <x-responsive-nav-link :href="route('qrcode.index')" :active="request()->routeIs('qrcode.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Pembuat QR Code') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
             @if(auth()->user()?->isOperatorKepegawaian())
             <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-bold py-2.5 ps-8 text-emerald-800 bg-emerald-50/70 flex items-center justify-between">
                 <span>{{ __('Hitung Tukin Pegawai (Permendikdasmen 14/2025)') }}</span>
@@ -498,48 +636,68 @@
                 {{ __('Slip Tukin Saya') }}
             </x-responsive-nav-link>
             @endif
+            @endif
+            @endif
 
             <!-- 7: ADMIN -->
-            @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
+            @if(\App\Models\Setting::isMenuEnabled('menu_admin') && auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
             <div class="px-6 py-3.5 text-[9px] font-black text-sipega-orange bg-orange-50 uppercase tracking-[0.2em] flex items-center justify-between mt-3 border-y border-orange-200/60">
                 <span class="flex items-center gap-1.5">
                     <span>⚙️</span> ADMIN
                 </span>
                 <span class="text-[7px] bg-sipega-orange text-white px-2 py-0.5 rounded font-black">MANAGEMENT</span>
             </div>
-            @if(in_array(auth()->user()->role, ['Pimpinan', 'Admin']))
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_auto_eval', 'menu_admin') && in_array(auth()->user()->role, ['Pimpinan', 'Admin']))
             <x-responsive-nav-link :href="route('pimpinan.auto_evaluation.index')" :active="request()->routeIs('pimpinan.auto_evaluation.*')" class="text-xs font-black py-2.5 ps-8 text-amber-900 bg-amber-50 flex items-center justify-between">
                 <span>⚡ {{ __('Otomatisasi Penilaian Pegawai (Jam 24:00)') }}</span>
                 <span class="text-[7px] bg-red-600 text-white px-1.5 py-0.5 rounded font-black">AUTO</span>
             </x-responsive-nav-link>
             @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_attendance_manage', 'menu_admin'))
             <x-responsive-nav-link :href="route('admin.attendance.manage')" :active="request()->routeIs('admin.attendance.*')" class="text-xs font-bold py-2.5 ps-8 text-sipega-navy">
                 {{ __('Kelola Kehadiran Pegawai') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_import_presence', 'menu_admin'))
             <x-responsive-nav-link :href="route('attendance.import.index')" :active="request()->routeIs('attendance.import.*')" class="text-xs font-bold py-2.5 ps-8 text-emerald-700">
                 {{ __('Import Log Kehadiran (SIPEGA-Check)') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_performance_recap', 'menu_admin'))
             <x-responsive-nav-link :href="route('performance.recap')" :active="request()->routeIs('performance.*')" class="text-xs font-bold py-2.5 ps-8 text-emerald-700">
                 {{ __('Raport Capaian Pegawai') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_simulation', 'menu_admin'))
             <x-responsive-nav-link :href="route('duty-simulation.index')" :active="request()->routeIs('duty-simulation.*')" class="text-xs font-bold py-2.5 ps-8 text-sipega-orange">
                 {{ __('Simulasi Surat Tugas') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_users', 'menu_admin'))
             <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')" class="text-xs font-medium py-2.5 ps-8 text-sipega-navy">
                 {{ __('Data Pegawai (NIP & Satker)') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_monitoring', 'menu_admin'))
             <x-responsive-nav-link :href="route('leader.agenda.index')" :active="request()->routeIs('leader.agenda.index')" class="text-xs font-medium py-2.5 ps-8 text-sipega-navy">
                 {{ __('Monitoring & Penilaian') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_travel_recap', 'menu_admin'))
             <x-responsive-nav-link :href="route('travel.recap')" :active="request()->routeIs('travel.recap')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Rekap Dinas Luar') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_calendar', 'menu_admin'))
             <x-responsive-nav-link :href="route('admin.calendar.index')" :active="request()->routeIs('admin.calendar.index')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Kalender Kerja Dinas') }}
             </x-responsive-nav-link>
+            @endif
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_admin_settings', 'menu_admin'))
             <x-responsive-nav-link :href="route('settings.index')" :active="request()->routeIs('settings.*', 'smartpengaturan')" class="text-xs font-bold py-2.5 ps-8 text-amber-700 bg-amber-50/50">
                 {{ __('⚙️ Smart Pengaturan') }}
             </x-responsive-nav-link>
+            @endif
             @endif
         </div>
 

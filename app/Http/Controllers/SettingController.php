@@ -43,12 +43,14 @@ class SettingController extends Controller
         $authMode = $driveService->getAuthMode();
         $connectedEmail = $driveService->getConnectedEmail();
         $oauthRedirectUri = route('settings.google.oauth.callback');
+        $menuDefinitions = Setting::getMenuDefinitions();
 
         return view('settings.index', compact(
             'tukinRules', 'rates', 'officialRates', 'generalSettings', 
             'driveConfigured', 'driveServiceEmail', 'libraryInstalled',
             'oauthClientId', 'oauthClientSecret', 'oauthConnected',
-            'oauthUserEmail', 'authMode', 'connectedEmail', 'oauthRedirectUri'
+            'oauthUserEmail', 'authMode', 'connectedEmail', 'oauthRedirectUri',
+            'menuDefinitions'
         ));
     }
 
@@ -364,5 +366,33 @@ class SettingController extends Controller
         Setting::set('google_oauth_user_email', '');
 
         return redirect(route('settings.index') . '#general')->with('success', 'Koneksi Google OAuth berhasil diputus. Sistem akan kembali menggunakan Service Account.');
+    }
+
+    /**
+     * Simpan Status Aktivasi Menu & Sub-Menu Navigasi
+     */
+    public function updateMenus(Request $request)
+    {
+        if (!TukinController::isPrivilegedUser(auth()->user())) {
+            abort(403, 'Akses terbatas untuk Administrator & Pengelola Kepegawaian.');
+        }
+
+        $menuDefinitions = Setting::getMenuDefinitions();
+
+        foreach ($menuDefinitions as $menuKey => $menuData) {
+            // Update Parent Menu
+            $val = $request->input($menuKey, '0');
+            Setting::set($menuKey, ($val === '1' || $val === 1 || $val === 'on' || $val === true) ? '1' : '0');
+
+            // Update Sub-menus jika ada
+            if (!empty($menuData['submenus'])) {
+                foreach ($menuData['submenus'] as $subKey => $subData) {
+                    $subVal = $request->input($subKey, '0');
+                    Setting::set($subKey, ($subVal === '1' || $subVal === 1 || $subVal === 'on' || $subVal === true) ? '1' : '0');
+                }
+            }
+        }
+
+        return redirect(route('settings.index') . '#menus')->with('success', 'Pengaturan aktivasi menu dan sub-menu navigasi berhasil disimpan!');
     }
 }

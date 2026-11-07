@@ -152,6 +152,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/settings/drive/oauth/disconnect', [SettingController::class, 'disconnectGoogleOAuth'])->name('settings.google.oauth.disconnect');
     Route::post('/settings/tukin', [SettingController::class, 'updateTukinRules'])->name('settings.tukin.update');
     Route::post('/settings/tukin/reset', [SettingController::class, 'resetTukinRules'])->name('settings.tukin.reset');
+    Route::post('/settings/menus', [SettingController::class, 'updateMenus'])->name('settings.menus.update');
 
     // MODULE USER MANAGEMENT (Admin-Only Dashboard Features)
     Route::get('/users', [UserController::class, 'index'])->name('users.index');

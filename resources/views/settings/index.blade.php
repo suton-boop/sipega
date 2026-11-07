@@ -26,7 +26,7 @@
         </div>
     </x-slot>
 
-    <div class="py-8" x-data="{ activeTab: window.location.hash === '#grade' ? 'grade' : (window.location.hash === '#general' ? 'general' : 'tukin') }">
+    <div class="py-8" x-data="{ activeTab: window.location.hash === '#menus' ? 'menus' : (window.location.hash === '#grade' ? 'grade' : (window.location.hash === '#general' ? 'general' : 'tukin')) }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
             <!-- Alert Notifikasi Flash -->
@@ -82,6 +82,13 @@
                         class="px-5 py-3 rounded-xl font-black text-xs transition flex items-center gap-2 cursor-pointer">
                     <span>⚙️</span>
                     <span>3. Pengaturan Umum Sistem</span>
+                </button>
+                <button type="button" 
+                        @click="activeTab = 'menus'; window.location.hash = 'menus'" 
+                        :class="activeTab === 'menus' ? 'bg-sipega-navy text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'"
+                        class="px-5 py-3 rounded-xl font-black text-xs transition flex items-center gap-2 cursor-pointer">
+                    <span>🧭</span>
+                    <span>4. Kontrol Menu & Sub-Menu Navigasi</span>
                 </button>
             </div>
 
@@ -871,8 +878,183 @@
                     </div>
                 </div>
 
-                <!-- BARIS TOMBOL AKSI STICKY BOTTOM -->
-                <div class="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-4 z-20">
+                <!-- ========================================== -->
+                <!-- TAB 4: KONTROL MENU & SUB-MENU NAVIGASI    -->
+                <!-- ========================================== -->
+                <div x-show="activeTab === 'menus'" class="space-y-6" style="display: none;">
+                    <form action="{{ route('settings.menus.update') }}" method="POST" id="menusForm">
+                        @csrf
+
+                        <!-- Header Banner -->
+                        <div class="bg-gradient-to-r from-sipega-navy via-slate-900 to-indigo-950 text-white p-6 rounded-[2rem] shadow-md border border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                            <div>
+                                <span class="px-2.5 py-0.5 bg-amber-400 text-black text-[9px] font-black rounded-full uppercase tracking-wider">
+                                    Pusat Kontrol Navigasi SIPEGA
+                                </span>
+                                <h3 class="font-black text-lg text-white mt-1">
+                                    Saklar Aktivasi Menu & Sub-Menu Sistem
+                                </h3>
+                                <p class="text-xs text-slate-300 font-medium">
+                                    Aktifkan atau nonaktifkan menu utama dan setiap sub-menu secara dinamis. Menu yang dinonaktifkan akan otomatis disembunyikan dari navbar desktop dan perangkat seluler/tablet.
+                                </p>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" @click="
+                                    document.querySelectorAll('.menu-switch-input').forEach(el => el.value = '1');
+                                    document.querySelectorAll('.menu-switch-btn').forEach(btn => {
+                                        btn.classList.remove('bg-gray-300');
+                                        btn.classList.add('bg-emerald-600');
+                                        const dot = btn.querySelector('.menu-switch-dot');
+                                        if(dot) { dot.classList.remove('translate-x-0'); dot.classList.add('translate-x-5'); }
+                                    });
+                                    document.querySelectorAll('.menu-status-badge').forEach(badge => {
+                                        badge.textContent = 'AKTIF';
+                                        badge.className = 'menu-status-badge text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border border-emerald-200 text-emerald-700 bg-emerald-100';
+                                    });
+                                " class="px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-400/40 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer">
+                                    <span>⚡</span> Aktifkan Semua
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- List of All Menus & Submenus -->
+                        <div class="space-y-4">
+                            @foreach($menuDefinitions as $menuKey => $menu)
+                                @php
+                                    $isParentActive = \App\Models\Setting::isMenuEnabled($menuKey, true);
+                                @endphp
+                                <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden" 
+                                     x-data="{ parentActive: {{ $isParentActive ? 'true' : 'false' }} }">
+                                    
+                                    <!-- Parent Menu Row -->
+                                    <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                                         :class="parentActive ? 'bg-white' : 'bg-slate-50/80'">
+                                        <div class="flex items-center gap-3.5">
+                                            <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 transition-colors"
+                                                 :class="parentActive ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-gray-100 text-gray-400 border border-gray-200'">
+                                                {{ $menu['icon'] }}
+                                            </div>
+                                            <div>
+                                                <div class="flex items-center gap-2">
+                                                    <h4 class="font-black text-sm text-sipega-navy" :class="{ 'opacity-60': !parentActive }">
+                                                        {{ $menu['label'] }}
+                                                    </h4>
+                                                    @if(count($menu['submenus']) > 0)
+                                                        <span class="text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
+                                                            {{ count($menu['submenus']) }} Sub-Menu
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                                <p class="text-xs text-gray-400 font-medium mt-0.5" :class="{ 'opacity-60': !parentActive }">
+                                                    {{ $menu['desc'] }}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <!-- Switch Parent -->
+                                        <div class="flex items-center gap-3 self-end sm:self-center">
+                                            <span class="menu-status-badge text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider border transition-all"
+                                                  :class="parentActive ? 'text-emerald-700 bg-emerald-100 border-emerald-200' : 'text-gray-500 bg-gray-100 border-gray-200'"
+                                                  x-text="parentActive ? 'AKTIF' : 'NONAKTIF'">
+                                                {{ $isParentActive ? 'AKTIF' : 'NONAKTIF' }}
+                                            </span>
+
+                                            <input type="hidden" name="{{ $menuKey }}" :value="parentActive ? '1' : '0'" class="menu-switch-input">
+
+                                            <button type="button" 
+                                                    @click="parentActive = !parentActive"
+                                                    :class="parentActive ? 'bg-emerald-600' : 'bg-gray-300'"
+                                                    class="menu-switch-btn relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none shadow-sm"
+                                                    role="switch" 
+                                                    :aria-checked="parentActive">
+                                                <span :class="parentActive ? 'translate-x-5' : 'translate-x-0'"
+                                                      class="menu-switch-dot pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sub-Menus List -->
+                                    @if(!empty($menu['submenus']))
+                                        <div class="px-5 sm:px-6 pb-5 sm:pb-6 pt-2 border-t border-gray-100"
+                                             :class="parentActive ? 'bg-slate-50/40' : 'bg-gray-100/40 opacity-50 pointer-events-none'">
+                                            <div class="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+                                                <span>Sub-Menu Navigasi:</span>
+                                                <span x-show="!parentActive" class="text-rose-600 font-bold">(Otomatis nonaktif karena menu utama nonaktif)</span>
+                                            </div>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                @foreach($menu['submenus'] as $subKey => $sub)
+                                                    @php
+                                                        $isSubActive = \App\Models\Setting::isMenuEnabled($subKey, true);
+                                                    @endphp
+                                                    <div class="p-3.5 rounded-xl border bg-white flex items-center justify-between gap-3 shadow-2xs transition-all"
+                                                         x-data="{ subActive: {{ $isSubActive ? 'true' : 'false' }} }"
+                                                         :class="subActive && parentActive ? 'border-emerald-200/80 bg-white' : 'border-gray-200 bg-gray-50/70'">
+                                                        <div class="min-w-0 pr-2">
+                                                            <div class="flex items-center gap-1.5 flex-wrap">
+                                                                <p class="text-xs font-bold text-gray-800 truncate" :class="{ 'line-through text-gray-400': !subActive || !parentActive }">
+                                                                    {{ $sub['label'] }}
+                                                                </p>
+                                                                @if(!empty($sub['tag']))
+                                                                    <span class="text-[8px] font-black px-1.5 py-0.2 rounded bg-slate-100 text-slate-600">
+                                                                        {{ $sub['tag'] }}
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                            <p class="text-[10px] text-gray-400 font-mono mt-0.5 truncate">
+                                                                Route: {{ $sub['route'] }}
+                                                            </p>
+                                                        </div>
+
+                                                        <div class="flex items-center gap-2 shrink-0">
+                                                            <span class="menu-status-badge text-[8px] font-black px-2 py-0.5 rounded-full uppercase"
+                                                                  :class="subActive && parentActive ? 'text-emerald-700 bg-emerald-100' : 'text-gray-400 bg-gray-100'"
+                                                                  x-text="subActive && parentActive ? 'ON' : 'OFF'">
+                                                                {{ $isSubActive ? 'ON' : 'OFF' }}
+                                                            </span>
+
+                                                            <input type="hidden" name="{{ $subKey }}" :value="subActive ? '1' : '0'" class="menu-switch-input">
+
+                                                            <button type="button" 
+                                                                    @click="subActive = !subActive"
+                                                                    :class="subActive && parentActive ? 'bg-emerald-600' : 'bg-gray-300'"
+                                                                    class="menu-switch-btn relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                                                                    role="switch" 
+                                                                    :aria-checked="subActive">
+                                                                <span :class="subActive && parentActive ? 'translate-x-4' : 'translate-x-0'"
+                                                                      class="menu-switch-dot pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Sticky Bottom Action Bar for Menus -->
+                        <div class="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-4 z-20 mt-6">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <p class="text-xs font-bold text-gray-600">
+                                    Menu yang dinonaktifkan akan langsung hilang dari navigasi seluruh pegawai.
+                                </p>
+                            </div>
+
+                            <div class="flex items-center gap-2.5 w-full sm:w-auto justify-end">
+                                <button type="submit" form="menusForm" class="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5 cursor-pointer flex items-center gap-1.5">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    <span>Simpan Pengaturan Menu Navigasi</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- BARIS TOMBOL AKSI STICKY BOTTOM (TAB TUKIN, GRADE, GENERAL) -->
+                <div x-show="activeTab !== 'menus'" class="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-4 z-20">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <p class="text-xs font-bold text-gray-600">
