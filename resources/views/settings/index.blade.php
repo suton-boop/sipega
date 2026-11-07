@@ -26,6 +26,10 @@
         </div>
     </x-slot>
 
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+
     <div class="py-8" x-data="{ activeTab: window.location.hash === '#menus' ? 'menus' : (window.location.hash === '#grade' ? 'grade' : (window.location.hash === '#general' ? 'general' : 'tukin')) }">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
 
@@ -425,7 +429,7 @@
                 <!-- ========================================== -->
                 <!-- TAB 2: PLAFON TARIF TUKIN PER GRADE        -->
                 <!-- ========================================== -->
-                <div x-show="activeTab === 'grade'" class="space-y-6" style="display: none;">
+                <div x-show="activeTab === 'grade'" x-cloak class="space-y-6">
                     <div class="bg-gradient-to-r from-sipega-navy via-slate-900 to-indigo-950 text-white p-6 rounded-[2rem] shadow-md border border-slate-800">
                         <span class="px-2.5 py-0.5 bg-amber-400 text-black text-[9px] font-black rounded-full uppercase tracking-wider">
                             Standar Plafon Nominal Tukin
@@ -493,7 +497,7 @@
                 <!-- ========================================== -->
                 <!-- TAB 3: PENGATURAN UMUM SISTEM              -->
                 <!-- ========================================== -->
-                <div x-show="activeTab === 'general'" class="space-y-6" style="display: none;">
+                <div x-show="activeTab === 'general'" x-cloak class="space-y-6">
                     <div class="bg-white p-6 rounded-[2rem] shadow-sm border border-gray-100 space-y-4">
                         <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
                             <div class="w-9 h-9 rounded-xl bg-indigo-100 text-indigo-800 flex items-center justify-center font-black text-base">
@@ -875,13 +879,11 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
-                </div>
 
                 <!-- ========================================== -->
                 <!-- TAB 4: KONTROL MENU & SUB-MENU NAVIGASI    -->
                 <!-- ========================================== -->
-                <div x-show="activeTab === 'menus'" class="space-y-6" style="display: none;">
+                <div x-show="activeTab === 'menus'" x-cloak class="space-y-6">
                     <form action="{{ route('settings.menus.update') }}" method="POST" id="menusForm">
                         @csrf
 
@@ -1054,7 +1056,7 @@
                 </div>
 
                 <!-- BARIS TOMBOL AKSI STICKY BOTTOM (TAB TUKIN, GRADE, GENERAL) -->
-                <div x-show="activeTab !== 'menus'" class="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-4 z-20">
+                <div x-show="activeTab !== 'menus'" x-cloak class="bg-white/95 backdrop-blur-md p-4 rounded-2xl shadow-lg border border-gray-200 flex flex-col sm:flex-row justify-between items-center gap-3 sticky bottom-4 z-20">
                     <div class="flex items-center gap-2">
                         <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <p class="text-xs font-bold text-gray-600">
