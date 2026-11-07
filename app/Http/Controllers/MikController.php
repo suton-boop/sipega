@@ -259,6 +259,10 @@ class MikController extends Controller
         Carbon::setLocale('id');
         $user = auth()->user();
 
+        if (!$user || !$user->canApproveMik()) {
+            abort(403, 'Akses Ditolak. Halaman Persetujuan Izin MiK hanya dapat diakses oleh Ketua Gugus Mutu dan Pimpinan.');
+        }
+
         $type = $request->input('type'); // all, kantor, ruangan
         $status = $request->input('status');
 

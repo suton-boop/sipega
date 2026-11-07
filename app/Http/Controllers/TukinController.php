@@ -30,37 +30,17 @@ class TukinController extends Controller
     {
         $user = $user ?: auth()->user();
         if (!$user) return false;
+        return $user->isOperatorKepegawaian() || $user->isPimpinanOrAdmin();
+    }
 
-        $role = strtolower(trim($user->role ?? ''));
-        $privilegedRoles = [
-            'admin', 'administrator', 'kasubag', 'pimpinan', 
-            'sekpri', 'operator', 'kepegawaian', 'superadmin', 
-            'bendahara', 'ppk', 'kpa'
-        ];
-
-        if (in_array($role, $privilegedRoles)) {
-            return true;
-        }
-
-        // Cek Spatie Roles jika ada
-        if (method_exists($user, 'hasAnyRole')) {
-            try {
-                if ($user->hasAnyRole(['Admin', 'Pimpinan', 'Kasubag', 'Operator', 'Kepegawaian', 'admin', 'pimpinan', 'kasubag', 'operator'])) {
-                    return true;
-                }
-            } catch (\Throwable $e) {}
-        }
-
-        // Cek jika Jabatan mengindikasikan Pimpinan / Pengelola Kepegawaian
-        $position = strtolower(trim($user->position ?? ''));
-        $privilegedPositions = ['kepala', 'pimpinan', 'kasubag', 'kepegawaian', 'admin', 'bendahara', 'ppk', 'kpa', 'subbagian umum'];
-        foreach ($privilegedPositions as $pos) {
-            if (str_contains($position, $pos)) {
-                return true;
-            }
-        }
-
-        return false;
+    /**
+     * Memeriksa apakah user adalah Operator Kepegawaian (yang berhak menghitung & kelola tukin)
+     */
+    public static function isOperatorKepegawaian(?User $user = null): bool
+    {
+        $user = $user ?: auth()->user();
+        if (!$user) return false;
+        return $user->isOperatorKepegawaian();
     }
 
     /**
@@ -70,21 +50,21 @@ class TukinController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $isPrivileged = self::isPrivilegedUser($user);
+        $isOperator = self::isOperatorKepegawaian($user);
 
-        // Hanya pegawai biasa yang dibatasi oleh master switch is_tukin_active dan show_slip_tukin
-        if (!$isPrivileged && (Setting::get('is_tukin_active') === '0' || Setting::get('show_slip_tukin') === '0')) {
+        // Hanya pegawai biasa/non-operator yang dibatasi oleh master switch is_tukin_active dan show_slip_tukin
+        if (!$isOperator && (Setting::get('is_tukin_active') === '0' || Setting::get('show_slip_tukin') === '0')) {
             return redirect()->route('dashboard')->with('error', 'Akses Slip Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
         }
 
-        // Jika Pegawai biasa, arahkan ke tampilan slip personal
-        if (!$isPrivileged) {
+        // Jika bukan Operator Kepegawaian (Pegawai biasa / Pimpinan non-operator), arahkan ke Slip Tukin Saya
+        if (!$isOperator) {
             $month = $request->get('month', Carbon::now('Asia/Makassar')->format('Y-m'));
             $tukin = $user->calculateMonthlyTukin($month);
             return view('tukin.pegawai', compact('user', 'tukin', 'month'));
         }
 
-        // LEVEL KEPEGAWAIAN & PIMPINAN
+        // LEVEL OPERATOR KEPEGAWAIAN (HITUNG TUKIN)
         // Tentukan periode (Default: cari periode terbaru yang memiliki data, atau bulan ini)
         $latestPeriodInDb = TukinCalculation::max('period');
         $defaultPeriod = $latestPeriodInDb ?: Carbon::now('Asia/Makassar')->format('Y-m');

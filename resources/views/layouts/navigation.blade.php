@@ -49,10 +49,12 @@
                                 <span>Form_Ruangan (Izin Keluar Ruangan)</span>
                                 <span class="text-[8px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Ruangan</span>
                             </x-dropdown-link>
+                            @if(auth()->user()?->canApproveMik())
                             <x-dropdown-link :href="route('mik.approvals')" class="text-[11px] font-bold py-2 flex items-center justify-between border-t border-gray-50">
                                 <span>Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">APPROVAL</span>
                             </x-dropdown-link>
+                            @endif
                         </x-slot>
                     </x-dropdown>
 
@@ -112,10 +114,12 @@
                                 <span>+ Ajukan Cuti Baru</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">FORM</span>
                             </x-dropdown-link>
+                            @if(auth()->user()?->isPimpinanOrAdmin())
                             <x-dropdown-link :href="route('leaves.approvals')" class="text-[11px] font-bold py-2 flex items-center justify-between">
                                 <span>Persetujuan Cuti</span>
                                 <span class="text-[8px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-black">APPROVAL</span>
                             </x-dropdown-link>
+                            @endif
                             @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
                             <x-dropdown-link :href="route('leaves.balances')" class="text-[11px] font-bold py-2 text-emerald-800 flex items-center justify-between border-t border-gray-50">
                                 <span>Saldo Cuti Satker</span>
@@ -208,7 +212,7 @@
                                 <span>Tunjangan Kinerja (Tukin)</span>
                                 <span class="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">14/2025</span>
                             </div>
-                            @if(auth()->user() && \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
+                            @if(auth()->user()?->isOperatorKepegawaian())
                             <x-dropdown-link :href="route('tukin.index')" class="text-[11px] font-bold py-2 text-emerald-900 bg-emerald-50/80 hover:bg-emerald-100 flex items-center justify-between">
                                 <span>Hitung Tukin (Permendikdasmen 14/2025)</span>
                                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">EXCEL</span>
@@ -373,9 +377,11 @@
             <x-responsive-nav-link :href="route('mik.form_ruangan')" :active="request()->routeIs('mik.form_ruangan')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Form_Ruangan (Izin Keluar Ruangan)') }}
             </x-responsive-nav-link>
+            @if(auth()->user()?->canApproveMik())
             <x-responsive-nav-link :href="route('mik.approvals')" :active="request()->routeIs('mik.approvals')" class="text-xs font-medium py-2.5 ps-8 text-emerald-700">
                 {{ __('Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)') }}
             </x-responsive-nav-link>
+            @endif
 
             <!-- 3: ARSIP -->
             <x-responsive-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="font-black uppercase tracking-widest text-[11px] text-sipega-orange mt-2">
@@ -417,9 +423,11 @@
             <x-responsive-nav-link :href="route('leaves.create')" :active="request()->routeIs('leaves.create')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('+ Ajukan Cuti Baru') }}
             </x-responsive-nav-link>
+            @if(auth()->user()?->isPimpinanOrAdmin())
             <x-responsive-nav-link :href="route('leaves.approvals')" :active="request()->routeIs('leaves.approvals')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Persetujuan Cuti (Approval)') }}
             </x-responsive-nav-link>
+            @endif
             @if(auth()->user() && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
             <x-responsive-nav-link :href="route('leaves.balances')" :active="request()->routeIs('leaves.balances')" class="text-xs font-medium py-2.5 ps-8 text-emerald-700">
                 {{ __('Saldo Cuti Satker') }}
@@ -480,7 +488,7 @@
             <x-responsive-nav-link :href="route('qrcode.index')" :active="request()->routeIs('qrcode.*')" class="text-xs font-medium py-2.5 ps-8">
                 {{ __('Pembuat QR Code') }}
             </x-responsive-nav-link>
-            @if(auth()->user() && \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
+            @if(auth()->user()?->isOperatorKepegawaian())
             <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-bold py-2.5 ps-8 text-emerald-800 bg-emerald-50/70 flex items-center justify-between">
                 <span>{{ __('Hitung Tukin Pegawai (Permendikdasmen 14/2025)') }}</span>
                 <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">EXCEL</span>

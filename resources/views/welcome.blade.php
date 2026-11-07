@@ -102,31 +102,31 @@
         </header>
 
         <!-- Dynamic Hero Section (Responsive All Devices) -->
-        <section class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden hero-elite pt-28 sm:pt-32 pb-16 px-4">
+        <section class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden hero-elite pt-24 sm:pt-28 md:pt-32 pb-12 sm:pb-16 px-4">
             <div class="absolute inset-0 z-0 opacity-5 pointer-events-none flex items-center justify-center">
                 <span class="text-[25vw] font-montserrat font-black uppercase tracking-tighter text-outline">SIPEGA</span>
             </div>
 
             <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
-                <div class="inline-flex items-center gap-3 px-4 sm:px-6 py-1.5 sm:py-2 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] sm:tracking-[0.4em] mb-6 sm:mb-8 md:mb-12 text-sipega-orange">
+                <div class="inline-flex items-center gap-2.5 px-4 sm:px-5 py-1 sm:py-1.5 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] mb-4 sm:mb-6 md:mb-8 text-sipega-orange">
                     <span class="w-1.5 h-1.5 rounded-full bg-sipega-orange shadow-lg shadow-sipega-orange"></span>
                     INSTITUTIONAL CORE v2.4
                 </div>
 
-                <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black font-montserrat tracking-tighter uppercase leading-[0.95] sm:leading-[0.9] mb-6 sm:mb-8 md:mb-12">
+                <h1 class="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black font-montserrat tracking-tighter uppercase leading-[0.95] sm:leading-[0.9] mb-4 sm:mb-6 md:mb-8">
                     Akurasi data, <br>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-sipega-orange to-amber-500 italic">Ekselensi Kinerja.</span>
                 </h1>
 
-                <p class="text-sm sm:text-base md:text-xl lg:text-2xl text-white/50 font-light max-w-3xl mx-auto leading-relaxed mb-8 sm:mb-12 md:mb-16 tracking-wide px-2">
+                <p class="text-xs sm:text-sm md:text-lg lg:text-xl text-white/50 font-light max-w-3xl mx-auto leading-relaxed mb-6 sm:mb-8 md:mb-10 tracking-wide px-2">
                     Membangun standar baru profesionalisme aparatur melalui <br class="hidden sm:inline"> integrasi data kehadiran yang presisi dan transparan.
                 </p>
 
                 <div class="flex items-center justify-center">
                     <a href="{{ route('login') }}" 
-                        class="btn-glow-animate inline-flex items-center gap-3 px-8 py-3.5 sm:px-12 sm:py-4 md:px-16 md:py-5 rounded-full font-black text-xs sm:text-sm md:text-base uppercase tracking-[0.25em] text-white bg-[#ff8c00] hover:bg-[#ff9d26] transition-all transform hover:scale-105 hover:-translate-y-1 shadow-2xl shadow-orange-500/40">
+                        class="btn-glow-animate inline-flex items-center gap-2.5 px-7 py-3 sm:px-10 sm:py-3.5 md:px-12 md:py-4 rounded-full font-black text-xs sm:text-sm uppercase tracking-[0.25em] text-white bg-[#ff8c00] hover:bg-[#ff9d26] transition-all transform hover:scale-105 hover:-translate-y-1 shadow-2xl shadow-orange-500/40">
                         <span>MASUK KE SISTEM</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                     </a>

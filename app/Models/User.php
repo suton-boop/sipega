@@ -349,4 +349,78 @@ class User extends Authenticatable
 
         return 'PNS';
     }
+
+    /**
+     * Memeriksa apakah user berhak memberikan persetujuan izin MiK (Ketua Gugus Mutu & Pimpinan/Admin)
+     */
+    public function canApproveMik(): bool
+    {
+        $role = strtolower(trim($this->role ?? ''));
+        $position = strtolower(trim($this->position ?? ''));
+
+        // Pimpinan & Admin
+        if (in_array($role, ['admin', 'administrator', 'superadmin', 'pimpinan', 'kasubag'])) {
+            return true;
+        }
+
+        if (str_contains($position, 'kepala') || str_contains($position, 'kasubag')) {
+            return true;
+        }
+
+        // Ketua Gugus Mutu
+        if (in_array($role, ['ketua gm', 'ketua gugus', 'ketua gugus mutu']) ||
+            str_contains($position, 'ketua gugus') ||
+            str_contains($position, 'ketua gm')) {
+            return true;
+        }
+
+        // Pegawai dengan indikasi ketua gugus mutu di profil
+        if (!empty($this->gugus_mutu) && (str_contains($position, 'ketua') || str_contains($role, 'ketua'))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Memeriksa apakah user berada di level Pimpinan (Kepala Balai, Kasubag, Admin)
+     */
+    public function isPimpinanOrAdmin(): bool
+    {
+        $role = strtolower(trim($this->role ?? ''));
+        $position = strtolower(trim($this->position ?? ''));
+
+        if (in_array($role, ['admin', 'administrator', 'superadmin', 'pimpinan', 'kasubag'])) {
+            return true;
+        }
+
+        if (str_contains($position, 'kepala') || str_contains($position, 'kasubag')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Memeriksa apakah user berada di level Operator Kepegawaian (Operator, Kepegawaian, Admin)
+     */
+    public function isOperatorKepegawaian(): bool
+    {
+        $role = strtolower(trim($this->role ?? ''));
+        $position = strtolower(trim($this->position ?? ''));
+
+        $operatorRoles = ['admin', 'administrator', 'superadmin', 'operator', 'kepegawaian'];
+        if (in_array($role, $operatorRoles)) {
+            return true;
+        }
+
+        $operatorPositions = ['kepegawaian', 'sdm', 'operator', 'pengelola kepegawaian', 'analis sdm'];
+        foreach ($operatorPositions as $pos) {
+            if (str_contains($position, $pos)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

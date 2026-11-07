@@ -293,6 +293,10 @@ class LeaveController extends Controller
         Carbon::setLocale('id');
         $user = auth()->user();
 
+        if (!$user || !$user->isPimpinanOrAdmin()) {
+            abort(403, 'Akses Ditolak. Halaman Persetujuan Cuti hanya dapat diakses oleh Pejabat Pimpinan.');
+        }
+
         $query = LeaveRequest::with(['user', 'supervisor', 'approver']);
 
         // Jika bukan Admin, saring sesuai wewenang Atasan Langsung atau PPK
