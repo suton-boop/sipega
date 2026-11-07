@@ -13,19 +13,55 @@
                     </a>
                 </div>
 
-                <!-- Navigation Links (6 Menu Spesifik & Rapi) -->
+                <!-- Navigation Links (Menu Utama) -->
                 <div class="hidden space-x-1 sm:-my-px sm:ms-8 sm:flex items-center">
                     <!-- 1. HOME -->
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="text-[10px] font-black uppercase tracking-[0.2em] px-3.5 text-white/70 hover:text-white transition-all">
                         {{ __('Home') }}
                     </x-nav-link>
 
-                    <!-- 2. ARSIP -->
+                    <!-- 2. MIK (MONITORING IZIN KARYAWAN) -->
+                    <x-dropdown align="right" width="64">
+                        <x-slot name="trigger">
+                            <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-blue-300 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('mik.*') ? 'text-white bg-blue-600/30 rounded-full border border-blue-400/40 shadow-sm' : '' }}">
+                                <span class="flex items-center gap-1.5">
+                                    <span>🏢</span>
+                                    <span>MiK</span>
+                                </span>
+                                <svg class="ms-1.5 h-3 w-3 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </x-slot>
+                        <x-slot name="content">
+                            <!-- Section: MiK (Izin Keluar) -->
+                            <div class="px-4 py-2 text-[8px] font-black text-[#0070ba] uppercase tracking-widest border-b border-gray-50 mb-1 flex items-center justify-between bg-blue-50/70">
+                                <span class="flex items-center gap-1.5"><span>🏢</span> Monitoring Izin Karyawan</span>
+                                <span class="text-[7px] bg-[#0070ba] text-white px-1.5 py-0.5 rounded font-black">TERTIB</span>
+                            </div>
+                            <x-dropdown-link :href="route('mik.index')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-blue-50 flex items-center justify-between">
+                                <span>Dashboard MiK (Statistik Izin Keluar)</span>
+                                <span class="text-[8px] bg-[#0070ba] text-white px-2 py-0.5 rounded-full font-black">UTAMA</span>
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('mik.form_kantor')" class="text-[11px] font-bold py-2 flex items-center justify-between">
+                                <span>Form_Kantor (Izin Keluar Kantor)</span>
+                                <span class="text-[8px] bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded font-bold">Kantor</span>
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('mik.form_ruangan')" class="text-[11px] font-bold py-2 flex items-center justify-between">
+                                <span>Form_Ruangan (Izin Keluar Ruangan)</span>
+                                <span class="text-[8px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Ruangan</span>
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('mik.approvals')" class="text-[11px] font-bold py-2 flex items-center justify-between border-t border-gray-50">
+                                <span>Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)</span>
+                                <span class="text-[8px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">APPROVAL</span>
+                            </x-dropdown-link>
+                        </x-slot>
+                    </x-dropdown>
+
+                    <!-- 3. ARSIP -->
                     <x-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="text-[10px] font-black uppercase tracking-[0.2em] px-3.5 text-white/70 hover:text-white transition-all">
                         {{ __('Arsip') }}
                     </x-nav-link>
 
-                    <!-- 3. KINERJA -->
+                    <!-- 4. KINERJA -->
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-white/70 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('agenda.*', 'evidence.*', 'schedules.*') ? 'text-white bg-white/10 rounded-full' : '' }}">
@@ -51,7 +87,7 @@
                         </x-slot>
                     </x-dropdown>
 
-                    <!-- 4. CUTI (ADMINISTRASI CUTI ASN) -->
+                    <!-- 5. CUTI (ADMINISTRASI CUTI ASN) -->
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-amber-300 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leaves.*') ? 'text-white bg-amber-500/20 rounded-full border border-amber-400/30' : '' }}">
@@ -86,42 +122,6 @@
                                 <span class="text-[8px] bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded font-bold">KUOTA</span>
                             </x-dropdown-link>
                             @endif
-                        </x-slot>
-                    </x-dropdown>
-
-                    <!-- 5. MIK (MONITORING IZIN KARYAWAN) -->
-                    <x-dropdown align="right" width="64">
-                        <x-slot name="trigger">
-                            <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-blue-300 hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('mik.*') ? 'text-white bg-blue-600/30 rounded-full border border-blue-400/40 shadow-sm' : '' }}">
-                                <span class="flex items-center gap-1.5">
-                                    <span>🏢</span>
-                                    <span>MiK</span>
-                                </span>
-                                <svg class="ms-1.5 h-3 w-3 opacity-60" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" /></svg>
-                            </button>
-                        </x-slot>
-                        <x-slot name="content">
-                            <!-- Section: MiK (Izin Keluar) -->
-                            <div class="px-4 py-2 text-[8px] font-black text-[#0070ba] uppercase tracking-widest border-b border-gray-50 mb-1 flex items-center justify-between bg-blue-50/70">
-                                <span class="flex items-center gap-1.5"><span>🏢</span> Monitoring Izin Karyawan</span>
-                                <span class="text-[7px] bg-[#0070ba] text-white px-1.5 py-0.5 rounded font-black">TERTIB</span>
-                            </div>
-                            <x-dropdown-link :href="route('mik.index')" class="text-[11px] font-bold py-2 text-sipega-navy hover:bg-blue-50 flex items-center justify-between">
-                                <span>Dashboard MiK (Statistik Izin Keluar)</span>
-                                <span class="text-[8px] bg-[#0070ba] text-white px-2 py-0.5 rounded-full font-black">UTAMA</span>
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('mik.form_kantor')" class="text-[11px] font-bold py-2 flex items-center justify-between">
-                                <span>Form_Kantor (Izin Keluar Kantor)</span>
-                                <span class="text-[8px] bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded font-bold">Kantor</span>
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('mik.form_ruangan')" class="text-[11px] font-bold py-2 flex items-center justify-between">
-                                <span>Form_Ruangan (Izin Keluar Ruangan)</span>
-                                <span class="text-[8px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded font-bold">Ruangan</span>
-                            </x-dropdown-link>
-                            <x-dropdown-link :href="route('mik.approvals')" class="text-[11px] font-bold py-2 flex items-center justify-between border-t border-gray-50">
-                                <span>Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)</span>
-                                <span class="text-[8px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">APPROVAL</span>
-                            </x-dropdown-link>
                         </x-slot>
                     </x-dropdown>
 
@@ -352,16 +352,37 @@
     <!-- Responsive Navigation Menu -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden border-t border-gray-100 shadow-2xl">
         <div class="pt-2 pb-3 space-y-1 bg-white">
-            <!-- 1 & 2: HOME & ARSIP -->
+            <!-- 1: HOME -->
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" class="font-black uppercase tracking-widest text-[11px]">
                 {{ __('Home') }}
             </x-responsive-nav-link>
 
-            <x-responsive-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="font-black uppercase tracking-widest text-[11px] text-sipega-orange">
+            <!-- 2: MIK (MONITORING IZIN KARYAWAN) -->
+            <div class="px-6 py-3.5 text-[9px] font-black text-[#0070ba] bg-blue-50 uppercase tracking-[0.2em] border-y border-blue-200/50 flex items-center justify-between mt-2">
+                <span class="flex items-center gap-1.5">
+                    <span>🏢</span> MIK
+                </span>
+                <span class="text-[8px] bg-[#0070ba] text-white px-2 py-0.5 rounded font-black">TERTIB</span>
+            </div>
+            <x-responsive-nav-link :href="route('mik.index')" :active="request()->routeIs('mik.index')" class="text-xs font-bold py-2.5 ps-8 text-[#0070ba]">
+                {{ __('Dashboard MiK (Statistik Izin Keluar)') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('mik.form_kantor')" :active="request()->routeIs('mik.form_kantor')" class="text-xs font-medium py-2.5 ps-8">
+                {{ __('Form_Kantor (Izin Keluar Kantor)') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('mik.form_ruangan')" :active="request()->routeIs('mik.form_ruangan')" class="text-xs font-medium py-2.5 ps-8">
+                {{ __('Form_Ruangan (Izin Keluar Ruangan)') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('mik.approvals')" :active="request()->routeIs('mik.approvals')" class="text-xs font-medium py-2.5 ps-8 text-emerald-700">
+                {{ __('Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)') }}
+            </x-responsive-nav-link>
+
+            <!-- 3: ARSIP -->
+            <x-responsive-nav-link :href="route('documents.index')" :active="request()->routeIs('documents.index')" class="font-black uppercase tracking-widest text-[11px] text-sipega-orange mt-2">
                 {{ __('Arsip') }}
             </x-responsive-nav-link>
 
-            <!-- 3: KINERJA -->
+            <!-- 4: KINERJA -->
             <div class="px-6 py-3.5 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b border-gray-50 flex items-center gap-2 mt-3 bg-slate-50">
                 <span>🎯</span> KINERJA
             </div>
@@ -383,7 +404,7 @@
                 {{ __('Agenda Individu') }}
             </x-responsive-nav-link>
 
-            <!-- 4: CUTI ASN -->
+            <!-- 5: CUTI ASN -->
             <div class="px-6 py-3.5 text-[9px] font-black text-amber-800 bg-amber-50 uppercase tracking-[0.2em] border-y border-amber-200/50 flex items-center justify-between mt-2">
                 <span class="flex items-center gap-1.5">
                     <span>🏖️</span> CUTI
@@ -405,27 +426,7 @@
             </x-responsive-nav-link>
             @endif
 
-            <!-- 5: MIK (MONITORING IZIN KARYAWAN) -->
-            <div class="px-6 py-3.5 text-[9px] font-black text-[#0070ba] bg-blue-50 uppercase tracking-[0.2em] border-y border-blue-200/50 flex items-center justify-between mt-2">
-                <span class="flex items-center gap-1.5">
-                    <span>🏢</span> MIK
-                </span>
-                <span class="text-[8px] bg-[#0070ba] text-white px-2 py-0.5 rounded font-black">TERTIB</span>
-            </div>
-            <x-responsive-nav-link :href="route('mik.index')" :active="request()->routeIs('mik.index')" class="text-xs font-bold py-2.5 ps-8 text-[#0070ba]">
-                {{ __('Dashboard MiK (Statistik Izin Keluar)') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('mik.form_kantor')" :active="request()->routeIs('mik.form_kantor')" class="text-xs font-medium py-2.5 ps-8">
-                {{ __('Form_Kantor (Izin Keluar Kantor)') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('mik.form_ruangan')" :active="request()->routeIs('mik.form_ruangan')" class="text-xs font-medium py-2.5 ps-8">
-                {{ __('Form_Ruangan (Izin Keluar Ruangan)') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('mik.approvals')" :active="request()->routeIs('mik.approvals')" class="text-xs font-medium py-2.5 ps-8 text-emerald-700">
-                {{ __('Persetujuan Izin MiK (Ketua GM / Kasubag / Kepala)') }}
-            </x-responsive-nav-link>
-
-            <!-- 5: PIKET -->
+            <!-- 6: PIKET -->
             <div class="px-6 py-3.5 text-[9px] font-black text-emerald-800 bg-emerald-50 uppercase tracking-[0.2em] border-y border-emerald-200/50 flex items-center justify-between mt-2">
                 <span class="flex items-center gap-1.5">
                     <span>🛡️</span> PIKET
