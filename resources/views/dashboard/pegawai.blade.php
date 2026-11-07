@@ -112,7 +112,10 @@
             </div>
             @endif
 
-            <!-- 1.3. Log Kehadiran Pribadi (Sesuai Log Masing-Masing) -->
+            <!-- 1.3. PUSAT UNDUH LAPORAN HARIAN & SLIP TUKIN (FILTER BULAN & TAHUN) -->
+            <x-report-slip-picker :current-user-id="$user->id" :default-month="$myAttendanceSummary['target_month'] ?? now('Asia/Makassar')->format('Y-m')" />
+
+            <!-- 1.4. Log Kehadiran Pribadi (Sesuai Log Masing-Masing) -->
             <div class="bg-white overflow-hidden shadow-2xl sm:rounded-[3rem] p-8 md:p-10 border border-gray-100 relative group">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-gray-100 pb-5">
                     <div>

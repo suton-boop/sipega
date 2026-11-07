@@ -7,37 +7,78 @@
 
     <div class="py-12 bg-gray-50 min-h-screen">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Filter & Print Actions -->
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6 p-6 flex flex-wrap justify-between items-center gap-4">
-                <form method="GET" action="{{ route('attendance.recap', $user->id) }}" class="flex flex-wrap items-center gap-4">
-                    @if(isset($allPegawai) && count($allPegawai) > 1 && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
+            <!-- Filter & Mode Actions (Tombol Pilihan Laporan Harian & Slip Tukin) -->
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-2xl mb-6 p-6 border border-gray-100">
+                <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 pb-6 border-b border-gray-100">
                     <div>
-                        <label class="block text-xs font-black uppercase text-gray-500 mb-1">Pilih Pegawai</label>
-                        <select onchange="window.location.href='{{ url('/attendance/recap') }}/' + this.value + '?month={{ $monthYear }}'" class="text-xs font-bold rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 max-w-xs">
-                            @foreach($allPegawai as $p)
-                            <option value="{{ $p->id }}" {{ $p->id == $user->id ? 'selected' : '' }}>
-                                {{ $p->name }} ({{ $p->nip ?? 'No NIP' }})
-                            </option>
-                            @endforeach
-                        </select>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-sky-50 text-sky-800 text-[10px] font-black uppercase tracking-widest rounded-full mb-2">
+                            <span>⏱️ Portal Data & Unduh Laporan</span>
+                        </div>
+                        <h3 class="text-xl font-black text-sipega-navy">Pusat Laporan & Slip Dokumen</h3>
+                        <p class="text-xs text-gray-500 font-medium">Pilih periode bulan & tahun untuk meninjau log presensi harian atau mengunduh dokumen resmi (PDF).</p>
                     </div>
-                    @endif
 
-                    <div>
-                        <label class="block text-xs font-black uppercase text-gray-500 mb-1">Pilih Bulan</label>
-                        <input type="month" name="month" value="{{ $monthYear }}" onchange="this.form.submit()" class="text-xs font-bold rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <!-- Tombol Pilihan Tampilan -->
+                    <div class="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200/60 shadow-inner">
+                        <span class="inline-flex items-center gap-2 px-4 py-2.5 bg-sipega-navy text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md">
+                            <span>📄 Laporan Harian</span>
+                            <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">AKTIF</span>
+                        </span>
+
+                        @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
+                        <a href="{{ route('tukin.index', ['month' => $monthYear, 'period' => $monthYear]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:text-sipega-navy hover:bg-white text-xs font-bold uppercase tracking-wider rounded-xl transition">
+                            <span>💰 Buka Slip Tukin</span>
+                            <span class="text-[9px] text-gray-400">({{ $monthYear }})</span>
+                        </a>
+                        @endif
                     </div>
-                </form>
-                
-                <div class="space-x-2">
-                    <button onclick="window.print()" class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 active:bg-gray-900 focus:outline-none focus:border-gray-900 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
-                        Cetak Laporan
-                    </button>
-                    @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
-                    <a href="{{ route('tukin.download_slip', $user->id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
-                        Lihat Slip Tukin
-                    </a>
-                    @endif
+                </div>
+
+                <div class="pt-6 flex flex-wrap justify-between items-center gap-4">
+                    <form method="GET" action="{{ route('attendance.recap', $user->id) }}" class="flex flex-wrap items-center gap-4">
+                        @if(isset($allPegawai) && count($allPegawai) > 1 && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1">Pilih Pegawai</label>
+                            <select onchange="window.location.href='{{ url('/attendance/recap') }}/' + this.value + '?month={{ $monthYear }}'" class="text-xs font-bold rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 max-w-xs">
+                                @foreach($allPegawai as $p)
+                                <option value="{{ $p->id }}" {{ $p->id == $user->id ? 'selected' : '' }}>
+                                    {{ $p->name }} ({{ $p->nip ?? 'No NIP' }})
+                                </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @endif
+
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1">Filter Bulan & Tahun</label>
+                            <div class="flex items-center gap-2">
+                                <input type="month" name="month" value="{{ $monthYear }}" onchange="this.form.submit()" class="text-xs font-black rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                                <span class="text-[10px] font-bold text-gray-400">({{ \Carbon\Carbon::parse($monthYear . '-01')->locale('id')->isoFormat('MMMM Y') }})</span>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <div class="flex flex-wrap items-center gap-2">
+                        <!-- Unduh PDF Laporan Harian -->
+                        <a href="{{ route('attendance.download_pdf', ['id' => $user->id, 'month' => $monthYear]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-700 hover:bg-sky-800 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-sky-700/20 transition transform hover:-translate-y-0.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span>Unduh PDF Laporan Harian</span>
+                        </a>
+
+                        <!-- Unduh PDF Slip Tukin (Sesuai Bulan & Tahun) -->
+                        @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
+                        <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $monthYear, 'month' => $monthYear]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 transition transform hover:-translate-y-0.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            <span>Unduh PDF Slip Tukin ({{ $monthYear }})</span>
+                        </a>
+                        @endif
+
+                        <!-- Cetak Halaman -->
+                        <button onclick="window.print()" class="inline-flex items-center gap-1.5 px-3 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 rounded-xl font-bold text-xs uppercase tracking-wider transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            <span>Print</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 

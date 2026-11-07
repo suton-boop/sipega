@@ -405,7 +405,7 @@ class TukinController extends Controller
             abort(403, 'Fitur pengunduhan Slip Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
         }
 
-        $period = $request->get('period', Carbon::now('Asia/Makassar')->format('Y-m'));
+        $period = $request->get('period', $request->get('month', Carbon::now('Asia/Makassar')->format('Y-m')));
         $monthDate = Carbon::parse($period . '-01');
 
         // Cek apakah ada data di TukinCalculation

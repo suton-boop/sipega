@@ -8,6 +8,57 @@
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8">
             
+            <!-- Tombol Pilihan Mode & Filter Periode Bulan / Tahun -->
+            <div class="bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-xl border border-gray-100">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 pb-6 border-b border-gray-100">
+                    <div>
+                        <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-800 text-[10px] font-black uppercase tracking-widest rounded-full mb-2">
+                            <span>💰 Slip & Laporan Periode</span>
+                        </div>
+                        <h3 class="text-xl font-black text-sipega-navy">Pusat Slip Tukin & Laporan Harian</h3>
+                        <p class="text-xs text-gray-500 font-medium">Lihat rincian kalkulasi Permendikdasmen 14/2025 atau unduh slip resmi PDF sesuai bulan & tahun.</p>
+                    </div>
+
+                    <!-- Tombol Pilihan -->
+                    <div class="flex items-center gap-2 p-1 bg-slate-100 rounded-2xl border border-slate-200/60 shadow-inner">
+                        <span class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-xs font-black uppercase tracking-wider rounded-xl shadow-md">
+                            <span>💰 Slip Tukin</span>
+                            <span class="text-[8px] bg-white/20 text-white px-2 py-0.5 rounded-full font-black">AKTIF</span>
+                        </span>
+
+                        <a href="{{ route('attendance.recap', ['id' => $user->id, 'month' => $month ?? now()->format('Y-m')]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:text-sipega-navy hover:bg-white text-xs font-bold uppercase tracking-wider rounded-xl transition">
+                            <span>📄 Buka Laporan Harian</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="pt-6 flex flex-wrap justify-between items-center gap-4">
+                    <!-- Form Filter Bulan & Tahun -->
+                    <form method="GET" action="{{ route('tukin.index') }}" class="flex items-center gap-3">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase tracking-wider text-gray-500 mb-1">Filter Periode Bulan & Tahun</label>
+                            <div class="flex items-center gap-2">
+                                <input type="month" name="month" value="{{ $month ?? now()->format('Y-m') }}" onchange="this.form.submit()" class="text-xs font-black rounded-xl border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <span class="text-xs font-bold text-gray-500">({{ \Carbon\Carbon::parse(($month ?? now()->format('Y-m')) . '-01')->locale('id')->isoFormat('MMMM Y') }})</span>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Tombol Unduh PDF Cepat -->
+                    <div class="flex flex-wrap items-center gap-2">
+                        <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $month ?? now()->format('Y-m'), 'month' => $month ?? now()->format('Y-m')]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 transition transform hover:-translate-y-0.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span>Unduh PDF Slip Tukin ({{ $month ?? now()->format('Y-m') }})</span>
+                        </a>
+
+                        <a href="{{ route('attendance.download_pdf', ['id' => $user->id, 'month' => $month ?? now()->format('Y-m')]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-700 hover:bg-sky-800 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-sky-700/20 transition transform hover:-translate-y-0.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            <span>Unduh PDF Laporan Harian</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
             <!-- Detail Tukin Pegawai -->
             <div class="bg-gradient-to-br from-sipega-navy to-[#001a33] p-12 rounded-[3.5rem] shadow-2xl text-white relative overflow-hidden group">
                 <div class="relative z-10">

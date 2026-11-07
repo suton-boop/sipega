@@ -33,6 +33,11 @@ class User extends Authenticatable
         'photo',
         'profile_photo_path',
         'drive_folder_link',
+        'status_kepegawaian',
+        'unit_kerja',
+        'tmt_cpns_pppk',
+        'phone',
+        'supervisor_id',
     ];
 
     protected $hidden = [
@@ -243,5 +248,105 @@ class User extends Authenticatable
     public function getDriveFolderUrlAttribute(): ?string
     {
         return $this->drive_folder_link ?: ($this->attributes['drive_folder_url'] ?? null);
+    }
+
+    public function leaveRequests()
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
+    public function leaveBalances()
+    {
+        return $this->hasMany(LeaveBalance::class);
+    }
+
+    public function supervisor()
+    {
+        return $this->belongsTo(User::class, 'supervisor_id');
+    }
+
+    public function subordinates()
+    {
+        return $this->hasMany(User::class, 'supervisor_id');
+    }
+
+    /**
+     * Hitung masa kerja pegawai berdasarkan TMT atau decode NIP resmi
+     */
+    public function getMasaKerjaText($asOfDate = null): string
+    {
+        $asOf = $asOfDate ? \Carbon\Carbon::parse($asOfDate) : now();
+
+        $tmt = null;
+        if (!empty($this->tmt_cpns_pppk)) {
+            $tmt = \Carbon\Carbon::parse($this->tmt_cpns_pppk);
+        } elseif (!empty($this->nip) && strlen(preg_replace('/\D/', '', $this->nip)) >= 14) {
+            $cleanNip = preg_replace('/\D/', '', $this->nip);
+            $year = substr($cleanNip, 8, 4);
+            $month = substr($cleanNip, 12, 2);
+            if (is_numeric($year) && is_numeric($month) && $year >= 1970 && $year <= 2030 && $month >= 1 && $month <= 12) {
+                $tmt = \Carbon\Carbon::createFromDate((int)$year, (int)$month, 1);
+            }
+        }
+
+        if (!$tmt) {
+            return '-';
+        }
+
+        $diff = $tmt->diff($asOf);
+        $years = $diff->y;
+        $months = $diff->m;
+
+        $parts = [];
+        if ($years > 0) {
+            $parts[] = "{$years} tahun";
+        }
+        if ($months > 0 || empty($parts)) {
+            $parts[] = "{$months} Bulan";
+        }
+
+        return implode(' ', $parts);
+    }
+
+    /**
+     * Dapatkan masa kerja dalam tahun float (misal 5.5 tahun) untuk validasi syarat hak cuti
+     */
+    public function getMasaKerjaYears($asOfDate = null): float
+    {
+        $asOf = $asOfDate ? \Carbon\Carbon::parse($asOfDate) : now();
+
+        $tmt = null;
+        if (!empty($this->tmt_cpns_pppk)) {
+            $tmt = \Carbon\Carbon::parse($this->tmt_cpns_pppk);
+        } elseif (!empty($this->nip) && strlen(preg_replace('/\D/', '', $this->nip)) >= 14) {
+            $cleanNip = preg_replace('/\D/', '', $this->nip);
+            $year = substr($cleanNip, 8, 4);
+            $month = substr($cleanNip, 12, 2);
+            if (is_numeric($year) && is_numeric($month) && $year >= 1970 && $year <= 2030 && $month >= 1 && $month <= 12) {
+                $tmt = \Carbon\Carbon::createFromDate((int)$year, (int)$month, 1);
+            }
+        }
+
+        if (!$tmt) {
+            return 0.0;
+        }
+
+        return (float) $tmt->diffInDays($asOf) / 365.25;
+    }
+
+    /**
+     * Cek status kepegawaian resmi (PNS atau PPPK)
+     */
+    public function getEffectiveStatusKepegawaianAttribute(): string
+    {
+        if (!empty($this->status_kepegawaian) && in_array(strtoupper($this->status_kepegawaian), ['PNS', 'PPPK'])) {
+            return strtoupper($this->status_kepegawaian);
+        }
+
+        if ($this->golongan && (stripos($this->golongan, 'Golongan') !== false || stripos($this->golongan, 'PPPK') !== false)) {
+            return 'PPPK';
+        }
+
+        return 'PNS';
     }
 }

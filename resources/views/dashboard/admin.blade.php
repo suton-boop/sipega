@@ -194,6 +194,9 @@
                 </div>
             </div>
 
+            <!-- PUSAT UNDUH LAPORAN HARIAN & SLIP TUKIN (FILTER BULAN & TAHUN) -->
+            <x-report-slip-picker :all-pegawai="$allPegawai" :current-user-id="auth()->id()" />
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Leaderboard High -->
                 <div class="bg-white overflow-hidden shadow-2xl rounded-[48px] p-10 border border-gray-100 relative">
@@ -410,24 +413,100 @@
                 </div>
             </div>
 
-            <!-- Import Section -->
-            <div class="bg-white overflow-hidden shadow-sm rounded-[40px] p-8 lg:p-12 border border-emerald-100">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
-                    <div>
-                        <h3 class="text-3xl font-black text-emerald-700 tracking-tighter uppercase mb-2">SIPEGA-Check</h3>
-                        <p class="text-gray-400 font-medium italic mb-3">Upload file <b>Laporan Log Transaksi</b> (HTML / Excel) dari portal Kehadiran Kemendikdasmen atau mesin absensi. Sistem akan mencocokkan NIP dan menghitung TL/PSW otomatis.</p>
-                        <a href="{{ route('attendance.import.index') }}" class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-emerald-700 hover:text-emerald-900 bg-emerald-100/70 hover:bg-emerald-200 px-4 py-2 rounded-xl transition">
-                            <span>Buka Menu Import Log Lengkap (Form & Tempel Teks) →</span>
-                        </a>
+            <!-- Import Section: SIPEGA-Check -->
+            <div class="relative bg-gradient-to-br from-white via-white to-emerald-50/40 rounded-3xl lg:rounded-[36px] p-6 lg:p-8 shadow-xl border border-emerald-100/80 overflow-hidden hover:shadow-2xl transition-all duration-300">
+                <!-- Subtle decorative background glow -->
+                <div class="absolute -right-16 -bottom-16 w-64 h-64 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute top-0 right-0 w-32 h-32 bg-teal-400/10 rounded-full blur-2xl pointer-events-none"></div>
+
+                <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 lg:gap-8">
+                    <!-- Left: Info & Description -->
+                    <div class="space-y-3 max-w-xl">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-600/25 text-xl shrink-0">
+                                ⚡
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h3 class="text-2xl font-black text-slate-800 tracking-tight leading-none">
+                                        SIPEGA<span class="text-emerald-600 font-extrabold italic ml-1">CHECK</span>
+                                    </h3>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                        Presensi Log Sync
+                                    </span>
+                                </div>
+                                <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mt-1">
+                                    Sinkronisasi Otomatis Mesin & Portal Kehadiran
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-600 font-medium leading-relaxed">
+                            Upload file <strong class="text-slate-800">Laporan Log Transaksi</strong> (<code class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono text-[11px]">.html</code>, <code class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono text-[11px]">.xlsx</code>, <code class="text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono text-[11px]">.csv</code>) dari portal Kehadiran Kemendikdasmen atau mesin absensi. Sistem akan mencocokkan NIP dan menghitung TL/PSW secara otomatis.
+                        </p>
+
+                        <div class="pt-1">
+                            <a href="{{ route('attendance.import.index') }}" class="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100/80 px-4 py-2 rounded-xl border border-emerald-200/60 transition group">
+                                <span>Buka Menu Import Log Lengkap (Form & Tempel Teks)</span>
+                                <svg class="w-3.5 h-3.5 text-emerald-600 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                            </a>
+                        </div>
                     </div>
 
-                    <form action="{{ route('attendance.import') }}" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row items-center gap-4 bg-emerald-50/50 p-4 rounded-3xl border border-emerald-50">
-                        @csrf
-                        <input type="file" name="excel_file" accept=".html,.htm,.xlsx,.csv,.xls,.txt" required class="block w-full text-xs text-emerald-800 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-[10px] file:font-black file:bg-emerald-600 file:text-white file:uppercase file:tracking-widest cursor-pointer"/>
-                        <button type="submit" class="w-full md:w-auto bg-emerald-700 hover:bg-emerald-800 text-white font-black py-4 px-8 rounded-2xl transition-all shadow-lg text-[10px] uppercase tracking-widest shrink-0">
-                            Sync Data
-                        </button>
-                    </form>
+                    <!-- Right: Elegant Upload Form with Interactive File Name Indicator -->
+                    <div class="lg:w-[480px] shrink-0" x-data="{ fileName: '', fileSize: '', isDragging: false }">
+                        <form action="{{ route('attendance.import') }}" method="POST" enctype="multipart/form-data" class="space-y-3">
+                            @csrf
+                            
+                            <!-- Custom File Select Area -->
+                            <div class="relative rounded-2xl border-2 border-dashed p-4 transition-all duration-200 bg-white/90 backdrop-blur-sm"
+                                 :class="isDragging ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20' : (fileName ? 'border-emerald-500 bg-emerald-50/40' : 'border-slate-200 hover:border-emerald-400')">
+                                
+                                <input type="file" 
+                                       name="excel_file" 
+                                       id="sipega_check_file"
+                                       accept=".html,.htm,.xlsx,.csv,.xls,.txt" 
+                                       required 
+                                       @change="if ($event.target.files.length) { fileName = $event.target.files[0].name; fileSize = ($event.target.files[0].size / 1024).toFixed(1) + ' KB'; } else { fileName = ''; fileSize = ''; }"
+                                       @dragover="isDragging = true"
+                                       @dragleave="isDragging = false"
+                                       @drop="isDragging = false"
+                                       class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
+
+                                <div class="flex items-center justify-between gap-3">
+                                    <div class="flex items-center gap-3 overflow-hidden">
+                                        <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition"
+                                             :class="fileName ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'bg-slate-100 text-slate-500'">
+                                            <template x-if="fileName">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                                            </template>
+                                            <template x-if="!fileName">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                                            </template>
+                                        </div>
+                                        <div class="truncate">
+                                            <div class="text-xs font-bold text-slate-800 truncate" x-text="fileName ? fileName : 'Pilih file Laporan Log Transaksi'"></div>
+                                            <div class="text-[10px] text-slate-400 mt-0.5" x-text="fileName ? 'Ukuran: ' + fileSize : 'Format: .html, .xlsx, .csv, .xls, .txt'"></div>
+                                        </div>
+                                    </div>
+
+                                    <div class="shrink-0 px-3.5 py-1.5 rounded-xl text-[11px] font-bold transition shadow-sm pointer-events-none"
+                                         :class="fileName ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-slate-100 text-slate-700 border border-slate-200'">
+                                        <span x-text="fileName ? 'Ganti File' : 'Pilih File'"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Sync Button -->
+                            <div>
+                                <button type="submit" 
+                                        class="w-full bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-800 hover:from-emerald-700 hover:to-teal-900 text-white font-black py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-700/20 hover:shadow-emerald-700/30 transition-all hover:-translate-y-0.5 active:translate-y-0 text-xs uppercase tracking-wider flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    <span>Sync Data Log Transaksi</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
 

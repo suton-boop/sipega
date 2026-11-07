@@ -58,20 +58,20 @@
              }
         </style>
     </head>
-    <body class="antialiased min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+    <body class="antialiased min-h-screen flex flex-col items-center justify-center py-6 px-4 sm:px-6 md:px-8 relative overflow-y-auto">
         
         <!-- Decoration Backgrounds -->
         <div class="soft-glow-1"></div>
         <div class="soft-glow-2"></div>
 
-        <div class="w-full max-w-xl relative z-10">
-            <div class="rounded-[4rem] card-premium p-12 lg:p-20 flex flex-col items-center">
+        <div class="w-full max-w-lg my-auto relative z-10">
+            <div class="rounded-[2.5rem] sm:rounded-[3.5rem] card-premium p-6 sm:p-10 md:p-12 flex flex-col items-center shadow-2xl">
                 
                 <!-- Official Header Branding -->
-                <div class="mb-14 text-center w-full flex items-center justify-center">
-                    <img src="{{ asset('images/logo-kemendikdasmen-bpmp-kaltim.png') }}" class="h-14 w-auto drop-shadow-sm" alt="Logo Kemendikdasmen">
+                <div class="mb-8 sm:mb-10 text-center w-full flex items-center justify-center">
+                    <img src="{{ asset('images/logo-kemendikdasmen-bpmp-kaltim.png') }}" class="h-10 sm:h-12 md:h-13 w-auto drop-shadow-sm" alt="Logo Kemendikdasmen">
                     <div class="official-divider"></div>
-                    <img src="{{ asset('images/jenaman-sipega.png') }}" class="h-10 w-auto opacity-100" alt="Jenaman SIPEGA">
+                    <img src="{{ asset('images/jenaman-sipega.png') }}" class="h-8 sm:h-9 md:h-10 w-auto opacity-100" alt="Jenaman SIPEGA">
                 </div>
 
                 <div class="w-full">
@@ -79,19 +79,19 @@
                 </div>
 
                 <!-- Footer Logos -->
-                <div class="mt-14 w-full border-t border-gray-100 pt-12">
-                    <div class="flex justify-center items-center gap-10 opacity-70">
-                         <img src="{{ asset('images/ramah-bermutu.png') }}" class="h-12 w-auto grayscale hover:grayscale-0 transition-all cursor-pointer">
+                <div class="mt-8 sm:mt-10 w-full border-t border-gray-100 pt-6 sm:pt-8">
+                    <div class="flex justify-center items-center gap-6 opacity-75">
+                         <img src="{{ asset('images/ramah-bermutu.png') }}" class="h-9 sm:h-11 w-auto grayscale hover:grayscale-0 transition-all cursor-pointer">
                     </div>
                     
-                    <p class="text-center text-[10px] text-gray-400 font-bold uppercase tracking-[0.4em] leading-relaxed mt-10">
-                        &copy; 2026 BPMP KALIMANTAN TIMUR &bull; PORTAL INVENTARISASI KINERJA
+                    <p class="text-center text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-[0.3em] leading-relaxed mt-6">
+                        &copy; 2026 BPMP KALIMANTAN TIMUR &bull; PORTAL SIPEGA ELITE
                     </p>
                 </div>
             </div>
 
-            <div class="mt-10 text-center">
-                <a href="/" class="text-[10px] font-bold text-gray-400 hover:text-[#003366] transition-colors uppercase tracking-[0.4em] bg-white/50 backdrop-blur-sm py-3 px-10 rounded-full shadow-sm hover:shadow-md border border-white/50">
+            <div class="mt-6 text-center">
+                <a href="/" class="inline-flex items-center gap-2 text-[10px] font-bold text-gray-500 hover:text-[#003366] transition-colors uppercase tracking-[0.3em] bg-white/70 backdrop-blur-sm py-2.5 px-6 rounded-full shadow-sm hover:shadow-md border border-white/60">
                     &larr; Beranda Utama
                 </a>
             </div>

@@ -77,63 +77,64 @@
     </head>
     <body class="antialiased selection:bg-sipega-orange selection:text-white">
         
-        <!-- Standardized Colored Logo Header -->
-        <header class="fixed top-0 left-0 right-0 z-[100] px-4">
-            <div class="glass-header py-4 px-8 flex justify-between items-center">
+        <!-- Standardized Colored Logo Header (Responsive All Devices) -->
+        <header class="fixed top-0 left-0 right-0 z-[100] px-3 sm:px-6">
+            <div class="glass-header py-3 sm:py-4 px-4 sm:px-8 flex justify-between items-center">
                 <div class="flex items-center">
-                    <img src="{{ asset('images/logo-kemendikdasmen-bpmp-kaltim.png') }}" class="h-10 w-auto" alt="Kemendikdasmen">
-                    <div class="official-divider"></div>
-                    <img src="{{ asset('images/jenaman-sipega.png') }}" class="h-8 w-auto" alt="SIPEGA">
+                    <img src="{{ asset('images/logo-kemendikdasmen-bpmp-kaltim.png') }}" class="h-8 sm:h-10 w-auto" alt="Kemendikdasmen">
+                    <div class="official-divider !mx-3 sm:!mx-6"></div>
+                    <img src="{{ asset('images/jenaman-sipega.png') }}" class="h-6 sm:h-8 w-auto" alt="SIPEGA">
                 </div>
                 
-                <nav class="hidden lg:flex items-center gap-10">
-                    <a href="#about" class="text-[10px] font-bold uppercase tracking-[0.4em] text-slate-400 hover:text-[#001a33] transition-all">Filosofi</a>
+                <nav class="flex items-center gap-3 sm:gap-6 md:gap-8">
+                    <a href="#about" class="hidden md:inline-block text-[10px] font-bold uppercase tracking-[0.3em] text-slate-500 hover:text-[#001a33] transition-all">Filosofi</a>
                     @if (Route::has('login'))
                         <a href="{{ route('login') }}" 
-                            style="background-color: #001a33 !important; color: white !important; font-size: 11px; padding: 0.75rem 2rem; border-radius: 1rem; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; transition: all 0.3s ease;"
-                            class="hover:scale-105 shadow-xl">
-                            MASUK
+                            class="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-2.5 bg-[#001a33] hover:bg-[#002b55] text-white text-[10px] sm:text-xs font-black uppercase tracking-[0.2em] rounded-xl sm:rounded-2xl shadow-xl transition-all transform hover:scale-105 active:scale-95">
+                            <span>MASUK</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-sipega-orange" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
                         </a>
                     @endif
                 </nav>
             </div>
         </header>
 
-        <!-- Dynamic Hero Section -->
-        <section class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden hero-elite pt-20">
+        <!-- Dynamic Hero Section (Responsive All Devices) -->
+        <section class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden hero-elite pt-28 sm:pt-32 pb-16 px-4">
             <div class="absolute inset-0 z-0 opacity-5 pointer-events-none flex items-center justify-center">
                 <span class="text-[25vw] font-montserrat font-black uppercase tracking-tighter text-outline">SIPEGA</span>
             </div>
 
-            <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
-                <div class="inline-flex items-center gap-4 px-6 py-2 bg-white/5 border border-white/10 rounded-full text-[10px] font-bold uppercase tracking-[0.4em] mb-12 text-sipega-orange">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 relative z-10 text-center">
+                <div class="inline-flex items-center gap-3 px-4 sm:px-6 py-1.5 sm:py-2 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] sm:tracking-[0.4em] mb-6 sm:mb-8 md:mb-12 text-sipega-orange">
                     <span class="w-1.5 h-1.5 rounded-full bg-sipega-orange shadow-lg shadow-sipega-orange"></span>
                     INSTITUTIONAL CORE v2.4
                 </div>
 
-                <h1 class="text-6xl lg:text-9xl font-black font-montserrat tracking-tighter uppercase leading-[0.9] mb-12">
+                <h1 class="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black font-montserrat tracking-tighter uppercase leading-[0.95] sm:leading-[0.9] mb-6 sm:mb-8 md:mb-12">
                     Akurasi data, <br>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-sipega-orange to-amber-500 italic">Ekselensi Kinerja.</span>
                 </h1>
 
-                <p class="text-lg lg:text-2xl text-white/40 font-light max-w-3xl mx-auto leading-relaxed mb-16 tracking-wide">
-                    Membangun standar baru profesionalisme aparatur melalui <br> integrasi data kehadiran yang presisi dan transparan.
+                <p class="text-sm sm:text-base md:text-xl lg:text-2xl text-white/50 font-light max-w-3xl mx-auto leading-relaxed mb-8 sm:mb-12 md:mb-16 tracking-wide px-2">
+                    Membangun standar baru profesionalisme aparatur melalui <br class="hidden sm:inline"> integrasi data kehadiran yang presisi dan transparan.
                 </p>
 
-                <div class="flex flex-col md:flex-row items-center justify-center gap-12">
+                <div class="flex items-center justify-center">
                     <a href="{{ route('login') }}" 
-                        style="background-color: #ff8c00 !important; color: white !important; display: inline-flex; align-items: center; gap: 1rem; padding: 1.5rem 4rem; border-radius: 4rem; font-weight: 800; text-transform: uppercase; letter-spacing: 4px; font-size: 14px; border: none; transition: all 0.4s ease; box-shadow: 0 20px 40px -10px rgba(255, 140, 0, 0.4);"
-                        class="btn-glow-animate hover:scale-105 hover:-translate-y-1">
-                        <span>MASUK</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        class="btn-glow-animate inline-flex items-center gap-3 px-8 py-3.5 sm:px-12 sm:py-4 md:px-16 md:py-5 rounded-full font-black text-xs sm:text-sm md:text-base uppercase tracking-[0.25em] text-white bg-[#ff8c00] hover:bg-[#ff9d26] transition-all transform hover:scale-105 hover:-translate-y-1 shadow-2xl shadow-orange-500/40">
+                        <span>MASUK KE SISTEM</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" />
                         </svg>
                     </a>
                 </div>
             </div>
 
-            <div class="absolute bottom-10 left-1/2 -translate-x-1/2 opacity-20">
-                <div class="w-px h-24 bg-gradient-to-b from-transparent via-white to-transparent"></div>
+            <div class="absolute bottom-6 sm:bottom-10 left-1/2 -translate-x-1/2 opacity-20">
+                <div class="w-px h-16 sm:h-24 bg-gradient-to-b from-transparent via-white to-transparent"></div>
             </div>
         </section>
 

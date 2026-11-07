@@ -14,6 +14,21 @@
                 </div>
             @endif
 
+            @if(auth()->user() && in_array(auth()->user()->role, ['Pimpinan', 'Admin']))
+            <div class="text-white p-4 rounded-2xl shadow-md mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 border border-amber-400/40" style="background: linear-gradient(135deg, #0f172a 0%, #003366 100%);">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">⚡</span>
+                    <div>
+                        <div class="text-xs font-black uppercase text-amber-300">Delegasi Pimpinan • Auto-Penilaian Jam 24:00</div>
+                        <div class="text-[11px] text-blue-100">Bantu Kasubag saat beban kerja tinggi dengan otomatisasi penilaian aplikasi pada akhir hari.</div>
+                    </div>
+                </div>
+                <a href="{{ route('pimpinan.auto_evaluation.index') }}" class="px-4 py-2 bg-amber-400 hover:bg-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl shadow transition whitespace-nowrap">
+                    ⚙️ Buka Pengaturan Auto Menilai →
+                </a>
+            </div>
+            @endif
+
             <form action="{{ route('leader.agenda.bulk-evaluate') }}" method="POST">
                 @csrf
                 <div class="bg-white overflow-hidden shadow-2xl sm:rounded-3xl border-t-[10px] border-sipega-navy relative">

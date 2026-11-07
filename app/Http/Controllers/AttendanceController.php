@@ -9,28 +9,17 @@ use App\Models\User;
 use App\Models\AttendanceLog;
 use App\Models\CalendarEvent;
 use App\Services\AttendanceLogParserService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 
 class AttendanceController extends Controller
 {
     /**
-     * SIPEGA: Rekap Kehadiran Perorangan (Bulan Berjalan)
+     * SIPEGA: Helper Kompilasi Data Rekapitulasi Presensi Harian
      */
-    public function recap(Request $request, $userId = null)
+    public function buildRecapData(User $user, string $monthYear): array
     {
-        $user = $userId ? User::findOrFail($userId) : auth()->user();
-        
-        // Security: Pegawai hanya boleh lihat data sendiri, Admin boleh lihat semua
-        if (auth()->id() !== $user->id && !in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
-            abort(403);
-        }
-
-        $monthYear = $request->get('month');
-        if (!$monthYear) {
-            $latestDate = AttendanceLog::where('user_id', $user->id)->max('date');
-            $monthYear = $latestDate ? Carbon::parse($latestDate)->format('Y-m') : Carbon::now('Asia/Makassar')->format('Y-m');
-        }
         $startOfMonth = Carbon::parse($monthYear . '-01')->startOfMonth();
         $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
@@ -40,7 +29,7 @@ class AttendanceController extends Controller
             ->orderBy('date', 'asc')
             ->get();
 
-        // Key by date string Y-m-d to ensure 100% accurate matching with $dateStr (avoid Carbon object vs string mismatch)
+        // Key by date string Y-m-d to ensure 100% accurate matching with $dateStr
         $logsByDate = $logs->keyBy(function ($item) {
             return Carbon::parse($item->date)->toDateString();
         });
@@ -84,7 +73,9 @@ class AttendanceController extends Controller
             'total_tl_minutes' => 0,
             'total_psw_minutes' => 0,
             'total_alpa' => 0,
-            'total_st' => 0
+            'total_st' => 0,
+            'total_days' => $period->count(),
+            'total_working_days' => 0,
         ];
 
         foreach ($period as $date) {
@@ -93,6 +84,9 @@ class AttendanceController extends Controller
             
             $status = 'Hadir';
             $isWorkingDay = !$date->isWeekend() && !in_array($dateStr, $holidays);
+            if ($isWorkingDay) {
+                $summary['total_working_days']++;
+            }
 
             $checkIn = $log ? $log->check_in : null;
             $checkOut = $log ? $log->check_out : null;
@@ -168,6 +162,8 @@ class AttendanceController extends Controller
 
             $recapData[] = [
                 'date' => $dateStr,
+                'day_name' => $date->locale('id')->isoFormat('dddd'),
+                'is_working_day' => $isWorkingDay,
                 'check_in' => $checkIn,
                 'check_out' => $checkOut,
                 'tl_minutes' => $tlVal,
@@ -178,11 +174,68 @@ class AttendanceController extends Controller
             ];
         }
 
+        return [
+            'recapData' => $recapData,
+            'summary' => $summary,
+            'monthYear' => $monthYear,
+        ];
+    }
+
+    /**
+     * SIPEGA: Rekap Kehadiran Perorangan (Bulan Berjalan)
+     */
+    public function recap(Request $request, $userId = null)
+    {
+        $user = $userId ? User::findOrFail($userId) : auth()->user();
+        
+        // Security: Pegawai hanya boleh lihat data sendiri, Admin boleh lihat semua
+        if (auth()->id() !== $user->id && !in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
+            abort(403);
+        }
+
+        $monthYear = $request->get('month', $request->get('period'));
+        if (!$monthYear) {
+            $latestDate = AttendanceLog::where('user_id', $user->id)->max('date');
+            $monthYear = $latestDate ? Carbon::parse($latestDate)->format('Y-m') : Carbon::now('Asia/Makassar')->format('Y-m');
+        }
+
+        $data = $this->buildRecapData($user, $monthYear);
+        $recapData = $data['recapData'];
+        $summary = $data['summary'];
+
         $allPegawai = in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator'])
             ? User::where('is_active', true)->orderBy('name')->get()
             : collect([$user]);
 
         return view('attendance.recap', compact('user', 'recapData', 'summary', 'monthYear', 'allPegawai'));
+    }
+
+    /**
+     * SIPEGA: Unduh PDF Laporan Harian Kehadiran Pegawai
+     */
+    public function downloadPdf(Request $request, $userId = null)
+    {
+        $user = $userId ? User::findOrFail($userId) : auth()->user();
+        
+        // Security: Pegawai hanya boleh download data sendiri, Admin boleh download semua
+        if (auth()->id() !== $user->id && !in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan'])) {
+            abort(403);
+        }
+
+        $monthYear = $request->get('month', $request->get('period'));
+        if (!$monthYear) {
+            $latestDate = AttendanceLog::where('user_id', $user->id)->max('date');
+            $monthYear = $latestDate ? Carbon::parse($latestDate)->format('Y-m') : Carbon::now('Asia/Makassar')->format('Y-m');
+        }
+
+        $data = $this->buildRecapData($user, $monthYear);
+        $recapData = $data['recapData'];
+        $summary = $data['summary'];
+
+        $cleanName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $user->name);
+        return Pdf::loadView('pdf.attendance_recap', compact('user', 'recapData', 'summary', 'monthYear'))
+            ->setPaper('a4', 'landscape')
+            ->download("Laporan_Harian_Presensi_{$cleanName}_{$monthYear}.pdf");
     }
 
     /**

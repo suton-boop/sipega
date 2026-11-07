@@ -19,6 +19,8 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DutySimulationController;
 use App\Http\Controllers\TravelReportController;
 use App\Http\Controllers\EmployeeReportController;
+use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\MikController;
 use Illuminate\Support\Facades\Route;
 
 // Landing Page: Korporat & Institusional (SIPEGA-Elite)
@@ -192,8 +194,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/attendance', [MeetingController::class, 'index'])->name('attendance.index');
     Route::post('/attendance/check-in', [MeetingController::class, 'checkIn'])->name('attendance.check-in');
     
-    // REKAP KEHADIRAN PERORANGAN (Sesuai Contoh Excel)
+    // REKAP KEHADIRAN PERORANGAN (Sesuai Contoh Excel & Cetak PDF)
     Route::get('/attendance/recap/{id?}', [AttendanceController::class, 'recap'])->name('attendance.recap');
+    Route::get('/attendance/recap-pdf/{id?}', [AttendanceController::class, 'downloadPdf'])->name('attendance.download_pdf');
     Route::post('/attendance/import', [AttendanceController::class, 'importExcel'])->name('attendance.import');
     Route::get('/attendance/import-log', [AttendanceController::class, 'importView'])->name('attendance.import.index');
     Route::post('/attendance/import-log', [AttendanceController::class, 'processImport'])->name('attendance.import.process');
@@ -295,6 +298,105 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/travel-reports/{id}/pdf', [TravelReportController::class, 'downloadPdf'])->name('travel-reports.pdf');
     Route::get('/travel-reports/{id}/doc', [TravelReportController::class, 'downloadDoc'])->name('travel-reports.doc');
     Route::resource('travel-reports', TravelReportController::class);
+
+    // MODUL LAYANAN CUTI ASN (Sesuai UU No. 20/2023 & PerBKN No. 24/2017 jo. 7/2021 & 7/2022)
+    Route::prefix('leaves')->name('leaves.')->group(function () {
+        Route::get('/', [LeaveController::class, 'index'])->name('index');
+        Route::get('/create', [LeaveController::class, 'create'])->name('create');
+        Route::post('/', [LeaveController::class, 'store'])->name('store');
+        Route::post('/ai-check', [LeaveController::class, 'aiCheck'])->name('ai_check');
+        Route::get('/approvals', [LeaveController::class, 'approvals'])->name('approvals');
+        Route::post('/{id}/process-approval', [LeaveController::class, 'processApproval'])->name('process_approval');
+        Route::get('/balances', [LeaveController::class, 'manageBalances'])->name('balances');
+        Route::put('/balances/{id}', [LeaveController::class, 'updateBalance'])->name('update_balance');
+        Route::post('/settings/concurrent', [LeaveController::class, 'updateConcurrentSettings'])->name('update_concurrent_settings');
+        Route::get('/{id}', [LeaveController::class, 'show'])->name('show');
+        Route::get('/{id}/print', [LeaveController::class, 'print'])->name('print');
+        Route::get('/{id}/pdf', [LeaveController::class, 'downloadPdf'])->name('pdf');
+    });
+
+    // MODUL MiK (Monitoring Izin Karyawan - Keluar Kantor & Keluar Ruangan)
+    // Berorientasi pada ketertiban dan TIDAK mempengaruhi perhitungan Tukin / skor performa
+    Route::prefix('mik')->name('mik.')->group(function () {
+        Route::get('/', [MikController::class, 'index'])->name('index');
+        Route::get('/form-kantor', [MikController::class, 'formKantor'])->name('form_kantor');
+        Route::get('/form-ruangan', [MikController::class, 'formRuangan'])->name('form_ruangan');
+        Route::post('/', [MikController::class, 'store'])->name('store');
+        Route::post('/{id}/return', [MikController::class, 'markReturned'])->name('return');
+        Route::post('/{id}/cancel', [MikController::class, 'cancel'])->name('cancel');
+        Route::get('/approvals', [MikController::class, 'approvals'])->name('approvals');
+        Route::post('/{id}/approve', [MikController::class, 'processApproval'])->name('process_approval');
+    });
+
+    // MODUL KHUSUS PIMPINAN: OTOMATISASI PENILAIAN PEGAWAI (Auto-Assess saat Kasubag Sibuk)
+    Route::prefix('pimpinan/auto-evaluation')->name('pimpinan.auto_evaluation.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Pimpinan\AutoEvaluationController::class, 'index'])->name('index');
+        Route::post('/update', [\App\Http\Controllers\Pimpinan\AutoEvaluationController::class, 'update'])->name('update');
+        Route::post('/run-now', [\App\Http\Controllers\Pimpinan\AutoEvaluationController::class, 'runNow'])->name('run_now');
+    });
+
+    // ========================================================
+    // MODUL MANAJEMEN PIKET TAHUNAN ULT & PERPUSTAKAAN (SIM SPP)
+    // ========================================================
+    Route::prefix('piket')->name('piket.')->group(function () {
+        // 1. Dashboard Piket
+        Route::get('/', [\App\Http\Controllers\Piket\PiketDashboardController::class, 'index'])->name('dashboard');
+
+        // 2. Data Petugas Piket
+        Route::prefix('officers')->name('officers.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Piket\PiketOfficerController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Piket\PiketOfficerController::class, 'store'])->name('store');
+            Route::put('/{id}', [\App\Http\Controllers\Piket\PiketOfficerController::class, 'update'])->name('update');
+            Route::delete('/{id}', [\App\Http\Controllers\Piket\PiketOfficerController::class, 'destroy'])->name('destroy');
+        });
+
+        // 3 & 4 & 9 & 12: Pengaturan Jadwal Tahunan, Kalender, Penerbitan, Pengaturan Unit
+        Route::prefix('schedules')->name('schedules.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'index'])->name('index');
+            Route::get('/create', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'store'])->name('store');
+            Route::get('/calendar', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'calendar'])->name('calendar');
+            Route::get('/settings', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'settings'])->name('settings');
+            Route::put('/settings/{id}', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'updateUnitSettings'])->name('update_unit_settings');
+            Route::get('/{id}', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'show'])->name('show');
+            Route::post('/{id}/audit', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'auditConflicts'])->name('audit');
+            Route::get('/{id}/publish', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'publishForm'])->name('publish_form');
+            Route::post('/{id}/publish', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'publish'])->name('publish');
+            Route::get('/{id}/pdf', [\App\Http\Controllers\Piket\PiketScheduleController::class, 'downloadPdf'])->name('pdf');
+        });
+
+        // 5 & 6: Penugasan Kedinasan & Deteksi Konflik
+        Route::prefix('conflicts')->name('conflicts.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Piket\PiketConflictController::class, 'index'])->name('index');
+            Route::get('/dinas', [\App\Http\Controllers\Piket\PiketConflictController::class, 'dinas'])->name('dinas');
+        });
+
+        // 7: Penggantian Petugas (3 Tingkat Prioritas)
+        Route::prefix('replacements')->name('replacements.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Piket\PiketReplacementController::class, 'index'])->name('index');
+            Route::get('/create/{assignmentId}', [\App\Http\Controllers\Piket\PiketReplacementController::class, 'create'])->name('create');
+            Route::post('/{assignmentId}', [\App\Http\Controllers\Piket\PiketReplacementController::class, 'store'])->name('store');
+        });
+
+        // 8: Pengajuan Tukar Jadwal
+        Route::prefix('swaps')->name('swaps.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Piket\PiketSwapController::class, 'index'])->name('index');
+            Route::post('/', [\App\Http\Controllers\Piket\PiketSwapController::class, 'store'])->name('store');
+            Route::post('/{id}/approval', [\App\Http\Controllers\Piket\PiketSwapController::class, 'processApproval'])->name('approval');
+        });
+
+        // 10: Monitoring Pelaksanaan & Presensi
+        Route::prefix('monitoring')->name('monitoring.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Piket\PiketMonitoringController::class, 'index'])->name('index');
+            Route::post('/{assignmentId}', [\App\Http\Controllers\Piket\PiketMonitoringController::class, 'recordAttendance'])->name('record');
+        });
+
+        // 11: Laporan & Rekapitulasi
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Piket\PiketReportController::class, 'index'])->name('index');
+            Route::get('/pdf', [\App\Http\Controllers\Piket\PiketReportController::class, 'downloadPdf'])->name('pdf');
+        });
+    });
 });
 
 // TEMPORARY FIX ROUTE FOR HOSTING (visit: /fix-app)
