@@ -25,9 +25,9 @@
                             <span class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black">AKTIF</span>
                         </span>
 
-                        @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
-                        <a href="{{ route('tukin.index', ['month' => $monthYear, 'period' => $monthYear]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:text-sipega-navy hover:bg-white text-xs font-bold uppercase tracking-wider rounded-xl transition">
-                            <span>💰 Buka Slip Tukin</span>
+                        @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Models\User::find(auth()->id())?->canManageTukin())
+                        <a href="{{ route('tukin.pegawai', ['month' => $monthYear, 'period' => $monthYear]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 text-slate-700 hover:text-sipega-navy hover:bg-white text-xs font-bold uppercase tracking-wider rounded-xl transition">
+                            <span>💰 Buka Tukin</span>
                             <span class="text-[9px] text-gray-400">({{ $monthYear }})</span>
                         </a>
                         @endif

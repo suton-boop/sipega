@@ -121,7 +121,8 @@ class Setting extends Model
                     'submenu_presensi_letters' => ['label' => 'SK & Surat Tugas', 'route' => 'letters.index', 'tag' => 'SURAT'],
                     'submenu_presensi_travel' => ['label' => 'Laporan Perjalanan Dinas', 'route' => 'travel-reports.index', 'tag' => 'LAPORAN'],
                     'submenu_presensi_qrcode' => ['label' => 'Pembuat QR Code', 'route' => 'qrcode.index', 'tag' => 'QR'],
-                    'submenu_presensi_tukin' => ['label' => 'Hitung Tukin (Permendikdasmen 14/2025) / Slip Tukin', 'route' => 'tukin.index', 'tag' => 'TUKIN'],
+                    'submenu_presensi_tukin' => ['label' => 'Tukin (Perhitungan Pegawai)', 'route' => 'tukin.pegawai', 'tag' => 'TUKIN'],
+                    'submenu_presensi_hitung_tukin' => ['label' => 'Hitung Tukin (Admin, Pimpinan & Kepegawaian)', 'route' => 'tukin.index', 'tag' => 'HITUNG'],
                 ]
             ],
             'menu_admin' => [

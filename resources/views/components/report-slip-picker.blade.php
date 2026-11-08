@@ -40,12 +40,12 @@
                 <span x-show="tab === 'harian'" class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black animate-pulse">PILIHAN</span>
             </button>
 
-            @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
+            @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Models\User::find(auth()->id())?->canManageTukin())
             <button type="button" 
                     @click="tab = 'slip'" 
                     :class="tab === 'slip' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-600 hover:text-emerald-800 hover:bg-white/80'" 
                     class="px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2">
-                <span>💰 Slip Tukin</span>
+                <span>💰 Tukin</span>
                 <span x-show="tab === 'slip'" class="text-[8px] bg-white text-emerald-800 px-2 py-0.5 rounded-full font-black animate-pulse">PILIHAN</span>
             </button>
             @endif
@@ -138,10 +138,10 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto">
-                    <!-- Tombol Lihat Rincian Slip -->
-                    <a :href="'{{ url('/tukin') }}?month=' + period + '&period=' + period" 
+                    <!-- Tombol Lihat Rincian Tukin -->
+                    <a :href="'{{ route('tukin.pegawai') }}?month=' + period + '&period=' + period" 
                        class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 bg-white hover:bg-slate-100 text-emerald-900 border border-emerald-200 rounded-xl font-black text-xs uppercase tracking-wider shadow-sm transition">
-                        <span>Lihat Rincian Slip</span>
+                        <span>Lihat Rincian Tukin</span>
                         <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
 

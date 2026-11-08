@@ -24,17 +24,25 @@ class TukinController extends Controller
     }
 
     /**
-     * Memeriksa apakah user memiliki hak akses Kepegawaian atau Pimpinan
+     * Memeriksa apakah user memiliki hak akses Admin, Pimpinan, atau Kepegawaian
      */
-    public static function isPrivilegedUser(?User $user = null): bool
+    public static function canManageTukin(?User $user = null): bool
     {
         $user = $user ?: auth()->user();
         if (!$user) return false;
-        return $user->isOperatorKepegawaian() || $user->isPimpinanOrAdmin();
+        return $user->canManageTukin();
     }
 
     /**
-     * Memeriksa apakah user adalah Operator Kepegawaian (yang berhak menghitung & kelola tukin)
+     * Alias backward-compatibility untuk hak akses Kepegawaian atau Pimpinan
+     */
+    public static function isPrivilegedUser(?User $user = null): bool
+    {
+        return self::canManageTukin($user);
+    }
+
+    /**
+     * Memeriksa apakah user adalah Operator Kepegawaian
      */
     public static function isOperatorKepegawaian(?User $user = null): bool
     {
@@ -44,27 +52,20 @@ class TukinController extends Controller
     }
 
     /**
-     * Halaman Utama Menu Khusus Penghitungan Tukin Pegawai (Kepegawaian & Pimpinan)
-     * atau Slip Tukin Pribadi untuk Pegawai Biasa.
+     * Halaman Utama Menu Khusus Penghitungan Tukin Pegawai (Hitung Tukin)
+     * HANYA ADA DI LEVEL ADMIN, PIMPINAN, DAN KEPEGAWAIAN.
+     * Untuk pegawai biasa, otomatis dialihkan ke sub-menu Tukin (Perhitungan Pegawai tersebut).
      */
     public function index(Request $request)
     {
         $user = auth()->user();
-        $isOperator = self::isOperatorKepegawaian($user);
 
-        // Hanya pegawai biasa/non-operator yang dibatasi oleh master switch is_tukin_active dan show_slip_tukin
-        if (!$isOperator && (Setting::get('is_tukin_active') === '0' || Setting::get('show_slip_tukin') === '0')) {
-            return redirect()->route('dashboard')->with('error', 'Akses Slip Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
+        // Hitung tukin hanya ada di level admin, pimpinan, dan kepegawaian
+        if (!self::canManageTukin($user)) {
+            return redirect()->route('tukin.pegawai', $request->query());
         }
 
-        // Jika bukan Operator Kepegawaian (Pegawai biasa / Pimpinan non-operator), arahkan ke Slip Tukin Saya
-        if (!$isOperator) {
-            $month = $request->get('month', Carbon::now('Asia/Makassar')->format('Y-m'));
-            $tukin = $user->calculateMonthlyTukin($month);
-            return view('tukin.pegawai', compact('user', 'tukin', 'month'));
-        }
-
-        // LEVEL OPERATOR KEPEGAWAIAN (HITUNG TUKIN)
+        // LEVEL ADMIN, PIMPINAN & KEPEGAWAIAN (HITUNG TUKIN SATKER)
         // Tentukan periode (Default: cari periode terbaru yang memiliki data, atau bulan ini)
         $latestPeriodInDb = TukinCalculation::max('period');
         $defaultPeriod = $latestPeriodInDb ?: Carbon::now('Asia/Makassar')->format('Y-m');
@@ -132,6 +133,34 @@ class TukinController extends Controller
             'tukinRules',
             'rates'
         ));
+    }
+
+    /**
+     * Halaman Perhitungan Tukin Pegawai (Sub Menu Baru: Tukin)
+     * Isinya adalah perhitungan pegawai bersangkutan
+     */
+    public function myTukin(Request $request)
+    {
+        $user = auth()->user();
+
+        // Pegawai biasa dibatasi oleh master switch
+        if (!self::canManageTukin($user) && (Setting::get('is_tukin_active') === '0' || Setting::get('show_slip_tukin') === '0')) {
+            return redirect()->route('dashboard')->with('error', 'Akses Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
+        }
+
+        $month = $request->get('month', $request->get('period', Carbon::now('Asia/Makassar')->format('Y-m')));
+
+        // Ambil kalkulasi resmi dari database (jika sudah dihitung/diimpor oleh tim kepegawaian)
+        $calcItem = TukinCalculation::where('period', $month)
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('nip', $user->nip);
+            })->first();
+
+        // Kalkulasi real-time dari log presensi
+        $tukin = $user->calculateMonthlyTukin($month);
+
+        return view('tukin.pegawai', compact('user', 'tukin', 'month', 'calcItem'));
     }
 
     /**

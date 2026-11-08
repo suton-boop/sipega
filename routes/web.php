@@ -176,6 +176,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/tukin/hitung', [TukinController::class, 'index']);
     Route::prefix('tukin')->name('tukin.')->group(function () {
         Route::get('/', [TukinController::class, 'index'])->name('index');
+        Route::get('/pegawai', [TukinController::class, 'myTukin'])->name('pegawai');
+        Route::get('/saya', [TukinController::class, 'myTukin'])->name('my');
         Route::post('/recalculate', [TukinController::class, 'recalculate'])->name('recalculate');
         Route::post('/import-excel', [TukinController::class, 'importExcel'])->name('import_excel');
         Route::get('/template', [TukinController::class, 'downloadTemplate'])->name('template');

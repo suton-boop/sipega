@@ -4,7 +4,7 @@
             <div>
                 <div class="flex items-center gap-2">
                     <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-sipega-navy text-white">
-                        Level Kepegawaian & Pimpinan
+                        Level Admin, Pimpinan & Kepegawaian
                     </span>
                     <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
                         Permendikdasmen No. 14 / 2025
@@ -18,7 +18,12 @@
                 </p>
             </div>
             
-            <div class="flex items-center gap-2">
+            <div class="flex flex-wrap items-center gap-2">
+                <!-- Tombol Lihat Tukin Pribadi -->
+                <a href="{{ route('tukin.pegawai', ['month' => $period]) }}" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-emerald-50 border border-emerald-300 text-emerald-900 hover:bg-emerald-100 text-xs font-black rounded-xl shadow-sm transition">
+                    <span>💰 Tukin Saya</span>
+                </a>
+
                 <!-- Tombol Download Template Excel -->
                 <a href="{{ route('tukin.template') }}" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 hover:text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50 text-xs font-black rounded-xl shadow-sm transition">
                     <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>

@@ -267,20 +267,40 @@
                             @endif
 
                             <!-- Remunerasi / Tukin -->
-                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
+                            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi') || \App\Models\Setting::isSubmenuEnabled('submenu_presensi_hitung_tukin', 'menu_presensi'))
                             <div class="px-4 py-2 text-[8px] font-black text-emerald-800 uppercase tracking-widest border-b border-gray-50 my-1 flex items-center justify-between bg-emerald-50/60">
                                 <span>Tunjangan Kinerja (Tukin)</span>
                                 <span class="text-[7px] bg-emerald-600 text-white px-1.5 py-0.5 rounded font-black">14/2025</span>
                             </div>
-                            @if(auth()->user()?->isOperatorKepegawaian())
-                            <x-dropdown-link :href="route('tukin.index')" class="text-[11px] font-bold py-2 text-emerald-900 bg-emerald-50/80 hover:bg-emerald-100 flex items-center justify-between">
-                                <span>Hitung Tukin (Permendikdasmen 14/2025)</span>
-                                <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">EXCEL</span>
-                            </x-dropdown-link>
+                            @if(auth()->user()?->canManageTukin())
+                                {{-- 1. Hitung Tukin: HANYA ada di level Admin, Pimpinan, dan Kepegawaian --}}
+                                @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_hitung_tukin', 'menu_presensi'))
+                                <x-dropdown-link :href="route('tukin.index')" class="text-[11px] font-bold py-2 text-emerald-900 bg-emerald-50/80 hover:bg-emerald-100 flex items-center justify-between">
+                                    <span>Hitung Tukin (Permendikdasmen 14/2025)</span>
+                                    <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">EXCEL</span>
+                                </x-dropdown-link>
+                                @endif
+                                {{-- 2. Sub Menu Tukin Pribadi --}}
+                                @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
+                                <x-dropdown-link :href="route('tukin.pegawai')" class="text-[11px] font-bold py-2 text-emerald-900 hover:bg-emerald-50 flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5">
+                                        <span>💰</span>
+                                        <span>Tukin</span>
+                                    </span>
+                                    <span class="text-[8px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-bold">PRIBADI</span>
+                                </x-dropdown-link>
+                                @endif
                             @elseif(\App\Models\Setting::get('show_slip_tukin', '1') == '1' && \App\Models\Setting::get('is_tukin_active', '1') == '1')
-                            <x-dropdown-link :href="route('tukin.index')" class="text-[11px] font-bold py-2 text-emerald-900 hover:bg-emerald-50">
-                                <span>Slip Tukin Saya</span>
-                            </x-dropdown-link>
+                                {{-- Pegawai biasa: JANGAN tampilkan Hitung Tukin, ganti dengan sub menu baru Tukin --}}
+                                @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
+                                <x-dropdown-link :href="route('tukin.pegawai')" class="text-[11px] font-bold py-2 text-emerald-900 hover:bg-emerald-50 flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5">
+                                        <span>💰</span>
+                                        <span>Tukin</span>
+                                    </span>
+                                    <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black">PERHITUNGAN</span>
+                                </x-dropdown-link>
+                                @endif
                             @endif
                             @endif
                         </x-slot>
@@ -625,16 +645,30 @@
                 {{ __('Pembuat QR Code') }}
             </x-responsive-nav-link>
             @endif
-            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
-            @if(auth()->user()?->isOperatorKepegawaian())
-            <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-bold py-2.5 ps-8 text-emerald-800 bg-emerald-50/70 flex items-center justify-between">
-                <span>{{ __('Hitung Tukin Pegawai (Permendikdasmen 14/2025)') }}</span>
-                <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">EXCEL</span>
-            </x-responsive-nav-link>
+            @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi') || \App\Models\Setting::isSubmenuEnabled('submenu_presensi_hitung_tukin', 'menu_presensi'))
+            @if(auth()->user()?->canManageTukin())
+                {{-- 1. Hitung Tukin: HANYA ada di level Admin, Pimpinan, dan Kepegawaian --}}
+                @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_hitung_tukin', 'menu_presensi'))
+                <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.index', 'tukin.calculate')" class="text-xs font-bold py-2.5 ps-8 text-emerald-800 bg-emerald-50/70 flex items-center justify-between">
+                    <span>{{ __('Hitung Tukin Pegawai (Permendikdasmen 14/2025)') }}</span>
+                    <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">EXCEL</span>
+                </x-responsive-nav-link>
+                @endif
+                {{-- 2. Tukin Pribadi --}}
+                @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
+                <x-responsive-nav-link :href="route('tukin.pegawai')" :active="request()->routeIs('tukin.pegawai', 'tukin.my')" class="text-xs font-medium py-2.5 ps-8 text-emerald-900 flex items-center justify-between">
+                    <span>{{ __('Tukin (Perhitungan Saya)') }}</span>
+                    <span class="text-[8px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-bold">PRIBADI</span>
+                </x-responsive-nav-link>
+                @endif
             @elseif(\App\Models\Setting::get('show_slip_tukin', '1') == '1' && \App\Models\Setting::get('is_tukin_active', '1') == '1')
-            <x-responsive-nav-link :href="route('tukin.index')" :active="request()->routeIs('tukin.*')" class="text-xs font-medium py-2.5 ps-8">
-                {{ __('Slip Tukin Saya') }}
-            </x-responsive-nav-link>
+                {{-- Pegawai biasa: JANGAN tampilkan Hitung Tukin, ganti dengan sub menu baru Tukin --}}
+                @if(\App\Models\Setting::isSubmenuEnabled('submenu_presensi_tukin', 'menu_presensi'))
+                <x-responsive-nav-link :href="route('tukin.pegawai')" :active="request()->routeIs('tukin.pegawai', 'tukin.my', 'tukin.index')" class="text-xs font-bold py-2.5 ps-8 text-emerald-800 bg-emerald-50/50 flex items-center justify-between">
+                    <span>{{ __('Tukin') }}</span>
+                    <span class="text-[8px] bg-emerald-600 text-white px-2 py-0.5 rounded font-black">PERHITUNGAN</span>
+                </x-responsive-nav-link>
+                @endif
             @endif
             @endif
             @endif
