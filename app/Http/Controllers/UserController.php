@@ -155,7 +155,21 @@ class UserController extends Controller
                 : " dan password direset ke default (12345678)";
         }
 
-        $user->save();
+        try {
+            $user->save();
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Jika kolom 'role' masih tipe ENUM lama di database, ubah otomatis menjadi VARCHAR
+            if (str_contains($e->getMessage(), 'role') || $e->getCode() == '01000' || ($e->errorInfo[1] ?? null) == 1265) {
+                try {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `users` MODIFY COLUMN `role` VARCHAR(50) NOT NULL DEFAULT 'Pegawai'");
+                    $user->save();
+                } catch (\Throwable $ex) {
+                    throw $e;
+                }
+            } else {
+                throw $e;
+            }
+        }
 
         // Sync role Spatie jika digunakan
         if (method_exists($user, 'syncRoles')) {
@@ -282,7 +296,7 @@ class UserController extends Controller
             ? \App\Services\TukinCalculatorService::OFFICIAL_RATES[$cleanGrade] 
             : null;
 
-        $user = User::create([
+        $userData = [
             'name' => $request->name,
             'email' => $request->email,
             'nip' => $request->nip,
@@ -295,7 +309,22 @@ class UserController extends Controller
             'password' => Hash::make($request->password),
             'is_active' => true,
             'photo' => $photoPath,
-        ]);
+        ];
+
+        try {
+            $user = User::create($userData);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (str_contains($e->getMessage(), 'role') || $e->getCode() == '01000' || ($e->errorInfo[1] ?? null) == 1265) {
+                try {
+                    \Illuminate\Support\Facades\DB::statement("ALTER TABLE `users` MODIFY COLUMN `role` VARCHAR(50) NOT NULL DEFAULT 'Pegawai'");
+                    $user = User::create($userData);
+                } catch (\Throwable $ex) {
+                    throw $e;
+                }
+            } else {
+                throw $e;
+            }
+        }
 
         $user->assignRole($request->role);
 
