@@ -66,6 +66,14 @@ Route::get('/clear-cache', function () {
             }
         }
 
+        // Reset permission cache Spatie & pastikan seluruh permission sistem terdaftar
+        try {
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+            foreach (array_keys(\App\Http\Controllers\RolePermissionController::PERMISSIONS_METADATA) as $p) {
+                \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
+            }
+        } catch (\Throwable $e) {}
+
         // Otomatis perbaiki link lama di database yang masih menunjuk ke /storage/ agar langsung menggunakan route view-pdf aman (Anti-403)
         try {
             \App\Models\DailyAgendaItem::where('drive_link', 'like', '%/storage/%')->get()->each(function($it) {
@@ -166,6 +174,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // MODULE RBAC (Matriks Hak Akses / Role-Permission Management)
     Route::get('/rbac', [RolePermissionController::class, 'index'])->name('rbac.index');
     Route::post('/rbac/sync', [RolePermissionController::class, 'sync'])->name('rbac.sync');
+    Route::post('/rbac/reset', [RolePermissionController::class, 'resetDefaults'])->name('rbac.reset');
 
     // MODULE REWARD (Wall of Fame / Wall of Shame)
     Route::get('/reward', [RewardController::class, 'index'])->name('reward.index');

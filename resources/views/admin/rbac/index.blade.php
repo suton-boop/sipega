@@ -38,6 +38,29 @@
                         </div>
                     @endif
 
+                    @if(session('error'))
+                        <div class="mb-6 bg-rose-50 border-l-4 border-rose-500 text-rose-700 p-4 rounded-lg flex items-center gap-3">
+                            <span class="text-2xl">⚠️</span>
+                            <span class="font-bold">{{ session('error') }}</span>
+                        </div>
+                    @endif
+
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-6 border-b border-gray-100 gap-4">
+                        <div>
+                            <h4 class="text-lg font-bold text-sipega-navy">Matriks Izin Modul Sistem ({{ $permissions->count() }} Fitur)</h4>
+                            <p class="text-xs text-gray-500">Kelola dan atur wewenang akses tiap tingkatan peran organisasi.</p>
+                        </div>
+                        <form action="{{ route('rbac.reset') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin me-reset seluruh permission ke setelan default awal SIPEGA?');">
+                            @csrf
+                            <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-xl transition">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                <span>Reset Default Permissions</span>
+                            </button>
+                        </form>
+                    </div>
+
                     <form action="{{ route('rbac.sync') }}" method="POST">
                         @csrf
                         

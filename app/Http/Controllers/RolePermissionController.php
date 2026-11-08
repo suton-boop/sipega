@@ -109,17 +109,24 @@ class RolePermissionController extends Controller
      */
     public function index()
     {
-        // Pastikan seluruh permission sistem terdaftar otomatis di database
-        foreach (array_keys(self::PERMISSIONS_METADATA) as $permName) {
-            Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
-        }
+        // 1. Bersihkan cache Spatie terlebih dahulu agar data selalu segar
+        try {
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        } catch (\Throwable $e) {}
 
-        // Pastikan role Admin selalu memiliki semua permissions
-        $adminRole = Role::where('name', 'Admin')->first();
-        if ($adminRole) {
-            $allPerms = Permission::all();
-            $adminRole->syncPermissions($allPerms);
-        }
+        // 2. Pastikan seluruh permission sistem terdaftar otomatis di database
+        try {
+            foreach (array_keys(self::PERMISSIONS_METADATA) as $permName) {
+                Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
+            }
+
+            // Pastikan role Admin selalu memiliki semua permissions
+            $adminRole = Role::where('name', 'Admin')->first();
+            if ($adminRole) {
+                $allPerms = Permission::all();
+                $adminRole->syncPermissions($allPerms);
+            }
+        } catch (\Throwable $e) {}
 
         $roles = Role::where('name', '!=', 'SuperAdmin')->get(); // Sembunyikan super jika ada
         
@@ -141,6 +148,24 @@ class RolePermissionController extends Controller
         $metadata = self::PERMISSIONS_METADATA;
         
         return view('admin.rbac.index', compact('roles', 'permissions', 'metadata'));
+    }
+
+    /**
+     * Reset Matriks Hak Akses ke Konfigurasi Default Seeder
+     */
+    public function resetDefaults()
+    {
+        try {
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+            \Illuminate\Support\Facades\Artisan::call('db:seed', [
+                '--class' => 'RolePermissionSeeder',
+                '--force' => true,
+            ]);
+            app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+            return back()->with('success', 'Matriks Hak Akses (RBAC) berhasil di-reset dan disinkronkan ke setelan default awal.');
+        } catch (\Throwable $e) {
+            return back()->with('error', 'Gagal reset permissions: ' . $e->getMessage());
+        }
     }
 
     /**
