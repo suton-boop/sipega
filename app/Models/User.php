@@ -442,12 +442,17 @@ class User extends Authenticatable
         $role = strtolower(trim($this->role ?? ''));
         $position = strtolower(trim($this->position ?? ''));
 
+        // Level Pegawai secara mutlak BUKAN Operator Kepegawaian
+        if ($role === 'pegawai') {
+            return false;
+        }
+
         $operatorRoles = ['admin', 'administrator', 'superadmin', 'operator', 'kepegawaian'];
         if (in_array($role, $operatorRoles)) {
             return true;
         }
 
-        $operatorPositions = ['kepegawaian', 'sdm', 'operator', 'pengelola kepegawaian', 'analis sdm'];
+        $operatorPositions = ['kepegawaian', 'sdm', 'pengelola kepegawaian', 'analis sdm'];
         foreach ($operatorPositions as $pos) {
             if (str_contains($position, $pos)) {
                 return true;
@@ -459,10 +464,17 @@ class User extends Authenticatable
 
     /**
      * Memeriksa apakah user berhak mengakses fitur Hitung Tukin
-     * (Hanya ada di level Admin, Pimpinan, dan Kepegawaian atau memiliki permission manage_tukin)
+     * (Hanya ada di level Admin, Pimpinan, dan Kepegawaian. Pegawai biasa mutlak dilarang).
      */
     public function canManageTukin(): bool
     {
+        $role = strtolower(trim($this->role ?? ''));
+
+        // Level Pegawai secara mutlak TIDAK BOLEH mengakses atau melihat Hitung Tukin
+        if ($role === 'pegawai') {
+            return false;
+        }
+
         try {
             if ($this->hasPermissionTo('manage_tukin')) {
                 return true;
