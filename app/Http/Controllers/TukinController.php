@@ -141,16 +141,14 @@ class TukinController extends Controller
     }
 
     /**
-     * Halaman Perhitungan Tukin Pegawai (Sub Menu Baru: Tukin)
-     * Isinya adalah perhitungan pegawai bersangkutan
+     * Halaman Perhitungan Tukin Pegawai (Sub Menu: Tukin)
+     * Isinya adalah khusus data perhitungan pegawai yang sedang login
      */
     public function myTukin(Request $request)
     {
         $user = auth()->user();
-
-        // Pegawai biasa dibatasi oleh master switch
-        if (!self::canManageTukin($user) && (Setting::get('is_tukin_active') === '0' || Setting::get('show_slip_tukin') === '0')) {
-            return redirect()->route('dashboard')->with('error', 'Akses Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
+        if (!$user) {
+            return redirect()->route('login');
         }
 
         $month = $request->get('month', $request->get('period', Carbon::now('Asia/Makassar')->format('Y-m')));
@@ -420,10 +418,6 @@ class TukinController extends Controller
 
         if (auth()->id() !== $targetUser->id && !$isPrivileged) {
             abort(403);
-        }
-
-        if (!$isPrivileged && Setting::get('show_slip_tukin') === '0') {
-            abort(403, 'Fitur pengunduhan Slip Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
         }
 
         $period = $request->get('period', $request->get('month', Carbon::now('Asia/Makassar')->format('Y-m')));

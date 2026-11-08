@@ -72,6 +72,8 @@ Route::get('/clear-cache', function () {
             foreach (array_keys(\App\Http\Controllers\RolePermissionController::PERMISSIONS_METADATA) as $p) {
                 \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
             }
+            \App\Models\Setting::set('show_slip_tukin', '1');
+            \App\Models\Setting::set('is_tukin_active', '1');
         } catch (\Throwable $e) {}
 
         // Otomatis perbaiki link lama di database yang masih menunjuk ke /storage/ agar langsung menggunakan route view-pdf aman (Anti-403)
