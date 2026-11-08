@@ -147,7 +147,7 @@
 
                     <div class="flex items-center gap-2 self-end md:self-center shrink-0">
                         @if($isApproved)
-                            <form action="{{ route('tukin.unapprove_final') }}" method="POST" onsubmit="return confirm('Batalkan status Approve Final untuk periode {{ \Carbon\Carbon::parse($period . \'-01\')->translatedFormat(\'F Y\') }}? Pengunduhan slip PDF bagi pegawai akan dinonaktifkan sementara.')">
+                            <form action="{{ route('tukin.unapprove_final') }}" method="POST" onsubmit="return confirm('Batalkan status Approve Final untuk periode {{ $period }}? Pengunduhan slip PDF bagi pegawai akan dinonaktifkan sementara.')">
                                 @csrf
                                 <input type="hidden" name="period" value="{{ $period }}">
                                 <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border border-rose-300 text-xs font-black rounded-xl transition shadow-sm cursor-pointer">
@@ -156,7 +156,7 @@
                                 </button>
                             </form>
                         @else
-                            <form action="{{ route('tukin.approve_final') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin data perhitungan periode {{ \Carbon\Carbon::parse($period . \'-01\')->translatedFormat(\'F Y\') }} sudah valid dan siap di-Approve Final? Setelah disetujui, seluruh pegawai dapat mengunduh Slip Tukin resmi.')">
+                            <form action="{{ route('tukin.approve_final') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin data perhitungan periode {{ $period }} sudah valid dan siap di-Approve Final? Setelah disetujui, seluruh pegawai dapat mengunduh Slip Tukin resmi.')">
                                 @csrf
                                 <input type="hidden" name="period" value="{{ $period }}">
                                 <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5 cursor-pointer">
