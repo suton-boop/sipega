@@ -48,10 +48,68 @@
         $taxAmount = $isOfficial ? $calcItem->tax_amount : round(($taxPercent / 100) * $baseAmount, 2);
         
         $nettoAmount = $isOfficial ? $calcItem->netto_amount : max(0, $baseAmount - $totalDeduction);
+
+        $canManage = auth()->user()?->canManageTukin();
     @endphp
 
     <div class="py-8">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            <!-- Alert Notifikasi Flash -->
+            @if(session('success'))
+            <div class="p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-2xl shadow-sm flex items-start gap-3">
+                <svg class="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="text-xs text-emerald-900 font-bold leading-relaxed">
+                    {{ session('success') }}
+                </div>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-2xl shadow-sm flex items-start gap-3">
+                <svg class="w-5 h-5 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <div class="text-xs text-red-900 font-bold leading-relaxed">
+                    {{ session('error') }}
+                </div>
+            </div>
+            @endif
+
+            <!-- BANNER STATUS APPROVAL (PENCEGAHAN MISKONSEPSI ISI SLIP) -->
+            @if(!empty($isApproved))
+            <div class="p-5 bg-emerald-50/90 border-2 border-emerald-300 rounded-[2rem] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center font-black text-lg shrink-0 shadow-md shadow-emerald-600/20">
+                        ✓
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-black text-xs sm:text-sm text-emerald-950">Status Slip: Resmi Telah Disetujui (Approved Final)</h4>
+                            <span class="px-2 py-0.5 rounded-full text-[8px] font-black bg-emerald-600 text-white uppercase tracking-wider">Valid</span>
+                        </div>
+                        <p class="text-xs text-emerald-800 font-medium mt-0.5">
+                            Disetujui oleh <strong>{{ $approvalInfo['approved_by'] ?? 'Admin / Kepegawaian' }}</strong> pada {{ !empty($approvalInfo['approved_at']) ? \Carbon\Carbon::parse($approvalInfo['approved_at'])->translatedFormat('d F Y H:i') . ' WITA' : '-' }}. Slip Tukin resmi (PDF) dapat diunduh langsung.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @else
+            <div class="p-5 bg-amber-50/90 border-2 border-amber-300 rounded-[2rem] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div class="flex items-center gap-3.5">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-black text-lg shrink-0 shadow-md shadow-amber-500/20">
+                        ⏳
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h4 class="font-black text-xs sm:text-sm text-amber-950">Status Slip: Menunggu Approve Final Admin / Kepegawaian</h4>
+                            <span class="px-2 py-0.5 rounded-full text-[8px] font-black bg-amber-200 text-amber-900 uppercase tracking-wider">Belum Final</span>
+                        </div>
+                        <p class="text-xs text-amber-800 font-medium mt-0.5">
+                            Untuk menghindari miskonsepsi isi slip, <strong>Cetak Slip Tukin Resmi (PDF)</strong> hanya bisa dilakukan ketika Admin atau Kepegawaian sudah melakukan <strong>Approve Final</strong> sebagai syarat resmi.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            @endif
             
             <!-- IDENTITAS PEGAWAI & FILTER PERIODE -->
             <div class="bg-white p-6 sm:p-8 rounded-[2.5rem] shadow-xl border border-gray-100">
@@ -63,9 +121,13 @@
                         <div>
                             <div class="flex items-center gap-2">
                                 <h3 class="text-xl font-black text-sipega-navy">{{ $user->name }}</h3>
-                                @if($isOfficial)
+                                @if(!empty($isApproved))
                                 <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-wider">
-                                    Resmi Terverifikasi
+                                    ✓ Approved Final
+                                </span>
+                                @elseif($isOfficial)
+                                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-amber-100 text-amber-800 border border-amber-200 uppercase tracking-wider">
+                                    Menunggu Approve Final
                                 </span>
                                 @else
                                 <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black bg-sky-100 text-sky-800 border border-sky-200 uppercase tracking-wider">
@@ -111,11 +173,23 @@
                     </form>
 
                     <div class="flex flex-wrap items-center gap-2">
-                        <!-- Unduh PDF Slip Tukin -->
+                        <!-- Unduh PDF Slip Tukin (Dengan Syarat Approval) -->
+                        @if(!empty($isApproved))
                         <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $month ?? now('Asia/Makassar')->format('Y-m'), 'month' => $month ?? now('Asia/Makassar')->format('Y-m')]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 transition transform hover:-translate-y-0.5">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             <span>Unduh Slip Tukin Resmi (PDF)</span>
                         </a>
+                        @elseif($canManage)
+                        <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $month ?? now('Asia/Makassar')->format('Y-m'), 'month' => $month ?? now('Asia/Makassar')->format('Y-m')]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-amber-600/20 transition">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                            <span>Pratinjau Slip (Draft - Admin)</span>
+                        </a>
+                        @else
+                        <button type="button" onclick="alert('Cetak Slip Tukin Resmi (PDF) periode {{ $periodFormatted }} belum bisa dilakukan karena belum di-Approve Final oleh Admin atau Tim Kepegawaian.')" class="cursor-not-allowed opacity-75 inline-flex items-center gap-2 px-4 py-2.5 bg-gray-200 text-gray-600 border border-gray-300 rounded-xl font-bold text-xs uppercase tracking-wider">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            <span>Cetak Slip Resmi (Menunggu Approve)</span>
+                        </button>
+                        @endif
 
                         <!-- Unduh Laporan Harian -->
                         <a href="{{ route('attendance.download_pdf', ['id' => $user->id, 'month' => $month ?? now('Asia/Makassar')->format('Y-m')]) }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-sky-700 hover:bg-sky-800 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-sky-700/20 transition transform hover:-translate-y-0.5">
@@ -133,13 +207,13 @@
                         <span class="text-xs font-black uppercase text-sipega-orange tracking-[.35em]">
                             Take Home Pay (Tukin Bersih) • Periode {{ $periodFormatted }}
                         </span>
-                        @if($isOfficial)
+                        @if(!empty($isApproved))
                         <span class="self-start sm:self-auto text-[10px] font-black px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-full uppercase tracking-wider">
-                            ✓ Hasil Rekapitulasi Final
+                            ✓ Hasil Rekapitulasi Final (Disetujui)
                         </span>
                         @else
-                        <span class="self-start sm:self-auto text-[10px] font-black px-3 py-1 bg-sky-500/20 text-sky-300 border border-sky-500/30 rounded-full uppercase tracking-wider">
-                            ⚡ Estimasi Berjalan
+                        <span class="self-start sm:self-auto text-[10px] font-black px-3 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full uppercase tracking-wider">
+                            ⏳ Rekapitulasi Berjalan (Belum Approve Final)
                         </span>
                         @endif
                     </div>
@@ -359,16 +433,28 @@
                 </div>
                 @endif
 
-                <!-- FOOTER CARD: CETAK PDF SLIP RESMI -->
+                <!-- FOOTER CARD: CETAK PDF SLIP RESMI (DENGAN KONDISI APPROVE FINAL) -->
                 <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div class="text-xs text-gray-400 font-medium">
                         Waktu Perhitungan Sistem: <strong>{{ now('Asia/Makassar')->translatedFormat('d F Y H:i') }} WITA</strong>
                     </div>
 
+                    @if(!empty($isApproved))
                     <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $month ?? now('Asia/Makassar')->format('Y-m'), 'month' => $month ?? now('Asia/Makassar')->format('Y-m')]) }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                         <span>Cetak Slip Tukin Resmi (PDF)</span>
                     </a>
+                    @elseif($canManage)
+                    <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $month ?? now('Asia/Makassar')->format('Y-m'), 'month' => $month ?? now('Asia/Makassar')->format('Y-m')]) }}" target="_blank" class="inline-flex items-center gap-2 px-5 py-2.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-black rounded-xl shadow-md transition transform hover:-translate-y-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <span>Pratinjau Slip (Draft - Admin)</span>
+                    </a>
+                    @else
+                    <button type="button" onclick="alert('Cetak Slip Tukin Resmi (PDF) periode {{ $periodFormatted }} belum bisa dilakukan karena belum di-Approve Final oleh Admin atau Tim Kepegawaian.')" class="cursor-not-allowed opacity-75 inline-flex items-center gap-2 px-5 py-2.5 bg-gray-200 text-gray-600 border border-gray-300 rounded-xl font-bold text-xs uppercase tracking-wider">
+                        <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <span>Cetak Slip Resmi (Menunggu Approve)</span>
+                    </button>
+                    @endif
                 </div>
             </div>
 

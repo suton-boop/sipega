@@ -51,6 +51,9 @@ class TukinCalculation extends Model
         'account_number',
         'notes',
         'source',
+        'is_approved',
+        'approved_at',
+        'approved_by',
         'created_by',
     ];
 
@@ -66,6 +69,8 @@ class TukinCalculation extends Model
         'tax_percent' => 'float',
         'tax_amount' => 'float',
         'netto_amount' => 'float',
+        'is_approved' => 'boolean',
+        'approved_at' => 'datetime',
     ];
 
     public function user()
@@ -76,6 +81,66 @@ class TukinCalculation extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Memeriksa apakah perhitungan Tukin untuk suatu periode sudah di-Approve Final oleh Admin / Kepegawaian
+     */
+    public static function isPeriodApproved(string $period): bool
+    {
+        // 1. Cek dari Setting (cepat dan kompatibel)
+        $approved = \App\Models\Setting::get("tukin_approved_{$period}");
+        if ($approved === '1' || $approved === 1) {
+            return true;
+        }
+
+        // 2. Cek apakah ada record di tukin_calculations dengan status is_approved
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('tukin_calculations', 'is_approved')) {
+                return self::where('period', $period)->where('is_approved', 1)->exists();
+            }
+        } catch (\Throwable $e) {
+            // fallback safe
+        }
+
+        return false;
+    }
+
+    /**
+     * Mengambil metadata persetujuan final suatu periode (Nama approver, waktu approval, dll)
+     */
+    public static function getPeriodApprovalInfo(string $period): ?array
+    {
+        $raw = \App\Models\Setting::get("tukin_approved_info_{$period}");
+        if ($raw) {
+            $data = is_array($raw) ? $raw : json_decode($raw, true);
+            if (!empty($data)) {
+                return $data;
+            }
+        }
+
+        // Fallback jika belum di setting tapi ada di database
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('tukin_calculations', 'is_approved')) {
+                $calc = self::with('approver')->where('period', $period)->where('is_approved', 1)->first();
+                if ($calc && $calc->approved_at) {
+                    return [
+                        'approved' => true,
+                        'approved_by' => $calc->approver?->name ?? 'Admin / Kepegawaian',
+                        'approved_by_id' => $calc->approved_by,
+                        'approved_at' => $calc->approved_at->toDateTimeString(),
+                        'period' => $period,
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {}
+
+        return null;
     }
 
     /**

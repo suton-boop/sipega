@@ -119,6 +119,56 @@
                 </div>
             </div>
 
+            <!-- STATUS PERSETUJUAN FINAL & SYARAT CETAK SLIP (ADMIN / KEPEGAWAIAN) -->
+            <div class="p-5 rounded-[2.5rem] shadow-sm border transition-all duration-200 {{ $isApproved ? 'bg-gradient-to-r from-emerald-50 via-teal-50 to-white border-emerald-300' : 'bg-gradient-to-r from-amber-50 via-orange-50/50 to-white border-amber-300' }}">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 shadow-md {{ $isApproved ? 'bg-emerald-600 text-white' : 'bg-amber-500 text-white' }}">
+                            {{ $isApproved ? '✓' : '⏳' }}
+                        </div>
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <h4 class="font-black text-sm text-sipega-navy">
+                                    {{ $isApproved ? 'Status: Perhitungan Sudah di-Approve Final' : 'Status: Draft / Belum di-Approve Final' }}
+                                </h4>
+                                <span class="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider {{ $isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200' }}">
+                                    {{ $isApproved ? 'Pegawai Berhak Cetak PDF' : 'Cetak PDF Terkunci Bagi Pegawai' }}
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-600 font-medium mt-1 leading-relaxed">
+                                @if($isApproved)
+                                    Disetujui oleh <strong>{{ $approvalInfo['approved_by'] ?? 'Admin / Kepegawaian' }}</strong> pada {{ !empty($approvalInfo['approved_at']) ? \Carbon\Carbon::parse($approvalInfo['approved_at'])->translatedFormat('d F Y H:i') . ' WITA' : '-' }}. Seluruh pegawai dapat mencetak slip PDF resmi.
+                                @else
+                                    Sesuai aturan untuk menghindari miskonsepsi isi slip, pegawai <strong>hanya bisa mencetak Slip Tukin Resmi (PDF)</strong> jika Admin/Kepegawaian sudah melakukan Approve Final.
+                                @endif
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-2 self-end md:self-center shrink-0">
+                        @if($isApproved)
+                            <form action="{{ route('tukin.unapprove_final') }}" method="POST" onsubmit="return confirm('Batalkan status Approve Final untuk periode {{ \Carbon\Carbon::parse($period . \'-01\')->translatedFormat(\'F Y\') }}? Pengunduhan slip PDF bagi pegawai akan dinonaktifkan sementara.')">
+                                @csrf
+                                <input type="hidden" name="period" value="{{ $period }}">
+                                <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2.5 bg-white hover:bg-rose-50 text-rose-700 hover:text-rose-800 border border-rose-300 text-xs font-black rounded-xl transition shadow-sm cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    <span>Batalkan Approve</span>
+                                </button>
+                            </form>
+                        @else
+                            <form action="{{ route('tukin.approve_final') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin data perhitungan periode {{ \Carbon\Carbon::parse($period . \'-01\')->translatedFormat(\'F Y\') }} sudah valid dan siap di-Approve Final? Setelah disetujui, seluruh pegawai dapat mengunduh Slip Tukin resmi.')">
+                                @csrf
+                                <input type="hidden" name="period" value="{{ $period }}">
+                                <button type="submit" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-lg shadow-emerald-600/30 transition transform hover:-translate-y-0.5 cursor-pointer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    <span>Approve Final Periode Ini</span>
+                                </button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
             <!-- PANEL IMPORT: BISA DI-HIDE & SHOW SECARA FLEKSIBEL -->
             <div x-show="showImport" 
                  x-cloak

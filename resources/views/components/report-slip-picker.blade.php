@@ -138,19 +138,11 @@
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto">
-                    <!-- Tombol Lihat Rincian Tukin -->
+                    <!-- Tombol Buka Perhitungan & Slip Tukin -->
                     <a :href="'{{ route('tukin.pegawai') }}?month=' + period + '&period=' + period" 
-                       class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 bg-white hover:bg-slate-100 text-emerald-900 border border-emerald-200 rounded-xl font-black text-xs uppercase tracking-wider shadow-sm transition">
-                        <span>Lihat Rincian Tukin</span>
-                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                    </a>
-
-                    <!-- Tombol Unduh PDF Slip Tukin -->
-                    <a :href="'{{ url('/tukin/export/pdf/slip') }}/' + userId + '?period=' + period + '&month=' + period" 
-                       target="_blank"
                        class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/20 transition transform hover:-translate-y-0.5">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        <span>Unduh Slip Tukin (PDF)</span>
+                        <span>Buka Perhitungan & Slip Tukin</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </a>
                 </div>
             </div>

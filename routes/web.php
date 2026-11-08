@@ -185,6 +185,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/period/{period}', [TukinController::class, 'deletePeriod'])->name('delete_period');
         Route::get('/classes', [TukinController::class, 'classes'])->name('classes');
         Route::post('/classes', [TukinController::class, 'storeClass'])->name('classes.store');
+        Route::post('/approve-final', [TukinController::class, 'approveFinal'])->name('approve_final');
+        Route::post('/unapprove-final', [TukinController::class, 'unapproveFinal'])->name('unapprove_final');
         
         // Export & Reports
         Route::get('/export/excel', [TukinController::class, 'export'])->name('export');

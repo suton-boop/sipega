@@ -66,11 +66,22 @@
                         </a>
 
                         <!-- Unduh PDF Slip Tukin (Sesuai Bulan & Tahun) -->
-                        @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Http\Controllers\TukinController::isPrivilegedUser(auth()->user()))
-                        <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $monthYear, 'month' => $monthYear]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-600/20 transition transform hover:-translate-y-0.5">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            <span>Unduh PDF Slip Tukin ({{ $monthYear }})</span>
-                        </a>
+                        @php
+                            $isSlipApproved = \App\Models\TukinCalculation::isPeriodApproved($monthYear);
+                            $canManageSlip = \App\Models\User::find(auth()->id())?->canManageTukin();
+                        @endphp
+                        @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || $canManageSlip)
+                            @if($isSlipApproved || $canManageSlip)
+                            <a href="{{ route('tukin.download_slip', ['id' => $user->id, 'period' => $monthYear, 'month' => $monthYear]) }}" target="_blank" class="inline-flex items-center gap-2 px-4 py-2.5 {{ $isSlipApproved ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-amber-600 hover:bg-amber-700' }} text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-md transition transform hover:-translate-y-0.5">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                <span>{{ $isSlipApproved ? "Unduh PDF Slip Tukin ({$monthYear})" : "Pratinjau Slip Tukin ({$monthYear})" }}</span>
+                            </a>
+                            @else
+                            <button type="button" onclick="alert('Cetak Slip Tukin Resmi (PDF) periode {{ $monthYear }} belum bisa dilakukan karena belum di-Approve Final oleh Admin atau Tim Kepegawaian.')" class="cursor-not-allowed opacity-75 inline-flex items-center gap-2 px-4 py-2.5 bg-gray-200 text-gray-600 border border-gray-300 rounded-xl font-bold text-xs uppercase tracking-wider">
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                <span>Slip Tukin (Menunggu Approve)</span>
+                            </button>
+                            @endif
                         @endif
 
                         <!-- Cetak Halaman -->

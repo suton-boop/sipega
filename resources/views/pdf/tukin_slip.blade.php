@@ -186,9 +186,14 @@
     </div>
 
     <div class="footer">
-        <p style="font-size: 9px; color: #888; font-style: italic;">
-            * Dokumen ini dihasilkan secara otomatis oleh sistem SIPEGA BPMP Kaltim berdasarkan Permendikdasmen No. 14 Tahun 2025.<br>
-            * Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }} WITA
+        <p style="font-size: 9px; color: #666; font-style: italic; line-height: 1.5;">
+            * Dokumen resmi ini dihasilkan oleh sistem SIPEGA BPMP Provinsi Kalimantan Timur (Permendikdasmen No. 14 Tahun 2025).<br>
+            @if(!empty($isApproved))
+            * <strong>STATUS SLIP: RESMI (TELAH DI-APPROVE FINAL OLEH BAGIAN KEPEGAWAIAN / ADMIN).</strong><br>
+            @else
+            * <strong>STATUS SLIP: DRAFT PRATINJAU INTERNAL (BELUM DI-APPROVE FINAL).</strong><br>
+            @endif
+            * Waktu cetak: {{ now()->translatedFormat('d F Y H:i') }} WITA
         </p>
 
         <div class="signature">

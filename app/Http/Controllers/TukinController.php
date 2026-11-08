@@ -121,6 +121,9 @@ class TukinController extends Controller
         $tukinRules = TukinCalculatorService::getRules();
         $rates = TukinCalculatorService::getRates();
 
+        $isApproved = TukinCalculation::isPeriodApproved($period);
+        $approvalInfo = TukinCalculation::getPeriodApprovalInfo($period);
+
         return view('tukin.index', compact(
             'period',
             'savedPeriods',
@@ -131,7 +134,9 @@ class TukinController extends Controller
             'jobClasses',
             'officialRates',
             'tukinRules',
-            'rates'
+            'rates',
+            'isApproved',
+            'approvalInfo'
         ));
     }
 
@@ -160,7 +165,10 @@ class TukinController extends Controller
         // Kalkulasi real-time dari log presensi
         $tukin = $user->calculateMonthlyTukin($month);
 
-        return view('tukin.pegawai', compact('user', 'tukin', 'month', 'calcItem'));
+        $isApproved = TukinCalculation::isPeriodApproved($month);
+        $approvalInfo = TukinCalculation::getPeriodApprovalInfo($month);
+
+        return view('tukin.pegawai', compact('user', 'tukin', 'month', 'calcItem', 'isApproved', 'approvalInfo'));
     }
 
     /**
@@ -402,20 +410,32 @@ class TukinController extends Controller
 
     /**
      * Download Individual Tukin Slip (PDF)
+     * SYARAT: Untuk menghindari miskonsepsi isi slip, pegawai biasa HANYA bisa cetak slip resmi
+     * setelah Admin atau Kepegawaian melakukan Approve Final.
      */
     public function downloadSlip(Request $request, $id = null)
     {
         $targetUser = $id ? User::findOrFail($id) : auth()->user();
-        if (auth()->id() !== $targetUser->id && !$this->isPrivilegedUser()) {
+        $isPrivileged = $this->isPrivilegedUser();
+
+        if (auth()->id() !== $targetUser->id && !$isPrivileged) {
             abort(403);
         }
 
-        if (!$this->isPrivilegedUser() && Setting::get('show_slip_tukin') === '0') {
+        if (!$isPrivileged && Setting::get('show_slip_tukin') === '0') {
             abort(403, 'Fitur pengunduhan Slip Tukin sedang dinonaktifkan atau disembunyikan oleh Administrator.');
         }
 
         $period = $request->get('period', $request->get('month', Carbon::now('Asia/Makassar')->format('Y-m')));
         $monthDate = Carbon::parse($period . '-01');
+
+        // SYARAT KHUSUS: Untuk menghindari miskonsepsi isi slip,
+        // Cetak Slip Tukin Resmi (PDF) hanya bisa dilakukan ketika admin atau kepegawaian sudah approve final.
+        $isApproved = TukinCalculation::isPeriodApproved($period);
+        if (!$isApproved && !$isPrivileged) {
+            return redirect()->route('tukin.pegawai', ['month' => $period])
+                ->with('error', 'Untuk menghindari miskonsepsi isi slip, Cetak Slip Tukin Resmi (PDF) periode ' . $monthDate->translatedFormat('F Y') . ' hanya bisa dilakukan ketika Admin atau Kepegawaian sudah melakukan Approve Final.');
+        }
 
         // Cek apakah ada data di TukinCalculation
         $calcItem = TukinCalculation::where('period', $period)
@@ -427,8 +447,87 @@ class TukinController extends Controller
         $tukin = (new TukinService())->calculateForUser($targetUser, $monthDate);
         $user = $targetUser;
 
-        return Pdf::loadView('pdf.tukin_slip', compact('user', 'tukin', 'calcItem', 'period'))
+        return Pdf::loadView('pdf.tukin_slip', compact('user', 'tukin', 'calcItem', 'period', 'isApproved'))
                   ->download("Slip_Tukin_{$user->name}_{$period}.pdf");
+    }
+
+    /**
+     * Approve Final Perhitungan Tukin Suatu Periode
+     * Dilakukan oleh Admin atau Kepegawaian sebagai syarat resmi pegawai dapat mencetak slip PDF.
+     */
+    public function approveFinal(Request $request)
+    {
+        if (!$this->canManageTukin()) {
+            abort(403, 'Akses ditolak. Fitur ini hanya untuk Admin dan Kepegawaian.');
+        }
+
+        $request->validate([
+            'period' => 'required|string|regex:/^\d{4}-\d{2}$/',
+        ]);
+
+        $period = $request->input('period');
+        $user = auth()->user();
+
+        $count = TukinCalculation::where('period', $period)->count();
+        if ($count === 0) {
+            return back()->with('error', "Gagal approve: Belum ada data perhitungan Tukin untuk periode {$period}. Silakan lakukan hitung ulang atau import Excel terlebih dahulu.");
+        }
+
+        $info = [
+            'approved' => true,
+            'approved_by' => $user->name,
+            'approved_by_id' => $user->id,
+            'approved_by_role' => $user->role,
+            'approved_at' => Carbon::now('Asia/Makassar')->toDateTimeString(),
+            'period' => $period,
+            'total_pegawai' => $count,
+        ];
+
+        Setting::set("tukin_approved_{$period}", '1');
+        Setting::set("tukin_approved_info_{$period}", json_encode($info));
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('tukin_calculations', 'is_approved')) {
+                TukinCalculation::where('period', $period)->update([
+                    'is_approved' => 1,
+                    'approved_at' => Carbon::now('Asia/Makassar'),
+                    'approved_by' => $user->id,
+                ]);
+            }
+        } catch (\Throwable $e) {}
+
+        return back()->with('success', "Perhitungan Tukin periode " . Carbon::parse($period . '-01')->translatedFormat('F Y') . " berhasil di-Approve Final! Seluruh pegawai sekarang berhak mengunduh Slip Tukin resmi (PDF).");
+    }
+
+    /**
+     * Batalkan Status Approve Final (Buka Kembali ke Draft)
+     */
+    public function unapproveFinal(Request $request)
+    {
+        if (!$this->canManageTukin()) {
+            abort(403, 'Akses ditolak.');
+        }
+
+        $request->validate([
+            'period' => 'required|string|regex:/^\d{4}-\d{2}$/',
+        ]);
+
+        $period = $request->input('period');
+
+        Setting::set("tukin_approved_{$period}", '0');
+        Setting::set("tukin_approved_info_{$period}", null);
+
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasColumn('tukin_calculations', 'is_approved')) {
+                TukinCalculation::where('period', $period)->update([
+                    'is_approved' => 0,
+                    'approved_at' => null,
+                    'approved_by' => null,
+                ]);
+            }
+        } catch (\Throwable $e) {}
+
+        return back()->with('success', "Status Approve Final periode " . Carbon::parse($period . '-01')->translatedFormat('F Y') . " berhasil dibatalkan. Pengunduhan slip PDF untuk pegawai dinonaktifkan sementara.");
     }
 
     /**
