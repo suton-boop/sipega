@@ -804,7 +804,14 @@ class AgendaController extends Controller
     public function leaderIndex()
     {
         $user = auth()->user();
-        if (!in_array($user->role, ['Admin', 'Pimpinan', 'Kasubag'])) {
+        $canEvaluate = in_array($user->role, ['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM']);
+        try {
+            if ($user->hasPermissionTo('evaluate_agenda')) {
+                $canEvaluate = true;
+            }
+        } catch (\Throwable $e) {}
+
+        if (!$canEvaluate) {
             return redirect()->route('dashboard')->with('error', 'Akses Ditolak: Anda tidak memiliki hak akses Penilaian.');
         }
 
@@ -825,7 +832,14 @@ class AgendaController extends Controller
     public function evaluate(Request $request, $id)
     {
         $leader = auth()->user();
-        if (!in_array($leader->role, ['Admin', 'Pimpinan', 'Kasubag'])) {
+        $canEvaluate = in_array($leader->role, ['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM']);
+        try {
+            if ($leader->hasPermissionTo('evaluate_agenda')) {
+                $canEvaluate = true;
+            }
+        } catch (\Throwable $e) {}
+
+        if (!$canEvaluate) {
             return back()->with('error', 'Akses Ditolak.');
         }
 
@@ -866,7 +880,14 @@ class AgendaController extends Controller
     public function bulkEvaluate(Request $request)
     {
         $leader = auth()->user();
-        if (!in_array($leader->role, ['Admin', 'Pimpinan', 'Kasubag'])) {
+        $canEvaluate = in_array($leader->role, ['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM']);
+        try {
+            if ($leader->hasPermissionTo('evaluate_agenda')) {
+                $canEvaluate = true;
+            }
+        } catch (\Throwable $e) {}
+
+        if (!$canEvaluate) {
             return back()->with('error', 'Akses Ditolak.');
         }
 

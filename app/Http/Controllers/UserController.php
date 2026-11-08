@@ -77,7 +77,7 @@ class UserController extends Controller
         $request->validate([
             'name'              => 'required|string|max:255',
             'nip'               => ['nullable', 'string', 'max:50', Rule::unique('users', 'nip')->ignore($user->id)],
-            'role'              => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
+            'role'              => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM', 'Pegawai', 'Operator', 'Sekpri'])],
             'position'          => 'nullable|string|max:255',
             'gugus_mutu'        => 'nullable|string|max:100',
             'golongan'          => 'nullable|string|max:100',
@@ -257,7 +257,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'nip' => 'required|string|unique:users',
-            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Pegawai', 'Operator', 'Sekpri'])],
+            'role' => ['required', Rule::in(['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM', 'Pegawai', 'Operator', 'Sekpri'])],
             'position' => 'nullable|string|max:255',
             'gugus_mutu' => 'nullable|string|max:100',
             'golongan' => 'nullable|string|max:100',

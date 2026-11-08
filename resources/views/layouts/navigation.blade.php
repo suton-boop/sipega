@@ -307,8 +307,8 @@
                     </x-dropdown>
                     @endif
 
-                    <!-- 8. ADMIN (HANYA MUNCUL UNTUK ADMIN, PIMPINAN, KASUBAG) -->
-                    @if(\App\Models\Setting::isMenuEnabled('menu_admin') && auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
+                    <!-- 8. ADMIN (HANYA MUNCUL UNTUK ADMIN, PIMPINAN, KASUBAG, KETUA GM) -->
+                    @if(\App\Models\Setting::isMenuEnabled('menu_admin') && auth()->user() && (in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM']) || auth()->user()->hasRole('Ketua GM')))
                     <x-dropdown align="right" width="64">
                         <x-slot name="trigger">
                             <button class="inline-flex items-center px-3.5 py-2 text-[10px] font-black leading-5 text-sipega-orange hover:text-white focus:outline-none transition duration-200 ease-in-out uppercase tracking-[0.2em] {{ request()->routeIs('leader.*', 'travel.*', 'admin.calendar.*', 'duty-simulation.*', 'performance.*', 'attendance.import.*', 'admin.attendance.*', 'pimpinan.auto_evaluation.*', 'users.*', 'settings.*') ? 'text-white bg-sipega-orange rounded-full shadow-md shadow-orange-500/20' : '' }}">
@@ -674,7 +674,7 @@
             @endif
 
             <!-- 7: ADMIN -->
-            @if(\App\Models\Setting::isMenuEnabled('menu_admin') && auth()->user() && in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag']))
+            @if(\App\Models\Setting::isMenuEnabled('menu_admin') && auth()->user() && (in_array(auth()->user()->role, ['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM']) || auth()->user()->hasRole('Ketua GM')))
             <div class="px-6 py-3.5 text-[9px] font-black text-sipega-orange bg-orange-50 uppercase tracking-[0.2em] flex items-center justify-between mt-3 border-y border-orange-200/60">
                 <span class="flex items-center gap-1.5">
                     <span>⚙️</span> ADMIN

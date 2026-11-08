@@ -70,6 +70,7 @@
                                     <label class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 px-1">Hak Akses (Role)</label>
                                     <select name="role" required class="w-full bg-gray-50 border-none rounded-2xl p-4 text-sm font-bold focus:ring-2 focus:ring-sipega-navy uppercase tracking-widest">
                                         <option value="Pegawai">Pegawai</option>
+                                        <option value="Ketua GM">Ketua GM (Gugus Mutu)</option>
                                         <option value="Operator">Operator</option>
                                         <option value="Kasubag">Kasubag</option>
                                         <option value="Pimpinan">Pimpinan</option>
@@ -296,6 +297,7 @@
                         <select name="role" onchange="this.form.submit()" class="w-full py-3 px-3 bg-gray-50 border-none rounded-2xl text-xs font-bold text-sipega-navy focus:ring-2 focus:ring-sipega-navy uppercase tracking-wider">
                             <option value="all">Semua Peran</option>
                             <option value="Pegawai" {{ request('role') == 'Pegawai' ? 'selected' : '' }}>Pegawai</option>
+                            <option value="Ketua GM" {{ request('role') == 'Ketua GM' ? 'selected' : '' }}>Ketua GM (Gugus Mutu)</option>
                             <option value="Operator" {{ request('role') == 'Operator' ? 'selected' : '' }}>Operator</option>
                             <option value="Kasubag" {{ request('role') == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
                             <option value="Pimpinan" {{ request('role') == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
@@ -577,6 +579,7 @@
                                                                     <option value="Admin" {{ $u->role == 'Admin' ? 'selected' : '' }}>Admin</option>
                                                                     <option value="Pimpinan" {{ $u->role == 'Pimpinan' ? 'selected' : '' }}>Pimpinan</option>
                                                                     <option value="Kasubag" {{ $u->role == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
+                                                                    <option value="Ketua GM" {{ $u->role == 'Ketua GM' ? 'selected' : '' }}>Ketua GM</option>
                                                                     <option value="Operator" {{ $u->role == 'Operator' ? 'selected' : '' }}>Operator</option>
                                                                     <option value="Pegawai" {{ $u->role == 'Pegawai' ? 'selected' : '' }}>Pegawai</option>
                                                                 </select>

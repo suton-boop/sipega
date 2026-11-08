@@ -26,6 +26,7 @@ class RolePermissionSeeder extends Seeder
         $admin = Role::firstOrCreate(['name' => 'Admin']);
         $pimpinan = Role::firstOrCreate(['name' => 'Pimpinan']);
         $kasubag = Role::firstOrCreate(['name' => 'Kasubag']);
+        $ketuaGm = Role::firstOrCreate(['name' => 'Ketua GM']);
         $operator = Role::firstOrCreate(['name' => 'Operator']);
         $pegawai = Role::firstOrCreate(['name' => 'Pegawai']);
 
@@ -54,6 +55,12 @@ class RolePermissionSeeder extends Seeder
             'approve_leaves',
             'approve_mik',
             'approve_piket',
+        ]);
+
+        $ketuaGm->syncPermissions([
+            'approve_mik',
+            'evaluate_agenda',
+            'view_reports',
         ]);
 
         $operator->syncPermissions([

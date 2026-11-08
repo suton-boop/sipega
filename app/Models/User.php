@@ -355,6 +355,13 @@ class User extends Authenticatable
      */
     public function canApproveMik(): bool
     {
+        // 1. Cek Permission Spatie jika aktif
+        try {
+            if ($this->hasPermissionTo('approve_mik')) {
+                return true;
+            }
+        } catch (\Throwable $e) {}
+
         $role = strtolower(trim($this->role ?? ''));
         $position = strtolower(trim($this->position ?? ''));
 
@@ -374,12 +381,38 @@ class User extends Authenticatable
             return true;
         }
 
+        try {
+            if ($this->hasRole('Ketua GM')) {
+                return true;
+            }
+        } catch (\Throwable $e) {}
+
         // Pegawai dengan indikasi ketua gugus mutu di profil
         if (!empty($this->gugus_mutu) && (str_contains($position, 'ketua') || str_contains($role, 'ketua'))) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Memeriksa apakah user berkedudukan sebagai Ketua Gugus Mutu (Ketua GM)
+     */
+    public function isKetuaGm(): bool
+    {
+        $role = strtolower(trim($this->role ?? ''));
+        $position = strtolower(trim($this->position ?? ''));
+
+        try {
+            if ($this->hasRole('Ketua GM')) {
+                return true;
+            }
+        } catch (\Throwable $e) {}
+
+        return in_array($role, ['ketua gm', 'ketua gugus', 'ketua gugus mutu']) ||
+               str_contains($position, 'ketua gugus') ||
+               str_contains($position, 'ketua gm') ||
+               (!empty($this->gugus_mutu) && (str_contains($position, 'ketua') || str_contains($role, 'ketua')));
     }
 
     /**

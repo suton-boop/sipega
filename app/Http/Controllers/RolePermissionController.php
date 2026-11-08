@@ -114,21 +114,40 @@ class RolePermissionController extends Controller
             app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         } catch (\Throwable $e) {}
 
-        // 2. Pastikan seluruh permission sistem terdaftar otomatis di database
+        // 2. Pastikan seluruh permission sistem dan role terdaftar otomatis di database
         try {
             foreach (array_keys(self::PERMISSIONS_METADATA) as $permName) {
                 Permission::firstOrCreate(['name' => $permName, 'guard_name' => 'web']);
             }
 
+            // Pastikan role-role standar SIPEGA tersedia
+            $adminRole = Role::firstOrCreate(['name' => 'Admin', 'guard_name' => 'web']);
+            Role::firstOrCreate(['name' => 'Pimpinan', 'guard_name' => 'web']);
+            Role::firstOrCreate(['name' => 'Kasubag', 'guard_name' => 'web']);
+            $ketuaGmRole = Role::firstOrCreate(['name' => 'Ketua GM', 'guard_name' => 'web']);
+            Role::firstOrCreate(['name' => 'Operator', 'guard_name' => 'web']);
+            Role::firstOrCreate(['name' => 'Pegawai', 'guard_name' => 'web']);
+
+            // Berikan default permission awal untuk Ketua GM jika belum ada
+            if ($ketuaGmRole->permissions()->count() === 0) {
+                $ketuaGmRole->givePermissionTo(['approve_mik', 'evaluate_agenda', 'view_reports']);
+            }
+
             // Pastikan role Admin selalu memiliki semua permissions
-            $adminRole = Role::where('name', 'Admin')->first();
             if ($adminRole) {
                 $allPerms = Permission::all();
                 $adminRole->syncPermissions($allPerms);
             }
         } catch (\Throwable $e) {}
 
-        $roles = Role::where('name', '!=', 'SuperAdmin')->get(); // Sembunyikan super jika ada
+        // Urutkan peran secara hierarkis: Admin -> Pimpinan -> Kasubag -> Ketua GM -> Operator -> Pegawai
+        $roleOrder = ['Admin', 'Pimpinan', 'Kasubag', 'Ketua GM', 'Operator', 'Pegawai'];
+        $roles = Role::where('name', '!=', 'SuperAdmin')
+            ->get()
+            ->sortBy(function($r) use ($roleOrder) {
+                $idx = array_search($r->name, $roleOrder);
+                return $idx !== false ? $idx : 99;
+            });
         
         // Urutkan permissions sesuai urutan di PERMISSIONS_METADATA
         $allPermissions = Permission::all()->keyBy('name');
