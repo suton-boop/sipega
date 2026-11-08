@@ -158,6 +158,8 @@ class TukinService
                 ->whereBetween('date', [$startOfMonth->toDateString(), $endOfMonth->toDateString()])
                 ->selectRaw('SUM(COALESCE(tl_minutes, 0) + COALESCE(psw_minutes, 0)) as total')
                 ->first()->total ?? 0,
+            'details' => $dailyDetails,
+            'summary' => $summary,
             'data' => [
                 'summary' => $summary,
                 'details' => $dailyDetails
