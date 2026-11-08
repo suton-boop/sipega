@@ -426,10 +426,16 @@ class User extends Authenticatable
 
     /**
      * Memeriksa apakah user berhak mengakses fitur Hitung Tukin
-     * (Hanya ada di level Admin, Pimpinan, dan Kepegawaian)
+     * (Hanya ada di level Admin, Pimpinan, dan Kepegawaian atau memiliki permission manage_tukin)
      */
     public function canManageTukin(): bool
     {
+        try {
+            if ($this->hasPermissionTo('manage_tukin')) {
+                return true;
+            }
+        } catch (\Throwable $e) {}
+
         return $this->isOperatorKepegawaian() || $this->isPimpinanOrAdmin();
     }
 }

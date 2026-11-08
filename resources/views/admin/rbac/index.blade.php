@@ -18,7 +18,7 @@
                     </div>
                     <div>
                         <h3 class="text-3xl font-extrabold text-white">SIPEGA Matrix Access</h3>
-                        <p class="text-gray-300">Konfigurasi dinamis hak akses berdasarkan peran organisasi.</p>
+                        <p class="text-gray-300">Konfigurasi dinamis hak akses berdasarkan peran organisasi (Role-Based Access Control).</p>
                     </div>
                 </div>
                 <div>
@@ -45,9 +45,11 @@
                             <table class="w-full text-left">
                                 <thead class="bg-gray-50/50">
                                     <tr>
-                                        <th class="p-6 text-sipega-navy font-black tracking-wider uppercase text-sm border-b border-gray-100">Daftar Fitur (Permissions)</th>
+                                        <th class="p-6 text-sipega-navy font-black tracking-wider uppercase text-sm border-b border-gray-100 min-w-[320px]">
+                                            Daftar Fitur (Permissions)
+                                        </th>
                                         @foreach($roles as $role)
-                                        <th class="p-6 text-center border-b border-gray-100">
+                                        <th class="p-6 text-center border-b border-gray-100 min-w-[110px]">
                                             <div class="bg-sipega-navy/5 p-3 rounded-xl">
                                                 <div class="text-sipega-navy font-bold text-base">{{ $role->name }}</div>
                                                 <div class="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">Role Level</div>
@@ -58,18 +60,33 @@
                                 </thead>
                                 <tbody class="divide-y divide-gray-50">
                                     @foreach($permissions as $permission)
+                                    @php
+                                        $meta = $metadata[$permission->name] ?? [
+                                            'label' => ucwords(str_replace('_', ' ', $permission->name)),
+                                            'desc'  => 'Izin sistem untuk modul ' . $permission->name,
+                                            'group' => 'Fitur Sistem'
+                                        ];
+                                    @endphp
                                     <tr class="hover:bg-orange-50/30 transition-colors group">
                                         <td class="p-6">
-                                            <div class="flex items-center gap-3">
-                                                <div class="w-2 h-8 bg-orange-400 rounded-full opacity-0 group-hover:opacity-100 transition"></div>
+                                            <div class="flex items-start gap-3">
+                                                <div class="w-1.5 h-10 bg-orange-400 rounded-full opacity-0 group-hover:opacity-100 transition mt-0.5 shrink-0"></div>
                                                 <div>
-                                                    <div class="font-extrabold text-sipega-navy capitalize">{{ str_replace('_', ' ', $permission->name) }}</div>
-                                                    <div class="text-xs text-gray-400 font-medium">Izin sistem untuk modul {{ $permission->name }}</div>
+                                                    <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                                        <span class="font-black text-sipega-navy text-sm">{{ $meta['label'] }}</span>
+                                                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200 uppercase tracking-wider">
+                                                            {{ $meta['group'] }}
+                                                        </span>
+                                                    </div>
+                                                    <div class="text-xs text-gray-500 font-normal leading-relaxed">{{ $meta['desc'] }}</div>
+                                                    <div class="text-[10px] font-mono text-orange-600 font-semibold mt-1">
+                                                        <code>{{ $permission->name }}</code>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
                                         @foreach($roles as $role)
-                                        <td class="p-6 text-center">
+                                        <td class="p-6 text-center align-middle">
                                             <label class="relative inline-flex items-center cursor-pointer">
                                                 <input type="checkbox" name="permissions[{{ $role->id }}][]" value="{{ $permission->name }}" 
                                                     class="sr-only peer" 
@@ -84,7 +101,7 @@
                             </table>
                         </div>
 
-                        <div class="flex justify-between items-center bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                        <div class="flex flex-col md:flex-row justify-between items-center gap-4 bg-gray-50 p-6 rounded-2xl border border-gray-100">
                             <div class="text-sm text-gray-500 max-w-lg italic">
                                 *Setiap perubahan akan langsung menyinkronkan hak akses untuk semua akun yang menggunakan Role terkait. Harap berhati-hati dalam mengubah izin <strong>manage_rbac</strong>.
                             </div>

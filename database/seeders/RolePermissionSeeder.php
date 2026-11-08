@@ -6,6 +6,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use App\Http\Controllers\RolePermissionController;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -15,18 +16,10 @@ class RolePermissionSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         // 1. Definisikan Permisson (Fitur Utama SIPEGA)
-        $permissions = [
-            'manage_users',         // Manajemen Pegawai & RBAC
-            'issue_st',             // Terbitkan Surat Tugas
-            'import_attendance',    // Impor Excel Mesin Absen
-            'view_private_st',      // Lihat Surat Tugas Rahasia
-            'approve_claims',      // Setujui Lupa Absen
-            'manage_dispositions',  // Kelola Instruksi Pimpinan
-            'view_reports',         // Lihat Laporan Performa Global
-        ];
+        $permissions = array_keys(RolePermissionController::PERMISSIONS_METADATA);
 
         foreach ($permissions as $p) {
-            Permission::firstOrCreate(['name' => $p]);
+            Permission::firstOrCreate(['name' => $p, 'guard_name' => 'web']);
         }
 
         // 2. Definisikan Roles
@@ -43,19 +36,36 @@ class RolePermissionSeeder extends Seeder
             'view_private_st',
             'approve_claims',
             'manage_dispositions',
-            'view_reports'
+            'view_reports',
+            'evaluate_agenda',
+            'approve_tukin',
+            'approve_leaves',
+            'approve_mik',
+            'approve_piket',
         ]);
 
         $kasubag->syncPermissions([
             'view_private_st',
             'approve_claims',
-            'manage_dispositions'
+            'manage_dispositions',
+            'view_reports',
+            'evaluate_agenda',
+            'approve_tukin',
+            'approve_leaves',
+            'approve_mik',
+            'approve_piket',
         ]);
 
         $operator->syncPermissions([
             'issue_st',
-            'import_attendance'
+            'import_attendance',
+            'manage_meetings',
+            'manage_tukin',
+            'manage_leave_balances',
+            'manage_piket',
         ]);
+
+        // Pegawai tidak memiliki permission administratif khusus. Fitur perorangan aktif mandiri.
 
         // 4. Buat Akun Admin Utama (Jika belum ada)
         $adminUser = User::firstOrCreate(
@@ -71,5 +81,7 @@ class RolePermissionSeeder extends Seeder
         );
 
         $adminUser->assignRole('Admin');
+
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
