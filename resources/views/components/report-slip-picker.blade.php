@@ -11,7 +11,7 @@
     setPeriod(val) {
         this.period = val;
     }
-}" class="bg-white overflow-hidden shadow-2xl sm:rounded-[3rem] p-8 md:p-10 border border-gray-100 relative group transition-all">
+}" id="report-slip-picker-container" class="bg-white overflow-hidden shadow-2xl sm:rounded-[3rem] p-8 md:p-10 border border-gray-100 relative group transition-all">
     
     <!-- Background Watermark -->
     <div class="absolute top-0 right-0 p-6 opacity-5 pointer-events-none text-8xl font-black rotate-12 select-none">
@@ -33,22 +33,24 @@
         <!-- Tombol Pilihan (Switch Pills) -->
         <div class="flex flex-wrap items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200/60 shadow-inner shrink-0">
             <button type="button" 
-                    @click="tab = 'harian'" 
+                    id="btn-picker-harian"
+                    @click="tab = 'harian'; switchTabManually('harian')" 
+                    onclick="switchTabManually('harian')"
                     :class="tab === 'harian' ? 'bg-sipega-navy text-white shadow-lg' : 'text-slate-600 hover:text-sipega-navy hover:bg-white/80'" 
-                    class="px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2">
+                    class="px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer">
                 <span>📄 Laporan Harian</span>
                 <span x-show="tab === 'harian'" class="text-[8px] bg-sipega-orange text-white px-2 py-0.5 rounded-full font-black animate-pulse">PILIHAN</span>
             </button>
 
-            @if(\App\Models\Setting::get('show_slip_tukin', '1') == '1' || \App\Models\User::find(auth()->id())?->canManageTukin())
             <button type="button" 
-                    @click="tab = 'slip'" 
+                    id="btn-picker-slip"
+                    @click="tab = 'slip'; switchTabManually('slip')" 
+                    onclick="switchTabManually('slip')"
                     :class="tab === 'slip' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-600 hover:text-emerald-800 hover:bg-white/80'" 
-                    class="px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2">
+                    class="px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer">
                 <span>💰 Tukin</span>
                 <span x-show="tab === 'slip'" class="text-[8px] bg-white text-emerald-800 px-2 py-0.5 rounded-full font-black animate-pulse">PILIHAN</span>
             </button>
-            @endif
         </div>
     </div>
 
@@ -56,10 +58,10 @@
     <div class="py-6 border-b border-gray-100 grid grid-cols-1 md:grid-cols-12 gap-4 items-end relative z-10">
         
         @if(isset($allPegawai) && count($allPegawai) > 1 && in_array(auth()->user()->role, ['Admin', 'Kasubag', 'Pimpinan', 'Operator']))
-        <!-- Pilihan Pegawai (Khusus Admin / Kasubag / Pimpinan) -->
+        <!-- Pilihan Pegawai (Khusus Admin / Kasubag / Pimpinan / Operator) -->
         <div class="md:col-span-5">
             <label class="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1.5">Pilih Pegawai Satker</label>
-            <select x-model="userId" class="w-full text-xs font-bold rounded-2xl border-gray-200 shadow-sm focus:border-sipega-orange focus:ring-sipega-orange bg-slate-50 py-3">
+            <select x-model="userId" id="picker-select-user" class="w-full text-xs font-bold rounded-2xl border-gray-200 shadow-sm focus:border-sipega-orange focus:ring-sipega-orange bg-slate-50 py-3">
                 <option value="{{ auth()->id() }}">-- Saya Sendiri ({{ auth()->user()->name }}) --</option>
                 @foreach($allPegawai as $p)
                     @if($p->id !== auth()->id())
@@ -76,6 +78,7 @@
             <div class="flex items-center gap-2">
                 <input type="month" 
                        x-model="period" 
+                       id="picker-input-period"
                        class="w-full text-xs font-black rounded-2xl border-gray-200 shadow-sm focus:border-sipega-orange focus:ring-sipega-orange bg-slate-50 py-3">
             </div>
         </div>
@@ -94,7 +97,7 @@
     <!-- Active Mode Details & Action Buttons -->
     <div class="pt-6 relative z-10">
         <!-- MODE 1: LAPORAN HARIAN PRESENSI -->
-        <div x-show="tab === 'harian'" x-transition class="space-y-4">
+        <div x-show="tab === 'harian'" id="panel-picker-harian" class="space-y-4">
             <div class="p-5 rounded-2xl bg-sky-50/70 border border-sky-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-2xl bg-sky-600 text-white flex items-center justify-center text-xl shadow-md shrink-0">
@@ -125,27 +128,81 @@
         </div>
 
         <!-- MODE 2: SLIP TUKIN PEGAWAI -->
-        <div x-show="tab === 'slip'" x-transition class="space-y-4" style="display: none;">
+        <div x-show="tab === 'slip'" id="panel-picker-slip" class="space-y-4" style="display: none;">
             <div class="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-xl shadow-md shrink-0">
                         💰
                     </div>
                     <div>
-                        <h4 class="text-sm font-black text-emerald-950">Slip Tunjangan Kinerja (Tukin)</h4>
-                        <p class="text-xs text-emerald-800 font-medium">Kalkulasi take-home pay, komponen hak grade jabatan, potongan progresif presensi & capaian kinerja sesuai regulasi Permendikdasmen 14/2025.</p>
+                        <h4 class="text-sm font-black text-emerald-950">Perhitungan & Slip Tukin Pegawai</h4>
+                        <p class="text-xs text-emerald-800 font-medium">Kalkulasi take-home pay, komponen hak grade jabatan, potongan progresif presensi & capaian kinerja sesuai Permendikdasmen 14/2025.</p>
                     </div>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 shrink-0 w-full md:w-auto">
-                    <!-- Tombol Buka Perhitungan & Slip Tukin -->
-                    <a :href="'{{ route('tukin.pegawai') }}?month=' + period + '&period=' + period" 
-                       class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/20 transition transform hover:-translate-y-0.5">
-                        <span>Buka Perhitungan & Slip Tukin</span>
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    <!-- Tombol Buka Perhitungan Tukin Pegawai -->
+                    <a :href="'{{ route('tukin.pegawai') }}?id=' + userId + '&month=' + period + '&period=' + period" 
+                       class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-600/20 transition transform hover:-translate-y-0.5">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        <span>Lihat Perhitungan Tukin</span>
                     </a>
+
+                    <!-- Tombol Unduh Slip Resmi (PDF) -->
+                    <a :href="'{{ url('/tukin/export/pdf/slip') }}/' + userId + '?period=' + period + '&month=' + period" 
+                       target="_blank"
+                       class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-5 py-3 bg-white hover:bg-emerald-50 text-emerald-900 border border-emerald-300 rounded-xl font-black text-xs uppercase tracking-wider shadow-sm transition">
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span>Cetak Slip PDF</span>
+                    </a>
+
+                    @if(auth()->user()?->canManageTukin())
+                    <!-- Tombol Kelola Satker (Khusus Admin/Pimpinan/Kepegawaian) -->
+                    <a :href="'{{ route('tukin.index') }}?period=' + period" 
+                       class="flex-1 md:flex-initial inline-flex items-center justify-center gap-2 px-4 py-3 bg-slate-800 hover:bg-black text-white rounded-xl font-black text-xs uppercase tracking-wider transition">
+                        <span>Hitung Satker</span>
+                        <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                    </a>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function switchTabManually(tabName) {
+    var harianPanel = document.getElementById('panel-picker-harian');
+    var slipPanel = document.getElementById('panel-picker-slip');
+    var btnHarian = document.getElementById('btn-picker-harian');
+    var btnSlip = document.getElementById('btn-picker-slip');
+
+    if (tabName === 'slip') {
+        if (harianPanel) {
+            harianPanel.style.display = 'none';
+        }
+        if (slipPanel) {
+            slipPanel.style.display = 'block';
+        }
+        if (btnSlip) {
+            btnSlip.className = 'px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer bg-emerald-600 text-white shadow-lg';
+        }
+        if (btnHarian) {
+            btnHarian.className = 'px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer text-slate-600 hover:text-sipega-navy hover:bg-white/80';
+        }
+    } else {
+        if (slipPanel) {
+            slipPanel.style.display = 'none';
+        }
+        if (harianPanel) {
+            harianPanel.style.display = 'block';
+        }
+        if (btnHarian) {
+            btnHarian.className = 'px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer bg-sipega-navy text-white shadow-lg';
+        }
+        if (btnSlip) {
+            btnSlip.className = 'px-5 py-3 rounded-xl font-black text-xs uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer text-slate-600 hover:text-emerald-800 hover:bg-white/80';
+        }
+    }
+}
+</script>

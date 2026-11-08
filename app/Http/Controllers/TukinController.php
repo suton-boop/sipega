@@ -151,6 +151,11 @@ class TukinController extends Controller
             return redirect()->route('login');
         }
 
+        // Jika Admin / Pimpinan / Kepegawaian memilih melihat perhitungan pegawai tertentu
+        if ($request->filled('id') && self::canManageTukin($user)) {
+            $user = User::find($request->get('id')) ?: $user;
+        }
+
         $month = $request->get('month', $request->get('period', Carbon::now('Asia/Makassar')->format('Y-m')));
 
         // Ambil kalkulasi resmi dari database (jika sudah dihitung/diimpor oleh tim kepegawaian)

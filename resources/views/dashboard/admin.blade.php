@@ -175,18 +175,21 @@
                         </div>
 
                         <div class="flex flex-col gap-3">
-                            <button class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-sipega-orange/20 uppercase text-xs tracking-widest">
-                                Validasi Lupa Absen
-                            </button>
+                            <a href="{{ route('admin.attendance.manage') }}" class="bg-sipega-orange hover:bg-orange-600 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-sipega-orange/20 uppercase text-xs tracking-widest text-center flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                <span>Validasi Lupa Absen</span>
+                            </a>
                             <form action="{{ route('users.recalculate-performance') }}" method="POST">
                                 @csrf
-                                <button type="submit" class="w-full bg-sipega-navy hover:bg-[#002244] text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-sipega-navy/20 uppercase text-xs tracking-widest flex items-center justify-center gap-3">
-                                    Kalkulasi Bobot Skor
+                                <button type="submit" class="w-full bg-sipega-navy hover:bg-[#002244] text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-sipega-navy/20 uppercase text-xs tracking-widest flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                                    <span>Kalkulasi Bobot Skor</span>
                                 </button>
                             </form>
                             @if(\App\Models\Setting::get('is_tukin_active') !== '0')
-                            <a href="{{ route('tukin.export') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-emerald-600/20 uppercase text-xs tracking-widest flex items-center justify-center gap-3">
-                                Export Rekap Tukin
+                            <a href="{{ route('tukin.index') }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 px-8 rounded-2xl shadow-xl transition-all hover:-translate-y-1 hover:shadow-emerald-600/20 uppercase text-xs tracking-widest flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                <span>Kelola & Rekap Tukin</span>
                             </a>
                             @endif
                         </div>
