@@ -62,7 +62,11 @@ class UserController extends Controller
         }
 
         $totalUsers = User::where('id', '!=', auth()->id())->count();
-        $users = $query->orderBy('name')->paginate(20)->withQueryString();
+        $perPage = (int) $request->input('per_page', 10);
+        if ($perPage <= 0) {
+            $perPage = 10;
+        }
+        $users = $query->orderBy('name')->paginate($perPage)->withQueryString();
 
         return view('admin.users.index', compact('users', 'totalUsers'));
     }

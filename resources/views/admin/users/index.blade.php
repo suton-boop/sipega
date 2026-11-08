@@ -349,13 +349,13 @@
                 <!-- Ringkasan Filter & Jumlah Data -->
                 <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-4 pt-4 border-t border-gray-100 text-[11px] text-gray-500 font-bold">
                     <div>
-                        Menampilkan <strong class="text-sipega-navy">{{ count($users) }}</strong> data pegawai
+                        Menampilkan <strong class="text-sipega-navy">{{ $users->firstItem() ?? 0 }} - {{ $users->lastItem() ?? 0 }}</strong> dari <strong class="text-sipega-navy">{{ $users->total() }}</strong> data pegawai
                         @if(request()->hasAny(['search', 'role', 'grade', 'status', 'device']))
                             <span class="text-sipega-orange font-black ml-1">(Hasil Filter Aktif)</span>
                         @endif
                     </div>
                     <div class="text-[10px] text-gray-400 uppercase tracking-widest">
-                        Total Terdaftar: <strong class="text-sipega-navy">{{ $totalUsers ?? count($users) }}</strong> Pegawai
+                        Total Terdaftar: <strong class="text-sipega-navy">{{ $totalUsers ?? $users->total() }}</strong> Pegawai
                     </div>
                 </div>
             </div>
@@ -654,6 +654,18 @@
                         </tbody>
                     </table>
                 </div>
+
+                <!-- 4. PAGINASI NAVIGASI HALAMAN (10 DATA PER HALAMAN) -->
+                @if($users->hasPages())
+                <div class="p-6 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50/50 rounded-b-[40px]">
+                    <div class="text-xs text-gray-500 font-bold">
+                        Halaman <span class="font-extrabold text-sipega-navy">{{ $users->currentPage() }}</span> dari <span class="font-extrabold text-sipega-navy">{{ $users->lastPage() }}</span>
+                    </div>
+                    <div>
+                        {{ $users->links() }}
+                    </div>
+                </div>
+                @endif
             </div>
         </div>
     </div>
