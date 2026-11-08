@@ -5,26 +5,41 @@
     <title>SLIP TUKIN - {{ $user->name }}</title>
     <style>
         body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; color: #333; line-height: 1.4; }
-        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-        .header h1 { font-size: 16px; margin: 0; text-transform: uppercase; }
+        
+        .kop-container {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .kop-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 15px; }
+        .header h1 { font-size: 15px; margin: 0; text-transform: uppercase; font-weight: bold; }
         .header p { margin: 2px 0; font-size: 10px; }
         
-        .info-table { width: 100%; margin-bottom: 20px; }
-        .info-table td { padding: 4px 0; vertical-align: top; }
+        .doc-title { text-align: center; text-transform: uppercase; font-size: 13px; font-weight: bold; margin-top: 8px; margin-bottom: 3px; }
+        .doc-period { text-align: center; font-weight: bold; font-size: 11px; margin-top: 0; margin-bottom: 15px; }
+
+        .info-table { width: 100%; margin-bottom: 15px; }
+        .info-table td { padding: 3px 0; vertical-align: top; }
         .label { font-weight: bold; width: 140px; }
         
-        table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        table.data-table th { background-color: #f2f2f2; border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 10px; }
-        table.data-table td { border: 1px solid #ddd; padding: 6px 8px; font-size: 10px; }
+        table.data-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        table.data-table th { background-color: #f2f2f2; border: 1px solid #ddd; padding: 6px 8px; text-align: left; font-size: 10px; }
+        table.data-table td { border: 1px solid #ddd; padding: 5px 8px; font-size: 10px; }
         
         .summary-box { float: right; width: 300px; border: 1px solid #000; padding: 10px; margin-top: 10px; }
         .summary-row { clear: both; margin-bottom: 5px; }
         .summary-label { float: left; font-weight: bold; }
         .summary-value { float: right; text-align: right; }
         
-        .footer { margin-top: 50px; clear: both; }
-        .signature { float: right; text-align: center; width: 200px; margin-top: 30px; }
-        .signature-name { margin-top: 60px; font-weight: bold; text-decoration: underline; }
+        .footer { margin-top: 35px; clear: both; }
+        .signature { float: right; text-align: center; width: 220px; margin-top: 20px; }
+        .signature-name { margin-top: 55px; font-weight: bold; text-decoration: underline; }
         
         .page-break { page-break-after: always; }
         .text-right { text-align: right; }
@@ -36,6 +51,27 @@
         $periodDate = !empty($period) ? \Carbon\Carbon::parse($period . '-01') : (!empty($month) ? \Carbon\Carbon::parse($month . '-01') : now());
         $periodLabel = $periodDate->translatedFormat('F Y');
         
+        // Pengecekan gambar kop surat resmi BPMP Provinsi Kalimantan Timur
+        $possibleKopFiles = [
+            public_path('images/kop-bpmp-prov-kaltim.png'),
+            public_path('images/kop-bpmp-prov-kaltim.jpg'),
+            public_path('images/kop-bpmp-prov-kaltim.jpeg'),
+            public_path('images/kop-surat-bpmp-kaltim-2026.png'),
+            public_path('images/kop-surat-bpmp-kaltim-2026.PNG'),
+            public_path('images/kop.png'),
+            public_path('images/kop.jpg'),
+        ];
+
+        $kopBase64 = null;
+        foreach ($possibleKopFiles as $file) {
+            if (file_exists($file)) {
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                $mime = in_array($ext, ['jpg', 'jpeg']) ? 'image/jpeg' : 'image/png';
+                $kopBase64 = 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($file));
+                break;
+            }
+        }
+
         $details = $tukin['details'] ?? $tukin['data']['details'] ?? [];
         
         $baseAmount = $calcItem ? $calcItem->base_amount : ($tukin['base_tukin'] ?? 0);
@@ -50,14 +86,21 @@
         $taxPercent = $calcItem ? ($calcItem->tax_percent ?? 0) : 0;
     @endphp
 
-    <div class="header">
-        <h1>Kementerian Pendidikan Dasar dan Menengah</h1>
-        <p>Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Kalimantan Timur</p>
-        <p>Sistem Informasi Performa dan Penugasan (SIPEGA)</p>
-    </div>
+    <!-- KOP SURAT RESMI BPMP PROV KALTIM -->
+    @if(!empty($kopBase64))
+        <div class="kop-container">
+            <img src="{{ $kopBase64 }}" class="kop-img" alt="Kop BPMP Prov Kaltim">
+        </div>
+    @else
+        <div class="header">
+            <h1>KEMENTERIAN PENDIDIKAN DASAR DAN MENENGAH</h1>
+            <p>Balai Penjaminan Mutu Pendidikan (BPMP) Provinsi Kalimantan Timur</p>
+            <p>Sistem Informasi Performa dan Penugasan (SIPEGA)</p>
+        </div>
+    @endif
 
-    <h2 style="text-align: center; text-transform: uppercase; font-size: 14px;">Slip Rincian Tunjangan Kinerja</h2>
-    <p style="text-align: center; font-weight: bold;">Periode: {{ $periodLabel }}</p>
+    <div class="doc-title">Slip Rincian Tunjangan Kinerja</div>
+    <div class="doc-period">Periode: {{ $periodLabel }}</div>
 
     <div class="info-table">
         <table width="100%">
@@ -115,7 +158,7 @@
     </table>
 
     <p class="text-bold">II. Komputasi Final:</p>
-    <div style="border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #fafafa;">
+    <div style="border: 1px solid #ddd; padding: 12px; border-radius: 5px; background: #fafafa;">
         <table width="100%">
             <tr>
                 <td width="300">Penghasilan Tunjangan Dasar (100%)</td>
@@ -136,8 +179,8 @@
             </tr>
             @endif
             <tr style="font-size: 13px; font-weight: bold; border-top: 2px solid #000;">
-                <td style="padding-top: 10px;">JUMLAH TUKIN DIBAYARKAN (NET)</td>
-                <td class="text-right" style="padding-top: 10px; color: #003366;">: Rp {{ number_format($nettoAmount, 0, ',', '.') }}</td>
+                <td style="padding-top: 8px;">JUMLAH TUKIN DIBAYARKAN (NET)</td>
+                <td class="text-right" style="padding-top: 8px; color: #003366;">: Rp {{ number_format($nettoAmount, 0, ',', '.') }}</td>
             </tr>
         </table>
     </div>
